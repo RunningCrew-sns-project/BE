@@ -18,8 +18,8 @@ public class SwaggerConfig {
 
 //    @Value("${aws.server-url}")
 //    private String serverUrl;
-//    @Value("${aws.new-server-url}")
-//    private String newServerUrl;
+    @Value("${spring.datasource.server-url}")
+    private String newServerUrl;
 
 
     @Bean
@@ -30,13 +30,15 @@ public class SwaggerConfig {
                 .version(openApiVersion)
                 .description("런닝크루 SNS 프로젝트 API 명세서");
 
+
+
 //        Server server = new Server();
 //        server.setUrl(serverUrl);
 //        server.setDescription("Spare Server");
-//
-//        Server newServer = new Server();
-//        newServer.setUrl(newServerUrl);
-//        newServer.setDescription("HTTPS Production Server");
+
+        Server newServer = new Server();
+        newServer.setUrl(newServerUrl);
+        newServer.setDescription("HTTPS Production Server");
 
         Server localServer = new Server();
         localServer.setUrl("http://localhost:8080/");
@@ -52,9 +54,7 @@ public class SwaggerConfig {
                                 new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.COOKIE).name("RefreshToken"))
                 )
                 .info(info)
-                //일단 로컬 서버만 추가
-//                .servers(Arrays.asList(newServer, server, localServer))
-                .servers(List.of(localServer))
+                .servers(List.of(localServer, newServer))
 
                 .addSecurityItem(new SecurityRequirement().addList("access"))
                 .addSecurityItem(new SecurityRequirement().addList("refresh"))

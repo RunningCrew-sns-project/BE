@@ -26,6 +26,7 @@ spring:
     password: ENC(FZchWcTilrdnJpcRebDLtOL5eTdyhz1T)
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3307/RunningCrewDB
+    server-url: ENC(iDTg6Fxw1LNDNw/voQuAhia2p7Xt0CLQZeYH2znQGFSx9qZqed4wJeaw2TjQ4lfauEVSXb5F36ZXoPjllIHkbw==)
 
 
   data:
