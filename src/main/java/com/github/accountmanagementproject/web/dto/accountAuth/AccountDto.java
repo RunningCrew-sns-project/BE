@@ -91,8 +91,7 @@ public class AccountDto {
         return this.getNickname().matches("01\\d{9}");
     }
     public boolean badPasswordValue(){
-        return !this.password.matches("^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]+$")
-                ||!(this.password.length()>=8&&password.length()<=20);
+        return !this.password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$");
     }
     public boolean differentPasswordConfirm(){
         return !this.passwordConfirm.equals(this.password);

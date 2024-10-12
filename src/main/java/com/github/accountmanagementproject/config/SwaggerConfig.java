@@ -26,9 +26,9 @@ public class SwaggerConfig {
     public OpenAPI openAPI(@Value("${springdoc.version}") String openApiVersion) {
 
         Info info = new Info()
-                .title("Account Management Project")
+                .title("Running Crew SNS Project")
                 .version(openApiVersion)
-                .description("계정 관리 프로젝트");
+                .description("런닝크루 SNS 프로젝트 API 명세서");
 
 //        Server server = new Server();
 //        server.setUrl(serverUrl);

@@ -25,10 +25,10 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
   datasource:
-    username: ${RDS_USERNAME}
-    password: ${RDS_PASSWORD}
+    username: ENC(h2JOcqwlTgH7EViYp44e4g==)
+    password: ENC(FZchWcTilrdnJpcRebDLtOL5eTdyhz1T)
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/RunningCrewDB
+    url: jdbc:mariadb://localhost:3307/RunningCrewDB
 
   data:
     redis:
@@ -40,6 +40,6 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /amp-docs.html
+    path: /running-docs.html
   version: 1.0.0
 

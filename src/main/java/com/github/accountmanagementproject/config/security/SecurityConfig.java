@@ -47,8 +47,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/auth/auth-test").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/resources/**","/api/auth/*",
-                                "/error").permitAll()
-                        .requestMatchers("/api-docs/**","/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/swagger-ui/**").permitAll()
+                                "/error","/swagger-ui/**", "/v3/api-docs/**", "/running-docs.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)//인증이전 실행
