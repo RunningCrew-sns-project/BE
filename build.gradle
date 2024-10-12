@@ -44,6 +44,8 @@ dependencies {
     //jasypt
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
 
+    //db ssh tunneling
+    implementation 'com.jcraft:jsch:0.1.55'
 }
 
 tasks.named('test') {
@@ -51,7 +53,7 @@ tasks.named('test') {
 }
 
 tasks.named('bootJar'){
-    mainClass = 'com.github.accountmanagementproject.AccountManagementProjectApplication'
+    mainClass = 'com.github.accountmanagementproject.RunningCrewSnsProjectApplication'
     destinationDirectory = file("./BuildFile")
     archivesBaseName = '프로젝트이름'
     archiveFileName = 'AccountManagementProject.jar'
