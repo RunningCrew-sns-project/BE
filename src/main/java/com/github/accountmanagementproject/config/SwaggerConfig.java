@@ -38,7 +38,7 @@ public class SwaggerConfig {
 
         Server newServer = new Server();
         newServer.setUrl(newServerUrl);
-        newServer.setDescription("HTTPS Production Server");
+        newServer.setDescription("AWS Server");
 
         Server localServer = new Server();
         localServer.setUrl("http://localhost:8080/");
