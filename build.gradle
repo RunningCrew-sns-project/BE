@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.2.1'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.github'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //lombok사용
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    //Mapstruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    //Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    //env-hide
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    //mariadb
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.1.4'
+    //JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    //jwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+    //security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    //redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    //jasypt
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.named('bootJar'){
+    mainClass = 'com.github.accountmanagementproject.AccountManagementProjectApplication'
+    destinationDirectory = file("./BuildFile")
+    archivesBaseName = '프로젝트이름'
+    archiveFileName = 'AccountManagementProject.jar'
+    archiveVersion = "3.9.3"
+}
+clean {
+    delete file('./src/main/generated/'), file('./BuildFile')
+}
