@@ -56,7 +56,7 @@ tasks.named('bootJar'){
     mainClass = 'com.github.accountmanagementproject.RunningCrewSnsProjectApplication'
     destinationDirectory = file("./BuildFile")
     archivesBaseName = '프로젝트이름'
-    archiveFileName = 'AccountManagementProject.jar'
+    archiveFileName = 'RunningCrewSnsProject.jar'
     archiveVersion = "3.9.3"
 }
 clean {
