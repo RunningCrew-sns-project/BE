@@ -12,7 +12,7 @@ oauth:
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
-      redirect-uri: http://localhost:8080/api/auth/kakao
+      redirect-uri: http://database-1.cto824g8iqv2.ap-northeast-2.rds.amazonaws.com:8080/api/auth/kakao
 
 spring:
   mvc:
@@ -20,24 +20,25 @@ spring:
       matching-strategy: ant_path_matcher
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
   datasource:
     username: ENC(h2JOcqwlTgH7EViYp44e4g==)
     password: ENC(FZchWcTilrdnJpcRebDLtOL5eTdyhz1T)
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3307/RunningCrewDB
+    url: jdbc:mariadb://localhost:3306/RunningCrewDB
     server-url: ENC(FbdGmh5s9GqK90JAkn5qEDVac2WmEsOYGi9QRiDRC41RY7Ir2CkUiBMnQJz/vl7exzhR+8sLDwpHtxljpCHuyFFa9B6eMhtJ9IQ7dMcNT7g=)
-
 
   data:
     redis:
       host: localhost
       port: 6379
 
-
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /running-docs.html
+    path: /amp-docs.html
   version: 1.0.0
 
