@@ -28,11 +28,12 @@ public class Blog {
     @Column(name = "record", nullable = false, length = 100)
     private String record;
 
-    @Column(name = "image", nullable = false)
-    private String image;
+    @Column(name = "image_url", nullable = false)
+    private String imageUrl;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
-    private Integer likeCount;
+    private Integer likeCount = 0;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
@@ -57,7 +58,7 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", image='" + image + '\'' +
+                ", imageUrl='" + imageUrl + '\'' +
                 ", user=" + user.getNickname() +
                 '}';
     }

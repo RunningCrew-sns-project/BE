@@ -12,9 +12,9 @@ import java.util.List;
 public interface BlogMapper {
     BlogMapper INSTANCE = Mappers.getMapper(BlogMapper.class);
 
-    @Mapping(source = "image", target = "imageUrl")
+    @Mapping(source = "user.nickname", target = "nickname")
     BlogResponseDTO blogToBlogResponseDTO(Blog blog);
 
-    @Mapping(source = "image", target = "imageUrl")
+    @Mapping(source = "user.nickname", target = "nickname")
     List<BlogResponseDTO> blogsToBlogResponseDTOs(List<Blog> blogs);
 }
