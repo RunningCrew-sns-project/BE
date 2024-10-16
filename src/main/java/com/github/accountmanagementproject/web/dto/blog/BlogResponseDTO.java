@@ -13,4 +13,6 @@ public class BlogResponseDTO {
     private String content;
     private String record;
     private String imageUrl;
+    private Integer likeCount;
+    private String nickname;
 }
