@@ -19,11 +19,11 @@ public class UserLikesBlog {
     @Column(name = "user_likes_blog_id")
     private Integer userLikesBlogId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "blog_id")
     private Blog blog;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private MyUser user;
 }
