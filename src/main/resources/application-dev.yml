@@ -34,10 +34,12 @@ spring:
       port: 6379
 
 
+
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /running-docs.html
   version: 1.0.0
+
 

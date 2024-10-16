@@ -2,13 +2,13 @@ package com.github.accountmanagementproject.repository.blog;
 
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +27,9 @@ public class Blog {
 
     @Column(name = "record", nullable = false, length = 100)
     private String record;
+
+    @Column(name = "image", nullable = false)
+    private String image;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
