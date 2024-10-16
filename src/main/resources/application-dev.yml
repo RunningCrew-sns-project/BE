@@ -14,6 +14,7 @@ oauth:
       api: https://kapi.kakao.com
       redirect-uri: http://localhost:8080/api/auth/kakao
 
+
 spring:
   mvc:
     path match:

@@ -20,9 +20,6 @@ spring:
       matching-strategy: ant_path_matcher
   jpa:
     open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
   datasource:
     username: ENC(h2JOcqwlTgH7EViYp44e4g==)
     password: ENC(FZchWcTilrdnJpcRebDLtOL5eTdyhz1T)
@@ -39,7 +36,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /amp-docs.html
+    path: /running-docs.html
   version: 1.0.0
 
 

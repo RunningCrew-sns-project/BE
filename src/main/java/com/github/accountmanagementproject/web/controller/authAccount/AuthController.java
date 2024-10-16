@@ -11,6 +11,7 @@ import com.github.accountmanagementproject.web.dto.response.CustomSuccessRespons
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,10 +26,15 @@ public class AuthController implements AuthControllerDocs {
     private final SignUpLoginService signUpLoginService;
 
 
+    @Value("${cloud.aws.credentials.secret-key}")
+    private String awsAccessKey;
+
 
     @Override
     @PostMapping("/sign-up")
     public ResponseEntity<CustomSuccessResponse> signUp(@RequestBody @Valid AccountDto accountDto){
+
+        System.out.println(awsAccessKey);
         signUpLoginService.signUp(accountDto);
         CustomSuccessResponse signUpResponse = new CustomSuccessResponse.SuccessDetail()
                 .message("회원가입 완료")
