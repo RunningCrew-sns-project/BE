@@ -1,0 +1,11 @@
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    credentials:
+      access-key: ENC(vVBmDPpzESLjxO64QRKezAJ9YAp1+8Roi9NoIXZkmWE=)
+      secret-key: ENC(CU9Au8AX+0NTG6K3jMxqX63u5ajLeIoWTwNdBEnCZTMCSVWuAw4j6IXotbMjGIHKKBAXUt2/CLg=)
+    s3:
+      bucket: "running-crew"
+    stack:
+      auto: false

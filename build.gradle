@@ -48,6 +48,10 @@ dependencies {
 
     //db ssh tunneling
     implementation 'com.jcraft:jsch:0.1.55'
+
+    //AWS S3
+    implementation platform('software.amazon.awssdk:bom:2.20.56')
+    implementation 'software.amazon.awssdk:s3:2.21.46'
 }
 
 tasks.named('test') {

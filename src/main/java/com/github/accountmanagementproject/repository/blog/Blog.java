@@ -2,13 +2,13 @@ package com.github.accountmanagementproject.repository.blog;
 
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.Objects;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,9 +28,27 @@ public class Blog {
     @Column(name = "record", nullable = false, length = 100)
     private String record;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "image", nullable = false)
+    private String image;
+
+    @Column(name = "like_count", nullable = false)
+    private Integer likeCount;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private MyUser user;
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (!(object instanceof Blog blog)) return false;
+        return Objects.equals(id, blog.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 
     @Override
     public String toString() {
@@ -39,7 +57,8 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", user nickname=" + user.getNickname() +
+                ", image='" + image + '\'' +
+                ", user=" + user.getNickname() +
                 '}';
     }
 }
