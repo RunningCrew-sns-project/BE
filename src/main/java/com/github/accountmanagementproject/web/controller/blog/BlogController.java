@@ -23,11 +23,11 @@ public class BlogController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) //블로그 작성
     public void writeBlog(
-            @RequestPart(required = false, value = "image") MultipartFile item_image,
+            @RequestPart(required = false, value = "image") MultipartFile image,
             @RequestPart BlogDTO blogDTO,
-            @AuthenticationPrincipal String principal) {
+            @AuthenticationPrincipal String principal) throws Exception {
         MyUser user = accountConfig.findMyUser(principal);
-        blogService.writeBlog(blogDTO, user, item_image);
+        blogService.writeBlog(blogDTO, user, image);
     }
 
     @PostMapping("/{blogId}/like") //블로그 좋아요

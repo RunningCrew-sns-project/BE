@@ -7,8 +7,11 @@ import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlogRepository;
+import com.github.accountmanagementproject.service.S3Service;
 import com.github.accountmanagementproject.service.authAccount.AccountService;
+import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
+import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
 import com.github.accountmanagementproject.web.dto.blog.BlogDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,7 @@ import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -26,9 +30,12 @@ public class BlogService {
     private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
     private final AccountConfig accountConfig;
+    private final S3Service s3Service;
 
-    public void writeBlog(BlogDTO blogDTO, MyUser user, MultipartFile image){
+    public void writeBlog(BlogDTO blogDTO, MyUser user, MultipartFile image) throws Exception {
         //TODO : S3 이미지 업로드 구현 필요
+        String imageUrl = s3Service.upload(image, "blog_images");
+
         Blog blog = Blog.builder()
                         .title(blogDTO.getTitle())
                         .content(blogDTO.getContent())
@@ -36,7 +43,11 @@ public class BlogService {
                         .user(user)
                         .build();
 
-
+        if (image == null) {
+            blog.setImage(null);
+        } else {
+            blog.setImage(imageUrl);
+        }
 
         blogRepository.save(blog); //레포지토리에 저장
 
