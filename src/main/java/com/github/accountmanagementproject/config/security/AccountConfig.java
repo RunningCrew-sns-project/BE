@@ -92,60 +92,6 @@ public class AccountConfig {
 
 
 
-    //회원가입시 사용되는 로직 모듈화
-    public void signUpChecker(AccountDto request){
-        String email = request.getEmail();
-        String nickname = request.getNickname();
-        String phoneNumber = request.getPhoneNumber();
-        String password = request.getPassword();
-
-        if(request.requiredNull()){
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("필수 입력값 누락")
-                    .request(Map.of(
-                            "email", request.getEmail(),
-                            "phoneNumber", request.getPhoneNumber(),
-                            "nickname", request.getNickname(),
-                            "password", request.getPassword(),
-                            "passwordConfirm", request.getPasswordConfirm()
-                    ))
-                    .build();
-        } else if(request.badEmailValue()){
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("잘못된 이메일")
-                    .request(email)
-                    .build();
-        } else if (request.badPhoneNumValue()) {
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("잘못된 핸드폰 번호")
-                    .request(phoneNumber)
-                    .build();
-        } else if (request.badNicknameValue()){
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("핸드폰 번호 형식으로 작성된 닉네임")
-                    .request(nickname)
-                    .build();
-        } else if(request.badPasswordValue()){
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("최소 조건을 충족하지 못한 비밀번호")
-                    .request(password)
-                    .build();
-        } else if (request.differentPasswordConfirm()) {
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("서로 다른 비밀번호와 비밀번호 확인")
-                    .request(Map.of(
-                            "password", password,
-                            "passwordConfirm", request.getPasswordConfirm()
-                    ))
-                    .build();
-        }
-        //성별 별 기본 프사 설정
-        if(request.getProfileImg() == null){
-            if(request.getGender()==null||request.getGender()==Gender.UNKNOWN)request.setProfileImg ("https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/anonymous-user-icon.png");
-            else if(request.getGender()==Gender.MALE) request.setProfileImg("https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/man-user-color-icon.png");
-            else request.setProfileImg("https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/woman-user-color-icon.png");
-        }
-    }
 
 
     @Transactional

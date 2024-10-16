@@ -16,7 +16,7 @@ public class AccountLockedException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public AccountLockedException build() {
             return new AccountLockedException(this);
         }
     }

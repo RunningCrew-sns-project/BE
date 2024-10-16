@@ -8,6 +8,8 @@ import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.response.CustomErrorResponse;
 import com.github.accountmanagementproject.web.dto.response.CustomSuccessResponse;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +28,7 @@ public class AuthController implements AuthControllerDocs {
 
     @Override
     @PostMapping("/sign-up")
-    public ResponseEntity<CustomSuccessResponse> signUp(@RequestBody AccountDto accountDto){
+    public ResponseEntity<CustomSuccessResponse> signUp(@RequestBody @Valid AccountDto accountDto){
         signUpLoginService.signUp(accountDto);
         CustomSuccessResponse signUpResponse = new CustomSuccessResponse.SuccessDetail()
                 .message("회원가입 완료")
@@ -37,7 +39,7 @@ public class AuthController implements AuthControllerDocs {
 
     @Override
     @PostMapping("/login")
-    public CustomSuccessResponse login(@RequestBody LoginRequest loginRequest){
+    public CustomSuccessResponse login(@RequestBody @Valid LoginRequest loginRequest){
         return new CustomSuccessResponse.SuccessDetail()
                 .message("로그인 성공")
                 .httpStatus(HttpStatus.OK)
@@ -55,6 +57,7 @@ public class AuthController implements AuthControllerDocs {
                 .build();
     }
 
+    @Hidden
     @GetMapping("/testerr")
     public CustomErrorResponse errorTest(){
         signUpLoginService.errorTest();
@@ -64,6 +67,7 @@ public class AuthController implements AuthControllerDocs {
                 .request("요청값")
                 .build();
     }
+    @Hidden
     @GetMapping("/testsuc")
     @ResponseStatus(HttpStatus.CREATED)
     public CustomSuccessResponse successTest(@AuthenticationPrincipal String principal) throws IOException {
@@ -78,13 +82,13 @@ public class AuthController implements AuthControllerDocs {
 //    public String securityTest(@RequestParam(name = "user-id") Integer userId){
 //        return signUpLoginService.securityTest(userId);
 //    }
-
+    @Hidden
     @GetMapping("/auth-test")
     public String authTest(@AuthenticationPrincipal String customUserDetails){
 
         return customUserDetails;
     }
-
+    @Hidden
     @GetMapping("authorize-test")
     public String authorizeTest(@AuthenticationPrincipal String email){
         return email;

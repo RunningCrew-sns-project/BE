@@ -12,7 +12,7 @@ oauth:
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
-      redirect-uri: http://database-1.cto824g8iqv2.ap-northeast-2.rds.amazonaws.com:8080/api/auth/kakao
+      redirect-uri: http://localhost:8080/api/auth/kakao
 
 spring:
   mvc:

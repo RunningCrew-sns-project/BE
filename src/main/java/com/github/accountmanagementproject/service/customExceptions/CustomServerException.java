@@ -11,7 +11,7 @@ public class CustomServerException  extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomServerException build() {
             return new CustomServerException(this);
         }
     }
