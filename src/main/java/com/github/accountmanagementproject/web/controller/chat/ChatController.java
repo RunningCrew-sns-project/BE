@@ -1,27 +1,48 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
+import com.github.accountmanagementproject.service.chat.ChatRoomService;
 import com.github.accountmanagementproject.web.dto.chat.ChatMessage;
+import com.github.accountmanagementproject.web.dto.chat.RequestChatRoomDto;
+import com.github.accountmanagementproject.web.dto.chat.ResponseChatRoomDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.stereotype.Controller;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
 public class ChatController {
-    //클라이언트가 /app/chat.sendMessage로 보낸 메세지를 처리
-    @MessageMapping("/chat.sendMessage")
-    //해당 메세지를 구독중인 클라이언트에게 전송
-    @SendTo("/topic/public")
-    public ChatMessage sendMessage(ChatMessage message){
-        return message;
+    private final SimpMessageSendingOperations template;
+    private final ChatRoomService chatRoomService;
+
+
+    @GetMapping("/chat/{id}")
+    public ResponseEntity<List<ChatMessage>> getChatMessages(@PathVariable("id") String id) {
+        ChatMessage chatMessage = new ChatMessage(1, "test", "test");
+        return ResponseEntity.ok(List.of(chatMessage));
     }
 
-    //클라이언트가 /app/chat.addUser로 보낸 메세지 처리
-    @MessageMapping("/chat.addUser")
-    @SendTo("/topic/public")
-    public ChatMessage addUser(ChatMessage message, SimpMessageHeaderAccessor headerAccessor){
-        //WebSocket 세션에 사용자 이름 저장
-        headerAccessor.getSessionAttributes().put("username", message.getSender());
-        return message;
+    //메시지 송신 및 수신, /pub가 생략된 모습. 클라이언트 단에선 /pub/message로 요청
+    @MessageMapping("/message")
+    public ResponseEntity<Void> receiveMessage(@RequestBody ChatMessage chat) {
+        // 메시지를 해당 채팅방 구독자들에게 전송
+        template.convertAndSend("/sub/chatroom/1", chat);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<ResponseChatRoomDto> createChatRoom(@RequestBody RequestChatRoomDto requestChatRoomDto) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(chatRoomService.createChatRoom(requestChatRoomDto));
+    }
+
+    @GetMapping("/chatList")
+    public ResponseEntity<List<ResponseChatRoomDto>> getChatRoomList() {
+        List<ResponseChatRoomDto> responseChatRoomDtoList = chatRoomService.findChatRoomList();
+        return ResponseEntity.ok(responseChatRoomDtoList);
     }
 }

@@ -1,16 +1,14 @@
 package com.github.accountmanagementproject.web.dto.chat;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessage {
-    private MessageType type;
-    private String content;
-    private String sender;
-
-    public enum MessageType{
-        CHAT, JOIN, LEAVE
-    }
+    private Integer id;
+    private String name;
+    private String message;
 }

@@ -2,6 +2,8 @@ package com.github.accountmanagementproject.web.dto.blog;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,7 +14,9 @@ public class BlogResponseDTO {
     private String title;
     private String content;
     private String record;
+    private String distance;
     private String imageUrl;
     private Integer likeCount;
     private String nickname;
+    private List<BlogCommentResponseDTO> comments;
 }
