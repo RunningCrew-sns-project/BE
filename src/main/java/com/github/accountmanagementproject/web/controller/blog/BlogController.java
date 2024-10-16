@@ -35,10 +35,11 @@ public class BlogController {
     }
 
     @PostMapping("/{blogId}/like") //블로그 좋아요
-    public void likeBlog(@PathVariable Integer blogId, @AuthenticationPrincipal String principal) {
+    public String likeBlog(@PathVariable Integer blogId, @AuthenticationPrincipal String principal) throws Exception {
         System.out.println(principal);
         MyUser user = accountConfig.findMyUser(principal);
-        blogService.likeBlog(blogId, user);
+        return blogService.likeBlog(blogId, user);
+
     }
 
     @GetMapping

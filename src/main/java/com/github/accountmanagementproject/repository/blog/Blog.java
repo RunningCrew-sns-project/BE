@@ -4,7 +4,7 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -31,9 +31,24 @@ public class Blog {
     @Column(name = "image", nullable = false)
     private String image;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "like_count", nullable = false)
+    private Integer likeCount;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private MyUser user;
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (!(object instanceof Blog blog)) return false;
+        return Objects.equals(id, blog.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 
     @Override
     public String toString() {
