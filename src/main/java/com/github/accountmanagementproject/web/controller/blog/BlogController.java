@@ -48,7 +48,7 @@ public class BlogController implements BlogControllerDocs{
     }
 
     //블로그 조회
-    //TODO : 내가 쓴 글만 보여지게 할지?
+    //TODO : 내가 쓴 글만 보여지게 할지? 필터링 구현 필요할듯
     @Override
     @GetMapping
     public CustomSuccessResponse getBlogs(@AuthenticationPrincipal String principal) {

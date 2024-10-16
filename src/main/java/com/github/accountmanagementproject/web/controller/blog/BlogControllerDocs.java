@@ -55,8 +55,9 @@ public interface BlogControllerDocs {
                                             "}")
                     })
     )
-    @PostMapping("/{blogId}/like")
-    String likeBlog(@PathVariable Integer blogId, @AuthenticationPrincipal String principal) throws Exception;
+    @PostMapping("/like")
+    String likeBlog(@RequestParam Integer blogId,
+                    @AuthenticationPrincipal String principal) throws Exception;
 
     @GetMapping
     CustomSuccessResponse getBlogs(@AuthenticationPrincipal String principal);
