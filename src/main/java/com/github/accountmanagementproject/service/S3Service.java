@@ -32,6 +32,10 @@ public class S3Service {
     @Value("${cloud.aws.region.static}")
     private String region;
 
+    /*
+    upload 메소드 사용법 :
+    1. service단에서 MultipartFile과 저장할 폴더 이름(ex. blog_image, chat_image 등) 을 매개변수로 넘겨준다.
+    * */
     public String upload(MultipartFile file, String dirName) throws IOException {
         //파일명 생성 : (랜덤 UUID_원본파일이름)
         String fileName = UUID.randomUUID() +"_"+file.getOriginalFilename();

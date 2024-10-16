@@ -8,18 +8,16 @@ import com.github.accountmanagementproject.repository.blogComment.BlogCommentRep
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlogRepository;
 import com.github.accountmanagementproject.service.S3Service;
-import com.github.accountmanagementproject.service.authAccount.AccountService;
-import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
-import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
-import com.github.accountmanagementproject.web.dto.blog.BlogDTO;
+import com.github.accountmanagementproject.service.mappers.BlogMapper;
+import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
+import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -32,14 +30,13 @@ public class BlogService {
     private final AccountConfig accountConfig;
     private final S3Service s3Service;
 
-    public void writeBlog(BlogDTO blogDTO, MyUser user, MultipartFile image) throws Exception {
-        //TODO : S3 이미지 업로드 구현 필요
+    public String writeBlog(BlogRequestDTO blogRequestDTO, MyUser user, MultipartFile image) throws Exception {
         String imageUrl = s3Service.upload(image, "blog_images");
 
         Blog blog = Blog.builder()
-                        .title(blogDTO.getTitle())
-                        .content(blogDTO.getContent())
-                        .record(blogDTO.getRecord())
+                        .title(blogRequestDTO.getTitle())
+                        .content(blogRequestDTO.getContent())
+                        .record(blogRequestDTO.getRecord())
                         .user(user)
                         .build();
 
@@ -50,7 +47,7 @@ public class BlogService {
         }
 
         blogRepository.save(blog); //레포지토리에 저장
-
+        return blog.getImage();
     }
 
     public void likeBlog(Integer blogId, MyUser user) {
@@ -79,6 +76,13 @@ public class BlogService {
         else { //존재하면 좋아요 테이블에서 삭제
 
         }
+
+    }
+
+    public List<BlogResponseDTO> getBlogs(MyUser user) {
+        List<Blog> blogs = blogRepository.findAll();
+
+        return BlogMapper.INSTANCE.blogsToBlogResponseDTOs(blogs);
 
     }
 }

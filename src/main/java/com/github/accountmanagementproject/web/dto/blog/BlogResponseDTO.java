@@ -1,16 +1,16 @@
 package com.github.accountmanagementproject.web.dto.blog;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BlogRequestDTO {
+@Builder
+public class BlogResponseDTO {
+    private Integer id;
     private String title;
     private String content;
     private String record;
+    private String imageUrl;
 }

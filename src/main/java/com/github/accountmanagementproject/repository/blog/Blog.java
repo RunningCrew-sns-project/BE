@@ -42,7 +42,8 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", user nickname=" + user.getNickname() +
+                ", image='" + image + '\'' +
+                ", user=" + user.getNickname() +
                 '}';
     }
 }
