@@ -16,7 +16,7 @@ public class NotFoundSocialAccount extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public NotFoundSocialAccount build() {
             return new NotFoundSocialAccount(this);
         }
     }

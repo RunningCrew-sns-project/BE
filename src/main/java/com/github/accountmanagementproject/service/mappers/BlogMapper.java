@@ -17,6 +17,5 @@ public interface BlogMapper {
     @Mapping(source = "user.nickname", target = "nickname")
     BlogResponseDTO blogToBlogResponseDTO(Blog blog);
 
-
     BlogCommentResponseDTO blogCommentToBlogCommentResponseDTO(BlogComment blogComment);
 }

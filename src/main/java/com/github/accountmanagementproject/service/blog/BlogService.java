@@ -132,7 +132,6 @@ public class BlogService {
                     .request("작성자의 권한이 필요합니다.")
                     .build();
         }
-
         blog.setTitle(blogRequestDTO.getTitle());
         blog.setContent(blogRequestDTO.getContent());
         blog.setRecord(blogRequestDTO.getRecord());

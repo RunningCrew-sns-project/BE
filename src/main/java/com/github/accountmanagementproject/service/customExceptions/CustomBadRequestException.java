@@ -17,7 +17,7 @@ public class CustomBadRequestException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomBadRequestException build() {
             return new CustomBadRequestException(this);
         }
     }
