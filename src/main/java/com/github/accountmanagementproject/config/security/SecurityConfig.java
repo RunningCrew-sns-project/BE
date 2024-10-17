@@ -42,11 +42,9 @@ public class SecurityConfig {
                     e.accessDeniedHandler(new CustomAccessDeniedHandler());
                 })
                 .authorizeHttpRequests(a->a
-
                         .requestMatchers("/api/auth/authorize-test").hasRole("ADMIN")
-
-                        .requestMatchers("/api/auth/auth-test").hasAnyRole("USER","ADMIN")
-                        .requestMatchers("/resources/**","/api/auth/*",
+                        .requestMatchers("/api/auth/auth-test", "/api/account/*").authenticated()
+                        .requestMatchers("/resources/**","/api/auth/*", "/api/email/*",
                                 "/error","/swagger-ui/**", "/v3/api-docs/**", "/running-docs.html").permitAll()
                         .anyRequest().authenticated()
                 )
