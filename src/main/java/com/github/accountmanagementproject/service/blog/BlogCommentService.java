@@ -5,11 +5,13 @@ import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
+import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.mappers.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -53,5 +55,16 @@ public class BlogCommentService {
                 .stream()
                 .map(CommentMapper.INSTANCE::commentToCommentResponseDTO)
                 .toList();
+    }
+
+    public void deleteComment(Integer commentId, MyUser user) {
+        BlogComment blogComment = blogCommentRepository.findById(commentId).get();
+        if(!user.equals(blogComment.getUser())) {
+            throw new CustomBadCredentialsException.ExceptionBuilder()
+                    .customMessage("권한이 없습니다")
+                    .request("작성자 권한 필요")
+                    .build();
+        }
+        blogCommentRepository.delete(blogComment);
     }
 }

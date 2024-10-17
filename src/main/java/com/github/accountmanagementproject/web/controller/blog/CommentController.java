@@ -22,8 +22,7 @@ public class CommentController {
 
     @GetMapping
     public List<BlogCommentResponseDTO> getComments() {
-        List<BlogCommentResponseDTO> commentResponseDTOList = blogCommentService.getAllComments();
-        return commentResponseDTOList;
+        return blogCommentService.getAllComments();
     }
 
     @PostMapping
@@ -40,5 +39,13 @@ public class CommentController {
         MyUser user = accountConfig.findMyUser(principal);
         blogCommentService.updateComment(comment, user);
         return "댓글 수정 완료";
+    }
+
+    @DeleteMapping
+    public String deleteComment(@RequestParam Integer commentId,
+                                @AuthenticationPrincipal String principal) {
+        MyUser user = accountConfig.findMyUser(principal);
+        blogCommentService.deleteComment(commentId, user);
+        return "댓글 삭제 완료";
     }
 }
