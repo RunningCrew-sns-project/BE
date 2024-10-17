@@ -9,9 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BlogRequestDTO {
-    private String title;
+public class BlogCommentRequestDTO {
+    private Integer blogId;
+    private Integer commentId;
     private String content;
-    private String record;
-    private String distance;
 }

@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/auth-test", "/api/account/*").authenticated()
                         .requestMatchers("/resources/**","/api/auth/*", "/api/email/*",
                                 "/error","/swagger-ui/**", "/v3/api-docs/**", "/running-docs.html").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)//인증이전 실행
                 .build();

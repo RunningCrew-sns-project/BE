@@ -7,17 +7,19 @@ import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlo
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Setter
 @Getter
 @DynamicInsert
@@ -125,8 +127,18 @@ public class MyUser {
         this.lastLogin = !failure ? LocalDateTime.now() : this.lastLogin;
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (!(object instanceof MyUser myUser)) return false;
+        return Objects.equals(userId, myUser.userId);
+    }
 
-//    @Override
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(userId);
+    }
+    //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return this.userRoles.stream().map(userRole -> userRole.getRoles())
 //                .map(role -> role.getName())
