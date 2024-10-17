@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/account")
 @RequiredArgsConstructor
-public class AccountController {
+public class AccountController implements AccountControllerDocs{
     private final AccountService accountService;
     @GetMapping("/my-info")
     public CustomSuccessResponse getMyInfo(@AuthenticationPrincipal String principal){

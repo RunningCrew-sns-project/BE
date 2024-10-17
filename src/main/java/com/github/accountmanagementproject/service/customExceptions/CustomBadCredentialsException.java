@@ -15,7 +15,7 @@ public class CustomBadCredentialsException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomBadCredentialsException build() {
             return new CustomBadCredentialsException(this);
         }
     }
