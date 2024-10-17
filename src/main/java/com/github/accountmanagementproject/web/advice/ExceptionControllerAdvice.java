@@ -2,6 +2,9 @@ package com.github.accountmanagementproject.web.advice;
 import com.github.accountmanagementproject.service.customExceptions.*;
 import com.github.accountmanagementproject.web.dto.response.CustomErrorResponse;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -12,9 +15,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.util.stream.StreamSupport;
 
-@RestControllerAdvice
 @Hidden
+@RestControllerAdvice
 public class ExceptionControllerAdvice {
 
     @ExceptionHandler(CustomNotFoundException.class)
@@ -64,7 +68,7 @@ public class ExceptionControllerAdvice {
         return makeResponse(HttpStatus.UNPROCESSABLE_ENTITY, messageAndRequest);
     }
 
-    @ExceptionHandler(CustomServerException.class)
+    @ExceptionHandler(CustomServerException.class) // 서버에러지만 예외처리가 필요할때
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public CustomErrorResponse handleCustomServerException(CustomServerException messageAndRequest) {
         return makeResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageAndRequest);
@@ -75,31 +79,23 @@ public class ExceptionControllerAdvice {
     public CustomErrorResponse handleNotFoundSocialAccount(NotFoundSocialAccount messageAndRequest) {
         return makeResponse(HttpStatus.UNPROCESSABLE_ENTITY, messageAndRequest);
     }
-    @ExceptionHandler({MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})//Valid 익셉션 처리
+
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+            MethodArgumentTypeMismatchException.class,
+            ConstraintViolationException.class,
+            HttpMessageNotReadableException.class
+    }) // Valid 익셉션 처리
     public CustomErrorResponse handleValidException(Exception ex) {
         if (ex instanceof MethodArgumentNotValidException validException) {
-            FieldError fieldError = validException.getBindingResult().getFieldError();
-            String fieldName = fieldError != null ? fieldError.getField() : "Unknown field";
-            Object fieldValue = fieldError != null ? fieldError.getRejectedValue() : "Unknown Value";
-            String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : "Validation error";
-
-            return handleBadRequestException(new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage(errorMessage)
-                    .systemMessage("유효성 검사 실패")
-                    .request(fieldName+" : "+fieldValue)
-                    .build());
-
-        } else if (ex instanceof MethodArgumentTypeMismatchException validException){
-
-            return handleBadRequestException(new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("잘못된 타입 전달")
-                    .systemMessage(validException.getMessage())
-                    .request(validException.getName() +"="+validException.getValue())
-                    .build());
-        }else return handleBadRequestException(new CustomBadRequestException.ExceptionBuilder()
-                .customMessage("잘못된 요청")
-                .systemMessage(ex.getMessage())
-                .build());
+            return handleBadRequestException(notValidToBadRequestException(validException));
+        } else if (ex instanceof MethodArgumentTypeMismatchException validException) {
+            return handleBadRequestException(typeMismatchToBadRequestException(validException));
+        } else if (ex instanceof ConstraintViolationException validException) {
+            return handleBadRequestException(constraintViolationToBadRequestException(validException));
+        } else {
+            return handleBadRequestException(genericExToBadRequestException(ex));
+        }
     }
 
 
@@ -111,5 +107,69 @@ public class ExceptionControllerAdvice {
                 .request(exception.getRequest())
                 .build();
     }
+
+    private CustomBadRequestException notValidToBadRequestException(MethodArgumentNotValidException validException){
+
+        FieldError fieldError = validException.getBindingResult().getFieldError();
+        String fieldName = fieldError != null ? fieldError.getField() : "Unknown field";
+        Object fieldValue = fieldError != null ? fieldError.getRejectedValue() : "Unknown Value";
+        String errorMessage = fieldError != null ? fieldError.getDefaultMessage() : "Validation error";
+
+        return new CustomBadRequestException.ExceptionBuilder()
+                .customMessage(errorMessage)
+                .systemMessage("유효성 검사 실패")
+                .request(fieldName+" : "+fieldValue)
+                .build();
+    }
+    private CustomBadRequestException typeMismatchToBadRequestException(MethodArgumentTypeMismatchException validException){
+        return new CustomBadRequestException.ExceptionBuilder()
+                .customMessage("잘못된 타입 전달")
+                .systemMessage(validException.getMessage())
+                .request(validException.getName() +"="+validException.getValue())
+                .build();
+    }
+
+
+
+    private CustomBadRequestException genericExToBadRequestException(Exception ex) {
+        return new CustomBadRequestException.ExceptionBuilder()
+                .customMessage("잘못된 요청")
+                .systemMessage(ex.getMessage())
+                .build();
+    }
+    private CustomBadRequestException constraintViolationToBadRequestException(ConstraintViolationException ex) {
+        String message = extractConstraintViolationMessage(ex);
+        String request = extractRequestFieldAndValue(ex);
+
+        return new CustomBadRequestException.ExceptionBuilder()
+                .customMessage("잘못된 요청")
+                .systemMessage(message)
+                .request(request)
+                .build();
+    }
+    //ConstraintViolationException 의 값 추출을 위한
+    private String extractConstraintViolationMessage(ConstraintViolationException ex) {
+        return ex.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessageTemplate)
+                .findFirst().orElse("Unknown message");
+    }
+
+    private String extractRequestFieldAndValue(ConstraintViolationException ex) {
+        return ex.getConstraintViolations().stream().map(constraintViolation -> {
+            String fieldName = extractLeafNodeName(constraintViolation.getPropertyPath());
+            Object invalidValue = constraintViolation.getInvalidValue();
+            return fieldName + "=" + invalidValue;
+        }).findFirst().orElse("Unknown value");
+    }
+
+    private String extractLeafNodeName(Path propertyPath) {
+        return StreamSupport.stream(propertyPath.spliterator(), false)
+                .reduce((first, second) -> second)
+                .map(Path.Node::getName)
+                .orElse("Unknown field");
+    }
+
+
+
 }
 

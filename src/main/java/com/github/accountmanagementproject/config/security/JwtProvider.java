@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.config.security;
 
 
-import com.github.accountmanagementproject.repository.redis.RedisTokenRepository;
+import com.github.accountmanagementproject.repository.redis.RedisRepository;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.json.BasicJsonParser;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,12 +20,11 @@ import javax.crypto.SecretKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Component
 public class JwtProvider {
-    private final RedisTokenRepository redisTokenRepository;
+    private final RedisRepository redisRepository;
 
     private final SecretKey key;//= Jwts.SIG.HS256.key().build();  이건 랜덤키 자동생성
 
@@ -38,9 +36,9 @@ public class JwtProvider {
     }
 
 
-    public JwtProvider(@Value("${jwtpassword.source}")String keySource, RedisTokenRepository redisTokenRepository) {
+    public JwtProvider(@Value("${jwtpassword.source}")String keySource, RedisRepository redisRepository) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(keySource));
-        this.redisTokenRepository = redisTokenRepository;
+        this.redisRepository = redisRepository;
     }
 
 
@@ -72,7 +70,7 @@ public class JwtProvider {
     //리프레시 토큰의 유효시간만큼 저장기간을 설정하고 레디스에 저장 이후 Dto 생성
     public TokenDto saveRefreshTokenAndCreateTokenDto(String accessToken, String refreshToken, Duration exp){
 
-        redisTokenRepository.tokenSave(accessToken, refreshToken, exp);
+        redisRepository.save(accessToken, refreshToken, exp);
 
         return TokenDto.builder()
                 .tokenType(getTokenType())
@@ -82,21 +80,21 @@ public class JwtProvider {
     }
 
     public Authentication getAuthentication(String accessToken) {
-            Jws<Claims> claimsJws = tokenParsing(accessToken);//검증은 여기서 내부적으로 진행됨
+        Jws<Claims> claimsJws = tokenParsing(accessToken);//검증은 여기서 내부적으로 진행됨
 
-            Claims payload = claimsJws.getPayload();
-            if(payload.getSubject()==null) throw new NullPointerException("payload의 subject값이 null 입니다.");
-            Collection<? extends GrantedAuthority> roles = Arrays.stream(payload.get("roles").toString().split(","))
+        Claims payload = claimsJws.getPayload();
+        if(payload.getSubject()==null) throw new NullPointerException("payload의 subject값이 null 입니다.");
+        Collection<? extends GrantedAuthority> roles = Arrays.stream(payload.get("roles").toString().split(","))
                 .map(role -> new SimpleGrantedAuthority(role))
                 .toList();
-            return new UsernamePasswordAuthenticationToken(payload.getSubject(), accessToken, roles);
+        return new UsernamePasswordAuthenticationToken(payload.getSubject(), accessToken, roles);
     }
 
     @Transactional
     public TokenDto tokenRefresh(String accessToken, String clientRefreshToken){
         //리프레시 토큰 유효성 검사와 파싱
         Jws<Claims> refreshTokenClaims = tokenParsing(clientRefreshToken);
-        String dbRefreshToken = redisTokenRepository.getAndDeleteJwtEntity(accessToken);//가져오면서 지움
+        String dbRefreshToken = redisRepository.getAndDeleteValue(accessToken);//가져오면서 지움
         //사용자의 리프레시토큰과 db의 리프레시토큰 대조
         if(!clientRefreshToken.equals(dbRefreshToken)) throw new NoSuchElementException("Not Found Exception");
 

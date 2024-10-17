@@ -37,6 +37,7 @@ public interface MyUsersJpa extends JpaRepository<MyUser, Integer> {
                     "WHERE u.email = :email OR u.phoneNumber = :email"
     )
     int updateFailureCountByEmail(String email);
+    boolean existsByEmail(String email);
 
     MyUser findBySocialId(BigInteger socialId);
 //
