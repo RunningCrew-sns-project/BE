@@ -4,21 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -50,8 +41,22 @@ public class S3Service {
 
         s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-        s3Client.close();
-
         return String.format("https://%s.s3.%s.amazonaws.com/%s",bucket, region, filePath);
+    }
+
+    //DB에 저장된 url을 가져와 추출하여 bucket에 있는 데이터 삭제
+    public void delete(String imageUrl){
+        String filePath = imageUrl.substring(imageUrl.indexOf(".com/") + 5); //객체 키 추출
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(filePath)
+                .build();
+
+        s3Client.deleteObject(deleteObjectRequest);
+    }
+
+    public String update(String imageUrl, MultipartFile file, String dirName) throws IOException {
+        delete(imageUrl);
+        return upload(file, dirName); //새로운 이미지 url 반환
     }
 }
