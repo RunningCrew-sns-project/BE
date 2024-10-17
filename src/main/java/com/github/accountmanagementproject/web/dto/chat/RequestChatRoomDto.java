@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.blog;
+package com.github.accountmanagementproject.web.dto.chat;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,9 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BlogRequestDTO {
+public class RequestChatRoomDto {
     private String title;
-    private String content;
-    private String record;
-    private String distance;
 }

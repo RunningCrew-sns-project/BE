@@ -4,6 +4,8 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -25,15 +27,21 @@ public class Blog {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "record", nullable = false, length = 100)
+    @Column(name = "record", length = 100)
     private String record;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "distance", length = 100)
+    private String distance;
+
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Builder.Default
     @Column(name = "like_count", nullable = false)
     private Integer likeCount = 0;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
