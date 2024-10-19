@@ -1,10 +1,12 @@
 package com.github.accountmanagementproject.web.advice;
+
 import com.github.accountmanagementproject.service.customExceptions.*;
-import com.github.accountmanagementproject.web.dto.response.CustomErrorResponse;
+import com.github.accountmanagementproject.web.dto.responseSystem.CustomErrorResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -14,7 +16,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 @Hidden
@@ -78,6 +84,45 @@ public class ExceptionControllerAdvice {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public CustomErrorResponse handleNotFoundSocialAccount(NotFoundSocialAccount messageAndRequest) {
         return makeResponse(HttpStatus.UNPROCESSABLE_ENTITY, messageAndRequest);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)//데이터 무결성 위반
+    public CustomErrorResponse handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        Map<String, String> duplicateInfo = getDuplicateKeyAndValue(ex.getMessage());
+        if (duplicateInfo != null) {
+            return handleDuplicateKeyException(
+                    new DuplicateKeyException.ExceptionBuilder()
+                            .systemMessage(ex.getMessage())
+                            .customMessage(duplicateInfo.get("key") + " 중복")
+                            .request(duplicateInfo)
+                            .build()
+            );
+        } else {
+            return handleCustomServerException(
+                    new CustomServerException.ExceptionBuilder()
+                            .systemMessage(ex.getMessage())
+                            .customMessage("데이터 무결성 위반")
+                            .build()
+            );
+        }
+    }
+
+    private Map<String, String> getDuplicateKeyAndValue(String message) {
+        Matcher keyMatcher = Pattern.compile("for key '(.+?)'").matcher(message);
+        Matcher valueMatcher = Pattern.compile("Duplicate entry '(.+?)'").matcher(message);
+
+        if (keyMatcher.find() & valueMatcher.find()) {
+            return Map.of("key",convertToCamelcase(keyMatcher.group(1)),
+                    "value",valueMatcher.group(1));
+        } else {
+            return null;
+        }
+    }
+    private String convertToCamelcase(String snakeCase){
+        String[] words = snakeCase.split("_");
+        return IntStream.range(0, words.length)
+                .mapToObj(i -> i == 0 ? words[i].toLowerCase() : words[i].substring(0, 1).toUpperCase() + words[i].substring(1).toLowerCase())
+                .collect(Collectors.joining());
     }
 
     @ExceptionHandler({

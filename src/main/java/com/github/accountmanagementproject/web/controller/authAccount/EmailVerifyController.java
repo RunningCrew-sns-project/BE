@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.controller.authAccount;
 
 import com.github.accountmanagementproject.service.authAccount.EmailVerifyService;
-import com.github.accountmanagementproject.web.dto.response.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

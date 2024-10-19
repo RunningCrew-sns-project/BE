@@ -1,14 +1,12 @@
 package com.github.accountmanagementproject.web.controller.authAccount;
 
-import com.github.accountmanagementproject.web.dto.response.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Email;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Account", description = "계정 관련 API")
 public interface AccountControllerDocs {
