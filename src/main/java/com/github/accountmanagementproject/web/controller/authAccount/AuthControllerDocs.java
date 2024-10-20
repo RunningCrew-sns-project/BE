@@ -36,7 +36,7 @@ public interface AuthControllerDocs {
                                     }""")
             )
     )
-    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호, 닉네임 세 값중 중복 값 발생",
+    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호 두 값중 중복 값 발생",
             content = @Content(mediaType = "application/json",
                     examples = {
                             @ExampleObject(name = "핸드폰 번호 중복",
@@ -357,7 +357,7 @@ public interface AuthControllerDocs {
                                     }""")
             )
     )
-    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호, 닉네임 세 값중 중복 값 발생",
+    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호 두 값중 중복 값 발생",
             content = @Content(mediaType = "application/json",
                     examples = {
                             @ExampleObject(name = "핸드폰 번호 중복",
