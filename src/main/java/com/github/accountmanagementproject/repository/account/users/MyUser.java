@@ -102,6 +102,9 @@ public class MyUser {
     public boolean isExpired(){
         return lastLogin != null && this.lastLogin.isBefore(LocalDateTime.now().minusMonths(3));
     }
+    public boolean isEnabled(){
+        return this.status == UserStatus.NORMAL;
+    }
     public boolean isCredentialsExpired(){
         return false;
     }
@@ -139,6 +142,7 @@ public class MyUser {
         if(oAuthSignUpDto.getDateOfBirth() != null)
             this.dateOfBirth = LocalDate.parse(oAuthSignUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
     }
+
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return this.userRoles.stream().map(userRole -> userRole.getRoles())
