@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+        #chat-page {
+            display: none;
+        }
+        #messageArea {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .chat-message {
+            display: flex;
+            align-items: center;
+        }
+        .chat-message i {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+        }
+        .event-message {
+            color: #888;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 유저 이름을 입력받는 페이지 -->
+<div id="username-page">
+    <h2>Enter your username</h2>
+    <form id="usernameForm">
+        <input type="text" id="name" placeholder="Enter your name" required/>
+        <button type="submit">Join Chat</button>
+    </form>
+</div>
+
+<!-- 채팅 페이지 -->
+<div id="chat-page">
+    <div id="userlist">
+        <h2>Chat Room</h2>
+        <ul id="list">
+            <!-- 유저 리스트가 이곳에 출력됨 -->
+        </ul>
+    </div>
+
+    <div id="messageArea"></div>
+
+    <form id="messageForm">
+        <input type="text" id="message" placeholder="Enter your message..." required/>
+        <button type="submit">Send</button>
+    </form>
+
+    <p class="connecting">Connecting...</p>
+</div>
+
+<!-- jQuery 및 SockJS, STOMP 관련 스크립트 로드 -->
+<script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<!-- 제공된 JavaScript 코드 -->
+<script src="app.js"></script>
+
+</body>
+</html>

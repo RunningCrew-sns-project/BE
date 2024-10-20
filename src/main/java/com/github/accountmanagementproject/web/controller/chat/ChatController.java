@@ -1,48 +1,92 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
-import com.github.accountmanagementproject.service.chat.ChatRoomService;
-import com.github.accountmanagementproject.web.dto.chat.ChatMessage;
-import com.github.accountmanagementproject.web.dto.chat.RequestChatRoomDto;
-import com.github.accountmanagementproject.web.dto.chat.ResponseChatRoomDto;
+import com.github.accountmanagementproject.repository.chat.ChatRepository;
+import com.github.accountmanagementproject.web.dto.chat.ChatDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
+@Slf4j
 public class ChatController {
     private final SimpMessageSendingOperations template;
-    private final ChatRoomService chatRoomService;
+    private final ChatRepository repository;
 
+    @MessageMapping("/chat/enterUser")
+    public void enterUser(@Payload ChatDto chat, SimpMessageHeaderAccessor headerAccessor){
+        repository.increaseUser(chat.getRoomId());
 
-    @GetMapping("/chat/{id}")
-    public ResponseEntity<List<ChatMessage>> getChatMessages(@PathVariable("id") String id) {
-        ChatMessage chatMessage = new ChatMessage(1, "test", "test");
-        return ResponseEntity.ok(List.of(chatMessage));
+        String userUUID = repository.addUser(chat.getRoomId(), chat.getSender());
+
+        headerAccessor.getSessionAttributes().put("userUUID", userUUID);
+        headerAccessor.getSessionAttributes().put("roomID", chat.getRoomId());
+
+        chat.setMessage(chat.getSender() + "님이 입장하셨습니다.");
+        template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
 
-    //메시지 송신 및 수신, /pub가 생략된 모습. 클라이언트 단에선 /pub/message로 요청
-    @MessageMapping("/message")
-    public ResponseEntity<Void> receiveMessage(@RequestBody ChatMessage chat) {
-        // 메시지를 해당 채팅방 구독자들에게 전송
-        template.convertAndSend("/sub/chatroom/1", chat);
-        return ResponseEntity.ok().build();
+    @MessageMapping("/chat/sendMessage")
+    public void sendMessage(@Payload ChatDto chat){
+        log.info("chat : {}", chat);
+        chat.setMessage(chat.getMessage());
+        template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<ResponseChatRoomDto> createChatRoom(@RequestBody RequestChatRoomDto requestChatRoomDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(chatRoomService.createChatRoom(requestChatRoomDto));
+    @EventListener
+    public void webSocketDisconnectListener(SessionDisconnectEvent event){
+        log.info("webSocketDisconnectListener : {}", event);
+
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        String userUUID = (String) headerAccessor.getSessionAttributes().get("userUUID");
+        String roomId = (String) headerAccessor.getSessionAttributes().get("roomID");
+
+        log.info("headerAccessor : {}", headerAccessor);
+
+        repository.decreaseUser(roomId);
+
+        String userName = repository.getUserName(roomId, userUUID);
+        repository.deleteUser(roomId, userUUID);
+
+        if(userName != null){
+            log.info("User disconnected : {}", userName);
+
+            ChatDto chat = ChatDto.builder()
+                    .type(ChatDto.MessageType.LEAVE)
+                    .sender(userName)
+                    .message(userName + "님이 퇴장하였습니다.")
+                    .build();
+
+            template.convertAndSend("/sub/chat/room/" + roomId, chat);
+        }
     }
 
-    @GetMapping("/chatList")
-    public ResponseEntity<List<ResponseChatRoomDto>> getChatRoomList() {
-        List<ResponseChatRoomDto> responseChatRoomDtoList = chatRoomService.findChatRoomList();
-        return ResponseEntity.ok(responseChatRoomDtoList);
+    @GetMapping("/chat/userlist")
+    @ResponseBody
+    public List<String> userList(String roomId){
+        return repository.getUserList(roomId);
+    }
+
+    @GetMapping("/chat/duplicateName")
+    @ResponseBody
+    public String isDuplicateName(@RequestParam("roomId") String roomId,
+                                  @RequestParam("username") String username){
+        String userName = repository.isDuplicateName(roomId, username);
+        log.info("isDuplicateName : {}", userName);
+
+        return userName;
     }
 }
