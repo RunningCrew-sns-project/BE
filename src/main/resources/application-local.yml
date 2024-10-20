@@ -12,7 +12,7 @@ oauth:
     url:
       auth: https://kauth.kakao.com
       api: https://kapi.kakao.com
-      redirect-uri: http://database-1.cto824g8iqv2.ap-northeast-2.rds.amazonaws.com:8080/api/auth/kakao
+      redirect-uri: http://localhost:8080/api/auth/kakao
 
 spring:
   mvc:
@@ -20,9 +20,6 @@ spring:
       matching-strategy: ant_path_matcher
   jpa:
     open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
   datasource:
     username: ENC(h2JOcqwlTgH7EViYp44e4g==)
     password: ENC(FZchWcTilrdnJpcRebDLtOL5eTdyhz1T)
@@ -39,7 +36,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /amp-docs.html
+    path: /running-docs.html
   version: 1.0.0
 
 

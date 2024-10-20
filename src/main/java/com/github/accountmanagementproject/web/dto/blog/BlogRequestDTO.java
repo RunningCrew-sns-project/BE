@@ -13,4 +13,5 @@ public class BlogRequestDTO {
     private String title;
     private String content;
     private String record;
+    private String distance;
 }

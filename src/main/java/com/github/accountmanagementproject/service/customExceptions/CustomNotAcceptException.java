@@ -17,7 +17,7 @@ public class CustomNotAcceptException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomNotAcceptException build() {
             return new CustomNotAcceptException(this);
         }
     }

@@ -5,12 +5,16 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
+import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlogRepository;
 import com.github.accountmanagementproject.service.S3Service;
+import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
 import com.github.accountmanagementproject.service.mappers.BlogMapper;
+import com.github.accountmanagementproject.service.mappers.CommentMapper;
+import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
 import jakarta.persistence.EntityManager;
@@ -20,7 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -33,27 +39,28 @@ public class BlogService {
     private final AccountConfig accountConfig;
     private final S3Service s3Service;
     private final MyUsersJpa myUsersJpa;
-    private final EntityManager entityManager;
 
     @Transactional
     public String writeBlog(BlogRequestDTO blogRequestDTO, MyUser user, MultipartFile image) throws Exception {
         String imageUrl = s3Service.upload(image, "blog_images");
 
         Blog blog = Blog.builder()
-                        .title(blogRequestDTO.getTitle())
-                        .content(blogRequestDTO.getContent())
-                        .record(blogRequestDTO.getRecord())
-                        .user(user)
-                        .build();
+                .title(blogRequestDTO.getTitle())
+                .content(blogRequestDTO.getContent())
+                .record(blogRequestDTO.getRecord())
+                .distance(blogRequestDTO.getDistance())
+                .user(user)
+                .createdAt(LocalDateTime.now())
+                .build();
 
         if (image == null) {
-            blog.setImage(null);
+            blog.setImageUrl(null);
         } else {
-            blog.setImage(imageUrl);
+            blog.setImageUrl(imageUrl);
         }
 
         blogRepository.save(blog); //레포지토리에 저장
-        return blog.getImage();
+        return blog.getImageUrl();
     }
 
     @Transactional
@@ -62,7 +69,6 @@ public class BlogService {
             1. 존재한다면 ? 좋아요 취소
             2. 존재하지 않는다면 ? 좋아요 누르기
         */
-
         try {
             Blog blog = blogRepository.findById(blogId).orElse(null);
             if (blog == null) {
@@ -99,8 +105,57 @@ public class BlogService {
 
     public List<BlogResponseDTO> getBlogs(MyUser user) {
         List<Blog> blogs = blogRepository.findAll();
+        List<BlogComment> allComments = blogCommentRepository.findAll();
 
-        return BlogMapper.INSTANCE.blogsToBlogResponseDTOs(blogs);
 
+        return blogs.stream()
+                .map(blog -> {
+                    // 블로그에 대한 댓글 가져오기
+                    List<BlogCommentResponseDTO> comments = allComments.stream()
+                            .filter(comment -> comment.getBlog().equals(blog)) // 해당 블로그의 댓글만 필터링
+                            .map(CommentMapper.INSTANCE::commentToCommentResponseDTO) // DTO로 매핑
+                            .toList();
+
+                    // 블로그 DTO 생성 및 댓글 추가
+                    BlogResponseDTO blogResponseDTO = BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
+                    blogResponseDTO.setComments(comments); // 댓글 리스트 설정
+                    return blogResponseDTO;
+                })
+                .toList();
+    }
+
+    public String updateBlog(MultipartFile image, BlogRequestDTO blogRequestDTO,Integer blogId, MyUser user) throws IOException {
+        Blog blog = blogRepository.findById(blogId).orElse(null);
+        if(!blog.getUser().equals(user)){
+            throw new CustomBadCredentialsException.ExceptionBuilder()
+                    .customMessage("권한이 없습니다.")
+                    .request("작성자의 권한이 필요합니다.")
+                    .build();
+        }
+        blog.setTitle(blogRequestDTO.getTitle());
+        blog.setContent(blogRequestDTO.getContent());
+        blog.setRecord(blogRequestDTO.getRecord());
+        blog.setDistance(blogRequestDTO.getDistance());
+
+        if (image != null) {
+            String imageUrl = s3Service.update(blog.getImageUrl(), image, "blog_images");
+            blog.setImageUrl(imageUrl);
+        }
+        blogRepository.save(blog);
+        return "성공적으로 수정하였습니다.";
+    }
+
+    public String deleteBlog(Integer blogId, MyUser user) {
+        Blog blog = blogRepository.findById(blogId).orElse(null);
+        if(!blog.getUser().equals(user)){
+            throw new CustomBadCredentialsException.ExceptionBuilder()
+                    .customMessage("권한이 없습니다.")
+                    .request("작성자의 권한이 필요합니다.")
+                    .build();
+        }
+        s3Service.delete(blog.getImageUrl());
+        blogRepository.delete(blog);
+
+        return "성공적으로 삭제하였습니다.";
     }
 }

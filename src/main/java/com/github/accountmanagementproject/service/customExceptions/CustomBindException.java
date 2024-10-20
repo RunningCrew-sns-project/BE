@@ -18,7 +18,7 @@ public class CustomBindException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomBindException build() {
             return new CustomBindException(this);
         }
     }

@@ -9,7 +9,7 @@ import com.github.accountmanagementproject.service.customExceptions.CustomBadReq
 import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
 import com.github.accountmanagementproject.service.customExceptions.DuplicateKeyException;
 import com.github.accountmanagementproject.service.mappers.UserMapper;
-import com.github.accountmanagementproject.web.dto.accountAuth.AccountDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -42,10 +42,7 @@ public class SignUpLoginService {
 
 
     @Transactional
-    public void signUp(AccountDto signUpRequest) {
-
-        //필수입력값 요구사항 확인, 기본 프사설정 로직
-        accountConfig.signUpChecker(signUpRequest);
+    public void signUp(AccountInfoDto signUpRequest) {
 
         //비번 암호화
         signUpRequest.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
