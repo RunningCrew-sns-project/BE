@@ -2,11 +2,9 @@ package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.service.blog.BlogCommentService;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
-import com.github.accountmanagementproject.web.dto.response.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

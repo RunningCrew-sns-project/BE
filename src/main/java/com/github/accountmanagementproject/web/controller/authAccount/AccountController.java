@@ -1,12 +1,15 @@
 package com.github.accountmanagementproject.web.controller.authAccount;
 
 import com.github.accountmanagementproject.service.authAccount.AccountService;
-import com.github.accountmanagementproject.web.dto.response.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+@Validated
 @RestController
 @RequestMapping("/api/account")
 @RequiredArgsConstructor

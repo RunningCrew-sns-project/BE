@@ -1,20 +1,21 @@
 package com.github.accountmanagementproject.repository.account.users;
 
+import com.github.accountmanagementproject.repository.account.socialIds.SocialId;
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
 import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Builder
@@ -25,14 +26,12 @@ import java.util.Set;
 @DynamicInsert
 @Entity
 @Table(name = "users")
+@EqualsAndHashCode(of = "userId")
 public class MyUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Integer userId;
-
-    @Column(name = "social_id", unique = true)
-    private BigInteger socialId;
 
     @Column(unique = true, nullable = false, length = 50)
     private String email;
@@ -82,15 +81,18 @@ public class MyUser {
             inverseJoinColumns = @JoinColumn(name = "role_id"))//상대 엔티티에서 참조할 fk
     private Set<Role> roles;
 
+    @OneToMany(mappedBy = "myUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)//orphanRemoval 고아제거
+    private Set<SocialId> socialIds;
+
     @Builder.Default
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<UserLikesBlog> userLikesBlogs = new HashSet<>();
 
 
-
     public boolean isLocked(){
         return this.status == UserStatus.LOCK;
     }
+
     public boolean isTempAccount(){
         return this.status == UserStatus.TEMP;
     }
@@ -127,16 +129,15 @@ public class MyUser {
         this.lastLogin = !failure ? LocalDateTime.now() : this.lastLogin;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (!(object instanceof MyUser myUser)) return false;
-        return Objects.equals(userId, myUser.userId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(userId);
+    public void oAuthSignUpSetting(OAuthSignUpDto oAuthSignUpDto){
+        this.email = oAuthSignUpDto.getEmail();
+        this.nickname = oAuthSignUpDto.getNickname();
+        this.status = UserStatus.NORMAL;
+        this.profileImg = oAuthSignUpDto.getProfileImg();
+        this.phoneNumber = oAuthSignUpDto.getPhoneNumber();
+        this.gender = oAuthSignUpDto.getGender();
+        if(oAuthSignUpDto.getDateOfBirth() != null)
+            this.dateOfBirth = LocalDate.parse(oAuthSignUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
     }
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {

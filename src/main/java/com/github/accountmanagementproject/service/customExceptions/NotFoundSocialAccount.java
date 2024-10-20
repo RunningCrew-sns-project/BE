@@ -1,6 +1,5 @@
 package com.github.accountmanagementproject.service.customExceptions;
 
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.SocialAccountDto;
 import lombok.Getter;
 
 @Getter
