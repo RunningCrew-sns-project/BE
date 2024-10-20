@@ -100,6 +100,12 @@ public class OAuthLoginService {
                         .request("oAuthSignUpDto")
                         .systemMessage("NotFoundException")
                         .build());
+
+        if( !socialId.getMyUser().isEnabled() )
+            throw new CustomBadRequestException.ExceptionBuilder()
+                    .customMessage("이미 가입된 계정입니다.")
+                    .request("oAuthSignUpDto")
+                    .build();
         try {
             socialId.socialConnectSetting();
             socialId.getMyUser().oAuthSignUpSetting(oAuthSignUpDto);
