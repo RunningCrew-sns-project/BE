@@ -1,24 +1,43 @@
 package com.github.accountmanagementproject.web.dto.chat;
 
-import lombok.Data;
-import java.util.HashMap;
-import java.util.UUID;
+import com.github.accountmanagementproject.repository.account.users.MyUser;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Data
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Entity
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "chat_room")
 public class ChatRoom {
 
-    private String roomId;  // 채팅방 아이디
-    private String roomName;// 채팅방 이름
-    private long userCount; // 채팅방 인원수
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "chatroom_id")
+    private Integer roomId;  // 채팅방 아이디
 
+    @Column(name = "title")
+    private String title;// 채팅방 이름
 
-    private HashMap<String, String> userList = new HashMap<>();
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    public ChatRoom create(String roomName) {
-        ChatRoom chatRoom = new ChatRoom();
-        chatRoom.roomId = UUID.randomUUID().toString();
-        chatRoom.roomName = roomName;
+    @Builder.Default
+    @Column(name = "user_count")
+    private Integer userCount = 0;
 
-        return chatRoom;
+    @Override
+    public String toString() {
+        return "ChatRoom{" +
+                "roomId='" + roomId + '\'' +
+                ", title='" + title + '\'' +
+                ", createdAt=" + createdAt +
+                ", userCount=" + userCount +
+                '}';
     }
 }

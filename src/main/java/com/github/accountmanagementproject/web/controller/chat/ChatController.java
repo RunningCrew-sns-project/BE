@@ -1,6 +1,10 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
-import com.github.accountmanagementproject.repository.chat.ChatRepository;
+import com.github.accountmanagementproject.config.security.AccountConfig;
+import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
+import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +27,18 @@ import java.util.List;
 @Slf4j
 public class ChatController {
     private final SimpMessageSendingOperations template;
-    private final ChatRepository repository;
+    private final ChatService chatService;
+    private final AccountConfig accountConfig;
+    private final MyUsersJpa myUsersJpa;
 
     @MessageMapping("/chat/enterUser")
     public void enterUser(@Payload ChatDto chat, SimpMessageHeaderAccessor headerAccessor){
-        repository.increaseUser(chat.getRoomId());
+        chatService.increaseUser(chat.getRoomId());
+        MyUser user = accountConfig.findMyUser(chat.getSender());
 
-        String userUUID = repository.addUser(chat.getRoomId(), chat.getSender());
+        Integer userID = chatService.addUser(chat.getRoomId(), user);
 
-        headerAccessor.getSessionAttributes().put("userUUID", userUUID);
+        headerAccessor.getSessionAttributes().put("userID", userID);
         headerAccessor.getSessionAttributes().put("roomID", chat.getRoomId());
 
         chat.setMessage(chat.getSender() + "님이 입장하셨습니다.");
@@ -51,23 +58,23 @@ public class ChatController {
 
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String userUUID = (String) headerAccessor.getSessionAttributes().get("userUUID");
-        String roomId = (String) headerAccessor.getSessionAttributes().get("roomID");
+        Integer userId = (Integer) headerAccessor.getSessionAttributes().get("userId");
+        Integer roomId = (Integer) headerAccessor.getSessionAttributes().get("roomID");
 
-        log.info("headerAccessor : {}", headerAccessor);
+        MyUser user = myUsersJpa.findById(userId).orElseThrow(null);
 
-        repository.decreaseUser(roomId);
+                log.info("headerAccessor : {}", headerAccessor);
 
-        String userName = repository.getUserName(roomId, userUUID);
-        repository.deleteUser(roomId, userUUID);
+        chatService.decreaseUser(roomId);
+        chatService.deleteUser(roomId, user);
 
-        if(userName != null){
-            log.info("User disconnected : {}", userName);
+        if(user != null){
+            log.info("User disconnected : {}", user.getNickname());
 
             ChatDto chat = ChatDto.builder()
                     .type(ChatDto.MessageType.LEAVE)
-                    .sender(userName)
-                    .message(userName + "님이 퇴장하였습니다.")
+                    .sender(user.getNickname())
+                    .message(user.getNickname() + "님이 퇴장하였습니다.")
                     .build();
 
             template.convertAndSend("/sub/chat/room/" + roomId, chat);
@@ -76,17 +83,7 @@ public class ChatController {
 
     @GetMapping("/chat/userlist")
     @ResponseBody
-    public List<String> userList(String roomId){
-        return repository.getUserList(roomId);
-    }
-
-    @GetMapping("/chat/duplicateName")
-    @ResponseBody
-    public String isDuplicateName(@RequestParam("roomId") String roomId,
-                                  @RequestParam("username") String username){
-        String userName = repository.isDuplicateName(roomId, username);
-        log.info("isDuplicateName : {}", userName);
-
-        return userName;
+    public List<String> userList(Integer roomId){
+        return chatService.getUserList(roomId);
     }
 }

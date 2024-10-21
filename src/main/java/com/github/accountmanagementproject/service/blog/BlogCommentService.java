@@ -9,6 +9,7 @@ import com.github.accountmanagementproject.service.customExceptions.CustomBadCre
 import com.github.accountmanagementproject.service.mappers.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
+import com.github.accountmanagementproject.web.dto.blog.PostCommentRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,7 +27,7 @@ public class BlogCommentService {
 
 
     @Transactional
-    public void createComment(BlogCommentRequestDTO comment, MyUser user) {
+    public void createComment(PostCommentRequest comment, MyUser user) {
         Blog blog = blogRepository.findById(comment.getBlogId()).get();
         BlogComment blogComment = BlogComment.builder()
                 .blog(blog)

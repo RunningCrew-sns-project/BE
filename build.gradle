@@ -6,6 +6,9 @@ plugins {
 
 group = 'com.github'
 version = '0.0.1-SNAPSHOT'
+def queryDslVersion = "5.1.0"
+def generatedDir = "./src/main/generated"
+def buildDir = "./BuildFile"
 
 java {
     sourceCompatibility = '17'
