@@ -8,7 +8,7 @@ import com.github.accountmanagementproject.service.customExceptions.CustomBadCre
 import com.github.accountmanagementproject.service.customExceptions.CustomBadRequestException;
 import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
 import com.github.accountmanagementproject.service.customExceptions.DuplicateKeyException;
-import com.github.accountmanagementproject.service.mappers.UserMapper;
+import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;

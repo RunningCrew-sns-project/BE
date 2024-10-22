@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.service.blog.BlogCommentService;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
+import com.github.accountmanagementproject.web.dto.blog.PostCommentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class CommentController {
     }
 
     @PostMapping
-    public String createComment(@RequestBody BlogCommentRequestDTO comment,
+    public String createComment(@RequestBody PostCommentRequest comment,
                                 @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
         blogCommentService.createComment(comment, user);

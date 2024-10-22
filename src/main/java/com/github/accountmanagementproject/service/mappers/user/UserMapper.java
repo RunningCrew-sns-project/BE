@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.service.mappers;
+package com.github.accountmanagementproject.service.mappers.user;
 
 import com.github.accountmanagementproject.config.client.dto.userInfo.OAuthUserInfo;
 import com.github.accountmanagementproject.repository.account.socialIds.SocialId;

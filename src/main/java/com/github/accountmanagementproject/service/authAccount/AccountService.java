@@ -2,7 +2,7 @@ package com.github.accountmanagementproject.service.authAccount;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.service.mappers.UserMapper;
+import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

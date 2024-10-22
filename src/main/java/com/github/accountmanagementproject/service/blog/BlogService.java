@@ -12,12 +12,11 @@ import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlo
 import com.github.accountmanagementproject.service.S3Service;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
-import com.github.accountmanagementproject.service.mappers.BlogMapper;
-import com.github.accountmanagementproject.service.mappers.CommentMapper;
+import com.github.accountmanagementproject.service.mappers.blog.BlogMapper;
+import com.github.accountmanagementproject.service.mappers.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor

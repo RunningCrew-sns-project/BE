@@ -11,7 +11,7 @@ import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadRequestException;
 import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
 import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
-import com.github.accountmanagementproject.service.mappers.UserMapper;
+import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.AuthResult;
