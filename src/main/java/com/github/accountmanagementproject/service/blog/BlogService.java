@@ -76,7 +76,8 @@ public class BlogService {
                         .request("존재하지 않는 게시물.")
                         .build();
             }
-            List<Blog> blogs = user.getUserLikesBlogs().stream().map(UserLikesBlog::getBlog).toList();
+
+            List<Blog> blogs = userLikesBlogRepository.findByUser(user).stream().map(UserLikesBlog::getBlog).toList();
             boolean isLiked = blogs.contains(blog);
 
             if(isLiked){
@@ -85,12 +86,10 @@ public class BlogService {
 
                 UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user,blog);
                 userLikesBlogRepository.delete(userLikesBlog);
-                user.getUserLikesBlogs().remove(userLikesBlog);
             }else {
                 //TODO: 좋아요 누르면 좋아요 갯수 증가
                 blogRepository.incrementLikeCount(blog.getId());
                 UserLikesBlog userLikesBlog = userLikesBlogRepository.save(UserLikesBlog.builder().user(user).blog(blog).build());
-                user.getUserLikesBlogs().add(userLikesBlog);
             }
 
             return isLiked ? "좋아요를 취소했습니다." : "좋아요를 눌렀습니다.";

@@ -4,7 +4,6 @@ import com.github.accountmanagementproject.repository.account.socialIds.SocialId
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
 import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
@@ -15,7 +14,6 @@ import org.hibernate.annotations.DynamicInsert;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -87,10 +85,6 @@ public class MyUser {
 
     @OneToMany(mappedBy = "myUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)//orphanRemoval 고아제거
     private Set<SocialId> socialIds;
-
-    @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<UserLikesBlog> userLikesBlogs = new HashSet<>();
 
 
     public boolean isLocked(){
