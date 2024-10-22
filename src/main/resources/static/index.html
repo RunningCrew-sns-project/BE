@@ -1,81 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Room</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Chat Application</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script> <!-- STOMP.js 추가 -->
+
     <style>
-        .hidden {
-            display: none;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
-        #chat-page {
-            display: none;
-        }
-        #messageArea {
+        #messages {
+            border: 1px solid #ccc;
             height: 300px;
             overflow-y: scroll;
-            border: 1px solid #ccc;
             margin-bottom: 10px;
         }
-        .chat-message {
-            display: flex;
-            align-items: center;
-        }
-        .chat-message i {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            margin-right: 10px;
-        }
-        .event-message {
-            color: #888;
-        }
-        .btn {
-            margin-top: 10px;
+        .message {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
         }
     </style>
 </head>
 <body>
+<h1>Chat Application</h1>
+<div id="messages"></div>
+<input type="text" id="messageInput" placeholder="메시지를 입력하세요..." />
+<button id="sendButton">전송</button>
 
-<!-- 유저 이름을 입력받는 페이지 -->
-<div id="username-page">
-    <h2>Enter your username</h2>
-    <form id="usernameForm">
-        <input type="text" id="name" placeholder="Enter your name" required/>
-        <button type="submit">Join Chat</button>
-    </form>
-</div>
+<script>
+	// STOMP 클라이언트 설정
+	const socket = new SockJS('http://localhost:8080/ws'); // SockJS를 사용하여 WebSocket 연결
+	const stompClient = Stomp.over(socket);
 
-<!-- 채팅 페이지 -->
-<div id="chat-page">
-    <div id="userlist">
-        <h2>Chat Room</h2>
-        <ul id="list">
-            <!-- 유저 리스트가 이곳에 출력됨 -->
-        </ul>
-    </div>
+	stompClient.connect({}, function (frame) {
+		console.log('Connected: ' + frame);
 
-    <div id="messageArea"></div>
+		// 채팅방 구독 처리 (예: 방 ID가 1인 경우)
+		stompClient.subscribe('/sub/chat/room/1', function (messageOutput) {
+			const message = JSON.parse(messageOutput.body);
+			displayMessage(message);
+		});
+	});
 
-    <form id="messageForm">
-        <input type="text" id="message" placeholder="Enter your message..." required/>
-        <button type="submit">Send</button>
-    </form>
+	// 메시지 전송 처리
+	document.getElementById('sendButton').addEventListener('click', function () {
+		const messageInput = document.getElementById('messageInput');
+		const chatMessage = {
+			roomId: 1,
+			sender: 'user1', // 사용자 이름 또는 ID를 동적으로 설정할 수 있습니다.
+			message: messageInput.value,
+			type: 'TALK'
+		};
+		stompClient.send('/pub/chat/sendMessage', {}, JSON.stringify(chatMessage));
+		messageInput.value = ''; // 메시지 입력 필드 초기화
+	});
 
-    <p class="connecting">Connecting...</p>
-</div>
-
-<!-- jQuery 및 SockJS, STOMP 관련 스크립트 로드 -->
-<script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-
-<!-- 제공된 JavaScript 코드 -->
-<script src="app.js"></script>
-
+	// 메시지 화면에 표시
+	function displayMessage(message) {
+		const messagesDiv = document.getElementById('messages');
+		const messageDiv = document.createElement('div');
+		messageDiv.classList.add('message');
+		messageDiv.innerText = `${message.sender}: ${message.message}`;
+		messagesDiv.appendChild(messageDiv);
+		messagesDiv.scrollTop = messagesDiv.scrollHeight; // 스크롤을 아래로 이동
+	}
+</script>
 </body>
 </html>

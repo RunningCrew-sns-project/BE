@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.repository.chat;
 
+import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,6 @@ public interface UserChatMappingRepository extends JpaRepository<UserChatMapping
     List<UserChatMapping> findAllByChatRoom(ChatRoom chatRoom);
 
     UserChatMapping findByChatRoom(ChatRoom chatRoom);
+
+    void deleteByChatRoomAndUser(ChatRoom chatRoom, MyUser user);
 }

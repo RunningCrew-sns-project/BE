@@ -2,7 +2,10 @@ package com.github.accountmanagementproject.web.controller.chat;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.service.chat.ChatService;
+import com.github.accountmanagementproject.service.mappers.chatRoom.ChatRoomMapper;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
+import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
+import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +14,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RestController
@@ -21,7 +27,7 @@ public class ChatRoomController {
     private final ChatService chatService;
 
     @GetMapping
-    public String chatRoomList(Model model) {
+    public List<ChatRoomResponse> chatRoomList(Model model) {
         model.addAttribute("list", chatService.findAllRoom());
         log.info("Chat room list : {}", chatService.findAllRoom());
 
@@ -38,13 +44,21 @@ public class ChatRoomController {
 
     @GetMapping("/chat/joinRoom")
     public String joinRoom(@RequestParam(name = "roomId") Integer roomId, Model model, @AuthenticationPrincipal String principal){
-        log.info("roomId : {}", roomId);
+        log.info("joinRoom -> roomId : {}", roomId);
         model.addAttribute("room", chatService.findByRoomId(roomId));
         MyUser user = accountConfig.findMyUser(principal);
         chatService.addUser(roomId, user);
         ChatRoom chatRoom = chatService.findByRoomId(roomId);
 
         return chatRoom.getTitle() + "에 입장했습니다.";
+    }
+
+    @GetMapping("/chat/leaveRoom")
+    public String leaveRoom(@RequestParam(name = "roomId") Integer roomId, Model model, @AuthenticationPrincipal String principal){
+        log.info("leaveRoom -> roomId : {}", roomId);
+        MyUser user = accountConfig.findMyUser(principal);
+        chatService.deleteUser(roomId, user);
+        return user.getNickname() + "님이 퇴장하였습니다.";
     }
 
 }

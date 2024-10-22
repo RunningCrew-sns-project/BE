@@ -1,12 +1,10 @@
-package com.github.accountmanagementproject.service.mappers;
+package com.github.accountmanagementproject.service.mappers.comment;
 
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
-
-import java.util.List;
 
 @Mapper
 public interface CommentMapper {

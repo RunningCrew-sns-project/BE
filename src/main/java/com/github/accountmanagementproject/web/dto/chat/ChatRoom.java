@@ -31,6 +31,9 @@ public class ChatRoom {
     @Column(name = "user_count")
     private Integer userCount = 0;
 
+    @Column(name = "chat_room_image")
+    private String chatRoomImage;
+
     @Override
     public String toString() {
         return "ChatRoom{" +
