@@ -32,7 +32,7 @@ public class AccountController implements AccountControllerDocs{
                 .build();
     }
     @PutMapping("/my-info")
-    public CustomSuccessResponse updateMyInfo(@AuthenticationPrincipal String principal, AccountInfoDto){
+    public CustomSuccessResponse updateMyInfo(@AuthenticationPrincipal String principal, AccountInfoDto accountInfoDto){
         return new CustomSuccessResponse.SuccessDetail()
                 .message("유저 정보 수정 성공")
                 .responseData(accountService.myInfoEdit(principal))
