@@ -35,6 +35,7 @@ public class ChatService {
                     List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
                     List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
                     ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
+                    chatRoomResponse.setUserCount(userList.size());
                     chatRoomResponse.setUserList(userResponses);
                     return chatRoomResponse;
                 })
@@ -62,25 +63,26 @@ public class ChatService {
                 .chatRoom(chatRoom)
                 .build();
         userChatMappingRepository.save(userChatMapping);
-
-        this.increaseUser(chatRoom.getRoomId());
+        List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
+        chatRoom.setUserCount(userList.size());
         return chatRoom;
     }
-
-    @Transactional
-    // 채팅방 인원 +1
-    public void increaseUser(Integer roomId){
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-        chatRoom.setUserCount(chatRoom.getUserCount() + 1);
-        chatRoomRepository.save(chatRoom);
-    }
-
-    @Transactional
-    // 채팅방 인원 -1
-    public void decreaseUser(Integer roomId){
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-        chatRoom.setUserCount(chatRoom.getUserCount()-1);
-    }
+//
+//    @Transactional
+//    // 채팅방 인원 +1
+//    public void increaseUser(Integer roomId){
+//        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+//        chatRoom.setUserCount(chatRoom.getUserCount() + 1);
+//        chatRoomRepository.save(chatRoom);
+//    }
+//
+//    @Transactional
+//    // 채팅방 인원 -1
+//    public void decreaseUser(Integer roomId){
+//        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+//        chatRoom.setUserCount(chatRoom.getUserCount()-1);
+//        chatRoomRepository.save(chatRoom);
+//    }
 
     @Transactional
     //채팅방 유저 리스트에 유저추가
@@ -96,11 +98,15 @@ public class ChatService {
 
         UserChatMapping userChatMapping = UserChatMapping.builder()
                         .chatRoom(chatRoom)
-                                .user(user)
-                                        .build();
+                        .user(user)
+                        .build();
 
-        this.increaseUser(roomId);
         userChatMappingRepository.save(userChatMapping);
+
+        Objects.requireNonNull(chatRoom).setUserCount(userList.size());
+
+        chatRoomRepository.save(chatRoom);
+
         return user.getUserId();
     }
 
@@ -108,8 +114,9 @@ public class ChatService {
     // 채팅방 유저 리스트 삭제
     public void deleteUser(Integer roomId, MyUser user){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-        this.decreaseUser(roomId);
-        userChatMappingRepository.deleteByChatRoomAndUser(chatRoom, user);
+//        this.decreaseUser(roomId);
+        UserChatMapping userChatMapping = userChatMappingRepository.findByUserAndChatRoom(user, chatRoom);
+        userChatMappingRepository.delete(userChatMapping);
         userChatMappingRepository.flush();
     }
 

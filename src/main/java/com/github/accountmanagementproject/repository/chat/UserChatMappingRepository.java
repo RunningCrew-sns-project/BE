@@ -13,6 +13,7 @@ public interface UserChatMappingRepository extends JpaRepository<UserChatMapping
     List<UserChatMapping> findAllByChatRoom(ChatRoom chatRoom);
 
     UserChatMapping findByChatRoom(ChatRoom chatRoom);
+    UserChatMapping findByUserAndChatRoom(MyUser user, ChatRoom chatRoom);
 
     void deleteByChatRoomAndUser(ChatRoom chatRoom, MyUser user);
 }
