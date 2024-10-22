@@ -52,7 +52,7 @@ public interface BlogControllerDocs {
                     })
     )
     @PostMapping("/like")
-    String likeBlog(@RequestParam Integer blogId,
+    CustomSuccessResponse likeBlog(@RequestParam Integer blogId,
                     @AuthenticationPrincipal String principal) throws Exception;
 
     @GetMapping

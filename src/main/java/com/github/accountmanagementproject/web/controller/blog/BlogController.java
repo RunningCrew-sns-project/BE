@@ -39,11 +39,14 @@ public class BlogController implements BlogControllerDocs{
     //블로그 좋아요
     @Override
     @PostMapping("/like")
-    public String likeBlog(@RequestParam Integer blogId,
+    public CustomSuccessResponse likeBlog(@RequestParam Integer blogId,
                            @AuthenticationPrincipal String principal) throws Exception {
         System.out.println(principal);
         MyUser user = accountConfig.findMyUser(principal);
-        return blogService.likeBlog(blogId, user);
+        return new CustomSuccessResponse.SuccessDetail()
+                .httpStatus(HttpStatus.OK)
+                .message(blogService.likeBlog(blogId, user))
+                .build();
 
     }
 
