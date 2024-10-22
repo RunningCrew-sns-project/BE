@@ -97,14 +97,14 @@ public class OAuthLoginService {
         SocialId socialId = socialIdsJpa.findBySocialIdPkJoinMyUser(new SocialIdPk(oAuthSignUpDto.getSocialId(), oAuthSignUpDto.getProvider()))
                 .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                         .customMessage("임시 계정이 존재하지 않습니다.")
-                        .request("oAuthSignUpDto")
+                        .request(oAuthSignUpDto)
                         .systemMessage("NotFoundException")
                         .build());
 
         if( !socialId.getMyUser().isEnabled() )
             throw new CustomBadRequestException.ExceptionBuilder()
                     .customMessage("이미 가입된 계정입니다.")
-                    .request("oAuthSignUpDto")
+                    .request(oAuthSignUpDto)
                     .build();
         try {
             socialId.socialConnectSetting();

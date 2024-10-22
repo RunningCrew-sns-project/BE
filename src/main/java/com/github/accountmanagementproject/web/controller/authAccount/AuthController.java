@@ -3,9 +3,9 @@ package com.github.accountmanagementproject.web.controller.authAccount;
 
 import com.github.accountmanagementproject.service.authAccount.SignUpLoginService;
 import com.github.accountmanagementproject.service.authAccount.oauth.OAuthLoginService;
-import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.KakaoLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.NaverLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthLoginParams;

@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.accountAuth;
+package com.github.accountmanagementproject.web.dto.accountAuth.myPage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

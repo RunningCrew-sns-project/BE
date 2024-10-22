@@ -50,6 +50,9 @@ public class MyUser {
     @Column(length = 4)
     private Gender gender;
 
+    @Column(name = "profile_message")
+    private String profileMessage;
+
     @Column(name = "profile_img", nullable = false)
     private String profileImg;
 
@@ -85,7 +88,7 @@ public class MyUser {
     private Set<SocialId> socialIds;
 
     @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserLikesBlog> userLikesBlogs = new HashSet<>();
 
 

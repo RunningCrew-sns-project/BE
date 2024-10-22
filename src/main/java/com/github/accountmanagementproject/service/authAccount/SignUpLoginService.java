@@ -9,9 +9,9 @@ import com.github.accountmanagementproject.service.customExceptions.CustomBadReq
 import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
 import com.github.accountmanagementproject.service.customExceptions.DuplicateKeyException;
 import com.github.accountmanagementproject.service.mappers.UserMapper;
-import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;

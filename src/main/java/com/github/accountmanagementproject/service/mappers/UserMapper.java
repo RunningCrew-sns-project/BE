@@ -5,7 +5,8 @@ import com.github.accountmanagementproject.repository.account.socialIds.SocialId
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -45,4 +46,7 @@ public interface UserMapper {
     }
     @Mapping(target = "provider", source = "OAuthProvider")
     OAuthSignUpDto oAuthUserInfoToOAuthSignUpDto(OAuthUserInfo oAuthUserInfo);
+
+
+    AccountMain myUserToAccountMain(MyUser myUser);
 }
