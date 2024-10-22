@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,9 +37,9 @@ public class ChatController {
     private final MyUsersJpa myUsersJpa;
 
     @MessageMapping("/chat/enterUser")
-    public void enterUser(@Payload ChatDto chat, SimpMessageHeaderAccessor headerAccessor){
+    public void enterUser(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){
         log.info("enter User {}", chat.getSender());
-        chatService.increaseUser(chat.getRoomId());
+
         MyUser user = accountConfig.findMyUser(chat.getSender());
 
         Integer userID = chatService.addUser(chat.getRoomId(), user);
@@ -46,13 +47,15 @@ public class ChatController {
         Objects.requireNonNull(headerAccessor.getSessionAttributes()).put("userID", userID);
         headerAccessor.getSessionAttributes().put("roomID", chat.getRoomId());
 
-        chat.setMessage(chat.getSender() + "님이 입장하셨습니다.");
+        chat.setMessage(user.getNickname() + "님이 입장하셨습니다.");
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
 
     @MessageMapping("/chat/sendMessage")
     public void sendMessage(@Payload ChatDto chat){
         log.info("chat : {}", chat);
+        MyUser user = accountConfig.findMyUser(chat.getSender());
+        chat.setSender(user.getNickname());
         chat.setMessage(chat.getMessage());
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
@@ -60,6 +63,7 @@ public class ChatController {
     @EventListener
     public void handleWebSocketConnectEvent(SessionConnectEvent event){
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        headerAccessor.setUser(event.getUser());
 
         log.info("websocket connect event : {}", headerAccessor.getSessionId());
     }
@@ -69,18 +73,16 @@ public class ChatController {
 
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        Integer userId = (Integer) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userId");
+        Integer userId = (Integer) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userID");
         Integer roomId = (Integer) headerAccessor.getSessionAttributes().get("roomID");
 
         MyUser user = myUsersJpa.findById(userId).orElseThrow(null);
 
         log.info("headerAccessor : {}", headerAccessor);
-
-        chatService.decreaseUser(roomId);
-        chatService.deleteUser(roomId, user);
-
         if(user != null){
             log.info("User disconnected : {}", user.getNickname());
+
+            chatService.deleteUser(roomId, user);
 
             ChatDto chat = ChatDto.builder()
                     .type(ChatDto.MessageType.LEAVE)
