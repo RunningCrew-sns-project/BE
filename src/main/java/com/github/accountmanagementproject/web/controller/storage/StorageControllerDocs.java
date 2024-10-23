@@ -114,10 +114,15 @@ public interface StorageControllerDocs {
                     examples = {
                             @ExampleObject(name = "삭제 성공 응답 예",
                                     description = "⬆️⬆️ 성공! (이미 삭제된 파일의 url 또는 존재하지 않는 url로 시도해도 에러는 안뜹니다. 삭제에 실패했을경우에만 에러발생)",
-                                    value = "{\n" +
-                                            "  \"code\": 200,\n" +
-                                            "  \"message\": \"OK\"\n" +
-                                            "}")
+                                    value = """
+                                            {
+                                              "success": {
+                                                "code": 200,
+                                                "httpStatus": "OK",
+                                                "message": "파일 삭제 성공",
+                                                "timestamp": "2024-10-23T19:44:52.3801181"
+                                              }
+                                            }""")
                     })
     )
     CustomSuccessResponse deleteMultipleFiles(
@@ -130,25 +135,34 @@ public interface StorageControllerDocs {
             )
             List<String> fileUrls);
     @Operation(summary = "업로드된 파일 수정", description = "업로드된 파일 수정 <br>(삭제할 URL들을 받아서 버킷에서 삭제한후 새로 업로드된 파일은 업로드 후 파일명과 url을 새로 반환)")
-    @ApiResponse(responseCode = "200", description = "파일 업로드 성공",
+    @ApiResponse(responseCode = "200", description = "파일 삭제 후 업로드 성공",
             content = @Content(mediaType = "application/json",
                     examples = {
                             @ExampleObject(name = "파일 업로드 성공 후 반환값 예",
                                     description = "⬆️⬆️ data 안에 제목과 그리고 첨부된 이미지들을 files 배열로 목록들을 반환해줍니다. ",
-                                    value = "{\n" +
-                                            "    \"code\": 200,\n" +
-                                            "    \"message\": \"OK\",\n" +
-                                            "    \"data\": [\n" +
-                                            "        {\n" +
-                                            "            \"fileName\": \"스크린샷 2024-04-02 214224.png\",\n" +
-                                            "            \"fileUrl\": \"https://sirimp-bucket.s3.ap-northeast-2.amazonaws.com/46ad7a78-3c71-494f-8b10-c422cb7ae236.png\"\n" +
-                                            "        },\n" +
-                                            "        {\n" +
-                                            "            \"fileName\": \"스크린샷 2023-11-04 203440.png\",\n" +
-                                            "            \"fileUrl\": \"https://sirimp-bucket.s3.ap-northeast-2.amazonaws.com/9de16ff9-fe3c-4bbb-b9c4-850791d65877.png\"\n" +
-                                            "        }\n" +
-                                            "    ]\n" +
-                                            "}")
+                                    value = """
+                                             {
+                                              "success": {
+                                                "code": 201,
+                                                "httpStatus": "OK",
+                                                "message": "파일 업로드 성공",
+                                                "responseData": [
+                                                  {
+                                                    "fileName": "perros carinosos (12).jpg",
+                                                    "fileUrl": "https://running-crew.s3.ap-northeast-2.amazonaws.com/c637b652-0a9f-4b97-88de-268fac7274ee.jpg"
+                                                  },
+                                                  {
+                                                    "fileName": "perros carinosos (16).jpg",
+                                                    "fileUrl": "https://running-crew.s3.ap-northeast-2.amazonaws.com/73dc1b40-d411-4f25-a480-8eb3b169cc7b.jpg"
+                                                  },
+                                                  {
+                                                    "fileName": "perros carinosos (19).jpg",
+                                                    "fileUrl": "https://running-crew.s3.ap-northeast-2.amazonaws.com/297ead59-2a9d-4bc7-bb19-4a68343aee3f.jpg"
+                                                  }
+                                                ],
+                                                "timestamp": "2024-10-23T19:44:52.3801181"
+                                              }
+                                            }""")
                     })
     )
     @ApiResponse(responseCode = "500", description = "서버 업로드 실패",
