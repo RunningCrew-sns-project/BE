@@ -14,8 +14,8 @@ import com.github.accountmanagementproject.service.customExceptions.CustomServer
 import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthLoginParams;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.AuthResult;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.RedisConnectionFailureException;

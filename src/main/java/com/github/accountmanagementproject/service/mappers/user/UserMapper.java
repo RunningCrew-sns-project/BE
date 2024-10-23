@@ -7,7 +7,7 @@ import com.github.accountmanagementproject.repository.account.users.enums.RolesE
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 

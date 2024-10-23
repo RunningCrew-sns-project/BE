@@ -6,7 +6,7 @@ import com.github.accountmanagementproject.repository.account.users.enums.UserSt
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -14,7 +14,6 @@ import org.hibernate.annotations.DynamicInsert;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import java.util.Set;
 
 @Builder
@@ -140,24 +139,13 @@ public class MyUser {
         if(oAuthSignUpDto.getDateOfBirth() != null)
             this.dateOfBirth = LocalDate.parse(oAuthSignUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
     }
-
+    public MyUser(Integer userId,String email){
+        this.userId = userId;
+        this.email = email;
+    }
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return this.userRoles.stream().map(userRole -> userRole.getRoles())
 //                .map(role -> role.getName())
 
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (!(object instanceof MyUser myUser)) return false;
-        return Objects.equals(userId, myUser.userId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(userId);
-    }
-//                .map(roles->new SimpleGrantedAuthority(roles))
-//                .toList();
-//    }
 }

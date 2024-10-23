@@ -5,7 +5,7 @@ import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.KakaoLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.NaverLoginParams;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
 import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

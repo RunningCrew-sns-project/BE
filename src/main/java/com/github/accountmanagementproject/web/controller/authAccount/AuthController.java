@@ -9,8 +9,8 @@ import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInf
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.KakaoLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.NaverLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthLoginParams;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.AuthResult;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
 import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

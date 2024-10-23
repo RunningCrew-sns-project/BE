@@ -16,6 +16,7 @@ public class MyUsersDaoCustomImpl implements MyUsersDaoCustom {
     public Optional<MyUser> findBySocialIdPk(SocialIdPk socialIdPk) {
 
         QSocialId qSocialId = QSocialId.socialId;
+
         MyUser myUser = queryFactory.select(qSocialId.myUser)
                 .from(qSocialId)
                 .where(qSocialId.socialIdPk.eq(socialIdPk))
@@ -24,4 +25,15 @@ public class MyUsersDaoCustomImpl implements MyUsersDaoCustom {
         return myUser==null ? Optional.empty() :
                 Optional.of(myUser);
     }
+
+//    @Override
+//    public Optional<MyUser> findByEmailMinimumInfo(String email) {
+//        Tuple tuple = queryFactory.select(qMyUser.userId, qMyUser.email)
+//                .from(qMyUser)
+//                .where(qMyUser.email.eq(email))
+//                .fetchOne();
+//
+//        MyUser myUser = new MyUser(tuple.get(qMyUser.userId), tuple.get(qMyUser.email));
+//        return Optional.of(myUser);
+//    }
 }

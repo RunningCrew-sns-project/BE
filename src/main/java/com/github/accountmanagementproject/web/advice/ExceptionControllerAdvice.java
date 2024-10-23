@@ -80,6 +80,12 @@ public class ExceptionControllerAdvice {
         return makeResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageAndRequest);
     }
 
+    @ExceptionHandler(StorageUpdateFailedException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)// aws s3 통신 에러
+    public CustomErrorResponse handleStorageUpdateFailedException(CustomServerException messageAndRequest) {
+        return makeResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageAndRequest);
+    }
+
     @ExceptionHandler(NotFoundSocialAccount.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public CustomErrorResponse handleNotFoundSocialAccount(NotFoundSocialAccount messageAndRequest) {

@@ -81,15 +81,9 @@ public class AccountConfig {
 
 
     @Transactional
-    public MyUser failureCounting() {
-        MyUser failUser = (MyUser) httpSession.getAttribute("myUser");
-//        MyUser failUser = findMyUser(principal);
-//        MyUser findUser = entityManager.find(MyUser.class, failUser.getUserId());
-//        failUser = entityManager.merge(failUser);
-        if (failUser != null) {
-            failUser = entityManager.find(MyUser.class, failUser.getUserId());
-            failUser.loginValueSetting(true);
-        }
+    public MyUser failureCounting(String email) {
+        MyUser failUser = findMyUser(email);
+        failUser.loginValueSetting(true);
         return failUser;
     }
 

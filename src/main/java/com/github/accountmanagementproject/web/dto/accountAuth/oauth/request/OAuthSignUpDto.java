@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.accountAuth.oauth.response;
+package com.github.accountmanagementproject.web.dto.accountAuth.oauth.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
