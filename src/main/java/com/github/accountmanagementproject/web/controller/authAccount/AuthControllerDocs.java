@@ -1,11 +1,11 @@
 package com.github.accountmanagementproject.web.controller.authAccount;
 
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
+import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.KakaoLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.NaverLoginParams;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -104,7 +104,7 @@ public interface AuthControllerDocs {
                                              }""")
                     })
     )
-    ResponseEntity<CustomSuccessResponse> signUp(@RequestBody AccountInfoDto accountInfoDto);
+    ResponseEntity<CustomSuccessResponse> signUp(@RequestBody SignUpRequest signUpRequest);
 
     @Operation(summary = "로그인", description = "로그인에 필요한 정보들을 입력 받아 로그인 진행")
     @ApiResponse(responseCode = "200", description = "로그인 성공",
@@ -412,5 +412,5 @@ public interface AuthControllerDocs {
                                             }""")
             )
     )
-    ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpDto oAuthSignUpDto);
+    ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpRequest oAuthSignUpRequest);
 }

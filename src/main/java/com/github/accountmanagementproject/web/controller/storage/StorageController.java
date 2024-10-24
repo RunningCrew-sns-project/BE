@@ -13,15 +13,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 @RestController
-@RequestMapping("/v1/api/storage")
+@RequestMapping("/api/storage")
 @RequiredArgsConstructor
 public class StorageController implements StorageControllerDocs {
     private final StorageService storageService;
 
     //한개 또는 여러개 업로드
     @Override
-    @PostMapping(value = "/multipart-files",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CustomSuccessResponse> uploadMultipleFiles(@RequestPart("files") List<MultipartFile> multipartFiles,
                                                                      @RequestParam(required = false, name = "big") boolean isBigFile) {
         CustomSuccessResponse response = new CustomSuccessResponse.SuccessDetail()
@@ -34,7 +33,7 @@ public class StorageController implements StorageControllerDocs {
     }
 
 
-    @DeleteMapping("/multipart-files")//여러개 파일 업로드 취소 (삭제)
+    @DeleteMapping//여러개 파일 업로드 취소 (삭제)
     public CustomSuccessResponse deleteMultipleFiles(@RequestParam(value = "delete-urls") List<String> fileUrls) {
         storageService.uploadCancel(fileUrls);
         return new CustomSuccessResponse
@@ -42,8 +41,7 @@ public class StorageController implements StorageControllerDocs {
     }
 
     //여러개 파일 수정
-    @PutMapping(value = "/multipart-files",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CustomSuccessResponse modifyMultipleFiles(@RequestParam(value = "delete-urls") List<String> deleteFileUrls,
                                                      @RequestPart("files") List<MultipartFile> multipartFiles,
                                                      @RequestParam(required = false, name = "big") boolean isBigFile) {

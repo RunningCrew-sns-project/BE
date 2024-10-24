@@ -4,6 +4,7 @@ import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoResponse;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class AccountService {
     private final AccountConfig accountConfig;
 
-    public AccountInfoDto myInfoByEmail(String principal) {
+    public AccountInfoResponse myInfoByEmail(String principal) {
         MyUser myUser = accountConfig.findMyUserFetchJoin(principal);
         return UserMapper.INSTANCE.myUserToAccountDto(myUser);
     }

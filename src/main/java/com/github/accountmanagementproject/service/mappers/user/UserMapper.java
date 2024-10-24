@@ -6,8 +6,9 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoResponse;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -23,7 +24,7 @@ public interface UserMapper {
     @Mapping(target = "gender", source = "myUser.gender")
     @Mapping(target = "dateOfBirth", dateFormat = "yyyy년 M월 d일")
     @Mapping(target = "lastLogin", dateFormat = "yyyy년 M월 d일 HH:mm:ss")
-    AccountInfoDto myUserToAccountDto(MyUser myUser);
+    AccountInfoResponse myUserToAccountDto(MyUser myUser);
 
     @Mapping(target = "dateOfBirth", dateFormat = "yyyy-M-d")
     @Mapping(target = "roles", ignore = true)
@@ -45,7 +46,7 @@ public interface UserMapper {
         myUserBuilder.socialIds(Set.of(new SocialId(oAuthUserInfo.getSocialId(), oAuthUserInfo.getOAuthProvider())));
     }
     @Mapping(target = "provider", source = "OAuthProvider")
-    OAuthSignUpDto oAuthUserInfoToOAuthSignUpDto(OAuthUserInfo oAuthUserInfo);
+    OAuthSignUpRequest oAuthUserInfoToOAuthSignUpDto(OAuthUserInfo oAuthUserInfo);
 
 
     AccountMain myUserToAccountMain(MyUser myUser);

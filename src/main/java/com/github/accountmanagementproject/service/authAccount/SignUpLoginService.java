@@ -10,8 +10,8 @@ import com.github.accountmanagementproject.service.customExceptions.CustomServer
 import com.github.accountmanagementproject.service.customExceptions.DuplicateKeyException;
 import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
+import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,10 +42,10 @@ public class SignUpLoginService {
 
 
     @Transactional
-    public void signUp(AccountInfoDto signUpRequest) {
+    public void signUp(SignUpRequest signUpRequest) {
 
         //비번 암호화
-        signUpRequest.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+        signUpRequest.passwordEncryption(passwordEncoder.encode(signUpRequest.getPassword()));
 
         //세이브 실행하면서 중복값 발생시 발생되는 익셉션 예외처리
         try {

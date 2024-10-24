@@ -55,6 +55,7 @@ public class EmailVerifyService {
             mailSender.send(mimeMessage);
             //레디스 저장 (유효 기간 10분)
             redisRepository.save(to, verifyCode, Duration.ofMinutes(10));
+
         } catch (MessagingException e) {
             throw new CustomServerException.ExceptionBuilder()
                     .customMessage("Failed to send email")

@@ -6,7 +6,7 @@ import com.github.accountmanagementproject.repository.account.users.enums.UserSt
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -129,15 +129,15 @@ public class MyUser {
         this.lastLogin = !failure ? LocalDateTime.now() : this.lastLogin;
     }
 
-    public void oAuthSignUpSetting(OAuthSignUpDto oAuthSignUpDto){
-        this.email = oAuthSignUpDto.getEmail();
-        this.nickname = oAuthSignUpDto.getNickname();
+    public void oAuthSignUpSetting(OAuthSignUpRequest oAuthSignUpRequest){
+        this.email = oAuthSignUpRequest.getEmail();
+        this.nickname = oAuthSignUpRequest.getNickname();
         this.status = UserStatus.NORMAL;
-        this.profileImg = oAuthSignUpDto.getProfileImg();
-        this.phoneNumber = oAuthSignUpDto.getPhoneNumber();
-        this.gender = oAuthSignUpDto.getGender();
-        if(oAuthSignUpDto.getDateOfBirth() != null)
-            this.dateOfBirth = LocalDate.parse(oAuthSignUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
+        this.profileImg = oAuthSignUpRequest.getProfileImg();
+        this.phoneNumber = oAuthSignUpRequest.getPhoneNumber();
+        this.gender = oAuthSignUpRequest.getGender();
+        if(oAuthSignUpRequest.getDateOfBirth() != null)
+            this.dateOfBirth = LocalDate.parse(oAuthSignUpRequest.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
     }
     public MyUser(Integer userId,String email){
         this.userId = userId;

@@ -14,7 +14,7 @@ import com.github.accountmanagementproject.service.customExceptions.CustomServer
 import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthLoginParams;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.AuthResult;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +51,8 @@ public class OAuthLoginService {
 
     }
 
-    private AuthResult<OAuthSignUpDto> createOAuthSignUpResponse(OAuthUserInfo oAuthUserInfo) {
-        return AuthResult.<OAuthSignUpDto>builder()
+    private AuthResult<OAuthSignUpRequest> createOAuthSignUpResponse(OAuthUserInfo oAuthUserInfo) {
+        return AuthResult.<OAuthSignUpRequest>builder()
                 .response( UserMapper.INSTANCE.oAuthUserInfoToOAuthSignUpDto(oAuthUserInfo) )
                 .message("임시 계정 생성")
                 .httpStatus(HttpStatus.CREATED)
@@ -93,27 +93,27 @@ public class OAuthLoginService {
     }
 
     @Transactional
-    public void signUp(OAuthSignUpDto oAuthSignUpDto) {
-        SocialId socialId = socialIdsJpa.findBySocialIdPkJoinMyUser(new SocialIdPk(oAuthSignUpDto.getSocialId(), oAuthSignUpDto.getProvider()))
+    public void signUp(OAuthSignUpRequest oAuthSignUpRequest) {
+        SocialId socialId = socialIdsJpa.findBySocialIdPkJoinMyUser(new SocialIdPk(oAuthSignUpRequest.getSocialId(), oAuthSignUpRequest.getProvider()))
                 .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                         .customMessage("임시 계정이 존재하지 않습니다.")
-                        .request(oAuthSignUpDto)
+                        .request(oAuthSignUpRequest)
                         .systemMessage("NotFoundException")
                         .build());
 
-        if( !socialId.getMyUser().isEnabled() )
+        if( socialId.getMyUser().isEnabled() )
             throw new CustomBadRequestException.ExceptionBuilder()
                     .customMessage("이미 가입된 계정입니다.")
-                    .request(oAuthSignUpDto)
+                    .request(oAuthSignUpRequest)
                     .build();
         try {
             socialId.socialConnectSetting();
-            socialId.getMyUser().oAuthSignUpSetting(oAuthSignUpDto);
+            socialId.getMyUser().oAuthSignUpSetting(oAuthSignUpRequest);
         } catch (DateTimeException e) {
             throw new CustomBadRequestException.ExceptionBuilder()
                     .systemMessage(e.getMessage())
                     .customMessage("호환되지 않는 날짜 형식 (ex. yyyy-M-d)")
-                    .request(oAuthSignUpDto.getDateOfBirth())
+                    .request(oAuthSignUpRequest.getDateOfBirth())
                     .build();
         }
     }
