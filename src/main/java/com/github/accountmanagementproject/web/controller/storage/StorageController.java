@@ -22,14 +22,14 @@ public class StorageController implements StorageControllerDocs {
     @Override
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CustomSuccessResponse> uploadMultipleFiles(@RequestPart("files") List<MultipartFile> multipartFiles,
+                                                                     @RequestParam String directory,
                                                                      @RequestParam(required = false, name = "big") boolean isBigFile) {
         CustomSuccessResponse response = new CustomSuccessResponse.SuccessDetail()
-                .responseData(storageService.fileUploadAndGetUrl(multipartFiles, isBigFile))
+                .responseData(storageService.fileUploadAndGetUrl(multipartFiles, isBigFile, directory))
                 .httpStatus(HttpStatus.CREATED)
                 .message("파일 업로드 성공").build();
 
         return new ResponseEntity<>(response, response.getSuccess().getHttpStatus());
-
     }
 
 
@@ -44,8 +44,9 @@ public class StorageController implements StorageControllerDocs {
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public CustomSuccessResponse modifyMultipleFiles(@RequestParam(value = "delete-urls") List<String> deleteFileUrls,
                                                      @RequestPart("files") List<MultipartFile> multipartFiles,
+                                                     @RequestParam String directory,
                                                      @RequestParam(required = false, name = "big") boolean isBigFile) {
-        List<FileDto> response = storageService.fileUploadAndGetUrl(multipartFiles, isBigFile);
+        List<FileDto> response = storageService.fileUploadAndGetUrl(multipartFiles, isBigFile, directory);
         storageService.uploadCancel(deleteFileUrls);
         return new CustomSuccessResponse.SuccessDetail()
                 .responseData(response)

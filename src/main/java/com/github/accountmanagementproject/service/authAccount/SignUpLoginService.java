@@ -7,14 +7,12 @@ import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadRequestException;
 import com.github.accountmanagementproject.service.customExceptions.CustomServerException;
-import com.github.accountmanagementproject.service.customExceptions.DuplicateKeyException;
 import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -24,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DateTimeException;
 import java.time.Duration;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,14 +49,6 @@ public class SignUpLoginService {
             MyUser signUpMyUser = UserMapper.INSTANCE.accountDtoToMyUser(signUpRequest);
             signUpMyUser.setRoles(Set.of(accountConfig.getNormalUserRole()));
             myUsersJpa.save(signUpMyUser);
-        }catch (DataIntegrityViolationException e){
-            throw new DuplicateKeyException.ExceptionBuilder()
-                    .systemMessage(e.getMessage())
-                    .customMessage("이메일, 핸드폰 번호, 닉네임 세 값중 중복 값 발생")
-                    .request(Map.of("email", signUpRequest.getEmail(),
-                            "phoneNumber", signUpRequest.getPhoneNumber(),
-                            "nickname", signUpRequest.getNickname()))
-                    .build();
         }catch (DateTimeException e){
             throw new CustomBadRequestException.ExceptionBuilder()
                     .systemMessage(e.getMessage())

@@ -139,10 +139,6 @@ public class MyUser {
         if(oAuthSignUpRequest.getDateOfBirth() != null)
             this.dateOfBirth = LocalDate.parse(oAuthSignUpRequest.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
     }
-    public MyUser(Integer userId,String email){
-        this.userId = userId;
-        this.email = email;
-    }
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return this.userRoles.stream().map(userRole -> userRole.getRoles())

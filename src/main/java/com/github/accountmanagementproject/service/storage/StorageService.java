@@ -27,7 +27,7 @@ public class StorageService {
 
 
     //파일 업로드 및 원본파일명, URL 반환
-    public List<FileDto> fileUploadAndGetUrl(List<MultipartFile> multipartFiles, boolean isBigFile){
+    public List<FileDto> fileUploadAndGetUrl(List<MultipartFile> multipartFiles, boolean isBigFile, String directory) {
         List<FileDto> response = new ArrayList<>();
 
         if (isBigFile) {
@@ -35,7 +35,7 @@ public class StorageService {
             // 로딩바 구현을위해 Amazons3 로 구현
         } else {
             for (MultipartFile file : multipartFiles) {
-                PutObjectRequest putObjectRequest = makePutObjectRequest(file);
+                PutObjectRequest putObjectRequest = makePutObjectRequest(file, directory);
                 amazonS3Client.putObject(putObjectRequest);
                 String url = amazonS3Client.getUrl(bucketName, putObjectRequest.getKey()).toString();
                 response.add(new FileDto(file.getOriginalFilename(), url));
@@ -45,8 +45,8 @@ public class StorageService {
     }
 
 
-    private PutObjectRequest makePutObjectRequest(MultipartFile file) {
-        String storageFileName = makeStorageFileName(Objects.requireNonNull(file.getOriginalFilename()));
+    private PutObjectRequest makePutObjectRequest(MultipartFile file, String directory) {
+        String storageFileName = directory + "/" + makeStorageFileName(Objects.requireNonNull(file.getOriginalFilename()));
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());

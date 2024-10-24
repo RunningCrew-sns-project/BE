@@ -83,6 +83,9 @@ public interface StorageControllerDocs {
 
             )
             List<MultipartFile> multipartFiles,
+            @Parameter(description = "파일을 업로드할 디렉토리명"
+                    , examples = @ExampleObject(name = "예시", value = "blog_images"))
+            String directory,
             @Parameter(description = "첨부파일이 일반파일인지 대용량인지 기본값은 false<br>" +
                     "기본값이 false라 대용량일때만 true 값 넣어주셔도 됩니다 ex) false, true <br>" +
                     "아직 대용량 업로드는 구현 안됐습니다 ㅠ", examples = {
@@ -214,6 +217,9 @@ public interface StorageControllerDocs {
                     description = "multipart/form-data 형식의 첨부파일 리스트를 input으로 받습니다. key 값은 files 입니다"
             )
             List<MultipartFile> multipartFiles,
+            @Parameter(description = "파일을 업로드할 디렉토리명"
+            , examples = @ExampleObject(name = "예시", value = "blog_images"))
+            String directory,
             @Parameter(description = "첨부파일이 일반파일인지 대용량인지 기본값은 false  ex) false, true", examples = {
                     @ExampleObject(name = "일반첨부", value = "false", description = "일반 파일"),
                     @ExampleObject(name = "대용량첨부", value = "true", description = "대용량 파일")

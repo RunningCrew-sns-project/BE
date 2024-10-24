@@ -5,7 +5,7 @@ import com.github.accountmanagementproject.repository.account.socialIds.SocialId
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoResponse;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
@@ -28,7 +28,7 @@ public interface UserMapper {
 
     @Mapping(target = "dateOfBirth", dateFormat = "yyyy-M-d")
     @Mapping(target = "roles", ignore = true)
-    MyUser accountDtoToMyUser(AccountInfoDto accountInfoDto);
+    MyUser accountDtoToMyUser(SignUpRequest signUpRequest);
 
     @Named("getMyRoles")
     default Set<RolesEnum> myRoles(Set<Role> roles){

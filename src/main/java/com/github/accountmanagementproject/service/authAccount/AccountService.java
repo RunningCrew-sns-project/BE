@@ -6,6 +6,7 @@ import com.github.accountmanagementproject.service.mappers.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoResponse;
 import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,11 @@ public class AccountService {
         return UserMapper.INSTANCE.myUserToAccountMain(myUser);
     }
 
-    public AccountInfoDto myInfoEdit(String principal) {
+    @Transactional
+    public AccountInfoResponse myInfoEdit(String principal, AccountInfoDto modifyRequest) {
         MyUser myUser = accountConfig.findMyUserFetchJoin(principal);
+
+
         return null;
 
     }
