@@ -17,6 +17,26 @@ import java.io.IOException;
 @Tag(name = "Blog", description = "블로그 작성, 좋아요, 댓글 관련 API")
 public interface BlogControllerDocs {
 
+
+    //블로그 조회
+    //TODO : 내가 쓴 글만 보여지게 할지? 필터링 구현 필요할듯
+    @Operation(summary = "블로그 조회", description = "모든 블로그 조회, 무한스크롤링 페이지네이션")
+    @ApiResponse(responseCode = "200",description = "블로그 조회 성공",
+            content = @Content(mediaType = "application/json",
+                    examples = {
+                            @ExampleObject(name = "블로그 조회 성공 예",
+                                    description = "블로그 조회에 성공하여 DB에 있는 블로그의 내용이 응답값으로 반환됩니다.",
+                                    value = "{\n" +
+                                            "  \"code\": 200,\n" +
+                                            "  \"httpStatus\": \"OK\",\n" +
+                                            "  \"message\": \"블로그 조회 성공\",\n" +
+                                            "  \"responseData\": \"블로그 데이터\"\n" +
+                                            "}")
+                    })
+    )
+    @GetMapping
+    CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size, @AuthenticationPrincipal String principal);
+
     @Operation(summary = "블로그 작성", description = "제목, 내용, 기록, 사진을 입력 받아 블로그 작성")
     @ApiResponse(responseCode = "201",description = "블로그 작성 성공",
             content = @Content(mediaType = "application/json",
@@ -32,10 +52,8 @@ public interface BlogControllerDocs {
                     })
     )
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    CustomSuccessResponse writeBlog(
-            @RequestPart(required = false, value = "image") MultipartFile image,
-            @RequestPart BlogRequestDTO blogRequestDTO,
-            @AuthenticationPrincipal String principal) throws Exception;
+    CustomSuccessResponse writeBlog(@RequestBody BlogRequestDTO blogRequestDTO,
+                                           @AuthenticationPrincipal String principal) throws Exception;
 
     @Operation(summary = "좋아요 기능", description = "좋아요 누르기, 취소")
     @ApiResponse(responseCode = "201",description = "좋아요를 눌렀습니다, 취소했습니다",
@@ -55,8 +73,6 @@ public interface BlogControllerDocs {
     CustomSuccessResponse likeBlog(@RequestParam Integer blogId,
                     @AuthenticationPrincipal String principal) throws Exception;
 
-    @GetMapping
-    CustomSuccessResponse getBlogs(@AuthenticationPrincipal String principal);
 
     @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     CustomSuccessResponse updateBlog(@RequestPart(required = false, value = "image") MultipartFile image,
