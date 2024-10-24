@@ -12,11 +12,12 @@ public class AccountModifyRequest extends AccountInfoDto{
     private String email;
     private String nickname;
     private String phoneNumber;
-    private String gender;
+    private Gender gender;
     private String profileImg;
     @JsonCreator
     public AccountModifyRequest(@JsonProperty("profileImg") String profileImg) {
-        this.profileImg = profileImg!=null?profileImg:defaultProfileUrl() ;
+        if(profileImg == null) return;
+        this.profileImg = !profileImg.isEmpty() ? profileImg:defaultProfileUrl() ;
     }
     public String defaultProfileUrl() {
         if (super.getGender() == null || super.getGender() == Gender.UNKNOWN)
