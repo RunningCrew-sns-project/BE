@@ -174,7 +174,7 @@ public class BlogService {
                     userLikesBlogRepository.delete(userLikesBlog); //db에 있으면 삭제 (좋아요 취소)
                 }
                 Integer likeCount = userLikesBlogRepository.countAllByBlog(blog); //db에서 blog에 해당하는 좋아요 갯수 가져오기
-                blog.setLikeCount(likeCount);
+                blog.setLikeCount(likeCount); //좋아요 갯수 저장
                 blogRepository.save(blog); //좋아요 갯수 저장
             }
 
