@@ -6,16 +6,12 @@ import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
-import com.github.accountmanagementproject.service.mappers.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
-import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
-import com.github.accountmanagementproject.web.dto.blog.PostCommentRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

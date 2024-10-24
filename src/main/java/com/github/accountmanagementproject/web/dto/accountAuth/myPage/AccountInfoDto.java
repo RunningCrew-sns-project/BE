@@ -1,17 +1,14 @@
-package com.github.accountmanagementproject.web.dto.accountAuth;
+package com.github.accountmanagementproject.web.dto.accountAuth.myPage;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
-import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
-import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Getter
 @Setter
@@ -21,23 +18,6 @@ public class AccountInfoDto {
     @Email(message = "이메일 형식이 아닙니다.")
     @Schema(description = "이메일", example = "abc@abc.com", pattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
     private String email;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank(message = "비밀번호는 필수 입니다.")
-    @Pattern(regexp="^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$",
-            message = "비밀번호는 영문과 특수문자 숫자를 포함하며 8자 이상 20자 이하여야 합니다.")
-    @Schema(description = "비밀번호 (*영문과 특수문자, 숫자를 포함)", example = "12341234a!", minLength = 8, maxLength = 20, pattern = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$")
-    private String password;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @NotBlank(message = "비밀번호 확인은 필수 입니다.")
-    @Schema(description = "비밀번호 확인", example = "12341234a!", minLength = 8, maxLength = 20, pattern = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$")
-    private String passwordConfirm;
-
-    @AssertTrue(message = "비밀번호와 비밀번호 확인이 같아야 합니다.")
-    private boolean isPasswordEquals(){
-        return this.password.equals(this.passwordConfirm);
-    }
 
     @NotBlank(message = "닉네임은 필수입니다.")
     @Size(min = 2, max = 8, message = "닉네임은 2자 이상 8자 이하여야 합니다.")
@@ -73,29 +53,6 @@ public class AccountInfoDto {
 
 
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "마지막 로그인 날짜")
-    private String lastLogin;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "계정 상태")
-    private UserStatus status;
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "유저의 허용 권한")
-    private Set<RolesEnum> roles;
-
-    @JsonCreator
-    public AccountInfoDto(@JsonProperty("profileImg") String profileImg) {
-        this.profileImg = profileImg!=null?profileImg:defaultProfileUrl();
-    }
-
-    public String defaultProfileUrl() {
-        if (this.gender == null || this.gender == Gender.UNKNOWN)
-            return "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/anonymous-user-icon.png";
-        else if (this.gender == Gender.MALE)
-            return "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/man-user-color-icon.png";
-        else
-            return "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/woman-user-color-icon.png";
-    }
 //
 //    public boolean requiredNull(){
 //        return this.email==null

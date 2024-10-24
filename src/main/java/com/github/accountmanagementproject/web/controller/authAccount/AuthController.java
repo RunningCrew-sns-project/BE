@@ -3,14 +3,14 @@ package com.github.accountmanagementproject.web.controller.authAccount;
 
 import com.github.accountmanagementproject.service.authAccount.SignUpLoginService;
 import com.github.accountmanagementproject.service.authAccount.oauth.OAuthLoginService;
-import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
+import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.KakaoLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.NaverLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthLoginParams;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.AuthResult;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
 import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +32,8 @@ public class AuthController implements AuthControllerDocs {
 
     @Override
     @PostMapping("/sign-up")
-    public ResponseEntity<CustomSuccessResponse> signUp(@RequestBody @Valid AccountInfoDto accountInfoDto){
-        signUpLoginService.signUp(accountInfoDto);
+    public ResponseEntity<CustomSuccessResponse> signUp(@RequestBody @Valid SignUpRequest signUpRequest){
+        signUpLoginService.signUp(signUpRequest);
         CustomSuccessResponse signUpResponse = createSignUpResponse();
         return new ResponseEntity<>(signUpResponse, signUpResponse.getSuccess().getHttpStatus());
     }
@@ -81,8 +81,8 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/oauth")
-    public ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpDto oAuthSignUpDto) {
-        oAuthLoginService.signUp(oAuthSignUpDto);
+    public ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpRequest oAuthSignUpRequest) {
+        oAuthLoginService.signUp(oAuthSignUpRequest);
         CustomSuccessResponse signUpResponse = createSignUpResponse();
         return new ResponseEntity<>(signUpResponse, signUpResponse.getSuccess().getHttpStatus());
     }

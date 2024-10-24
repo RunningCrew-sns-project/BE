@@ -21,15 +21,15 @@ public class RedisRepository {
     public void save(String key, String value, Duration exp){
         valueOperations.set(key, value, exp);
     }
+
     public String getValue(String key){
         return valueOperations.get(key);
     }
+
     public Set<String> keys(String pattern){return valueOperations.getOperations().keys(pattern);}
     public String getAndDeleteValue(String key){
         return valueOperations.getAndDelete(key);
     }
-    public String deleteTest(String key){
-        return valueOperations.getAndDelete(key);
-    }
+
 
 }

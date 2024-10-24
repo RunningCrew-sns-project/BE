@@ -1,6 +1,5 @@
 package com.github.accountmanagementproject.web.dto.chat;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
 import lombok.*;
 
 import java.time.LocalDateTime;

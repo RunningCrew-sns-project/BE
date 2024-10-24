@@ -1,11 +1,9 @@
 package com.github.accountmanagementproject.web.dto.chat;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.*;
 
 @Entity
 @Builder

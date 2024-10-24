@@ -49,36 +49,26 @@ public class AccountConfig {
 
 
     public MyUser findMyUserFetchJoin(String emailOrPhoneNumber){
+        CustomNotFoundException.ExceptionBuilder exceptionBuilder = new CustomNotFoundException.ExceptionBuilder().request(emailOrPhoneNumber);
         if(emailOrPhoneNumber.matches("01\\d{9}")){
             return myUsersJpa.findByPhoneNumberJoin(emailOrPhoneNumber).orElseThrow(()->
-                    new CustomNotFoundException.ExceptionBuilder()
-                            .customMessage("가입되지 않은 핸드폰 번호")
-                            .request(emailOrPhoneNumber)
-                            .build());
+                    exceptionBuilder.customMessage("가입되지 않은 핸드폰 번호").build());
         }else if (emailOrPhoneNumber.matches(".+@.+\\..+")){
             return myUsersJpa.findByEmailJoin(emailOrPhoneNumber).orElseThrow(()->
-                    new CustomNotFoundException.ExceptionBuilder()
-                            .customMessage("가입되지 않은 이메일")
-                            .request(emailOrPhoneNumber)
-                            .build());
+                    exceptionBuilder.customMessage("가입되지 않은 이메일").build());
         }else throw new CustomBadRequestException.ExceptionBuilder()
                 .customMessage("잘못 입력된 식별자")
                 .request(emailOrPhoneNumber)
                 .build();
     }
     public MyUser findMyUser(String emailOrPhoneNumber){
+        CustomNotFoundException.ExceptionBuilder exceptionBuilder = new CustomNotFoundException.ExceptionBuilder().request(emailOrPhoneNumber);
         if(emailOrPhoneNumber.matches("01\\d{9}")){
             return myUsersJpa.findByPhoneNumber(emailOrPhoneNumber).orElseThrow(()->
-                    new CustomNotFoundException.ExceptionBuilder()
-                            .customMessage("가입되지 않은 핸드폰 번호")
-                            .request(emailOrPhoneNumber)
-                            .build());
+                    exceptionBuilder.customMessage("가입되지 않은 핸드폰 번호").build());
         }else if (emailOrPhoneNumber.matches(".+@.+\\..+")){
             return myUsersJpa.findByEmail(emailOrPhoneNumber).orElseThrow(()->
-                    new CustomNotFoundException.ExceptionBuilder()
-                            .customMessage("가입되지 않은 이메일")
-                            .request(emailOrPhoneNumber)
-                            .build());
+                    exceptionBuilder.customMessage("가입되지 않은 이메일").build());
         }else throw new CustomBadRequestException.ExceptionBuilder()
                 .customMessage("잘못 입력된 식별자")
                 .request(emailOrPhoneNumber)
@@ -91,14 +81,8 @@ public class AccountConfig {
 
 
     @Transactional
-    public MyUser failureCounting() {
-        MyUser failUser = (MyUser) httpSession.getAttribute("myUser");
-//        MyUser failUser = findMyUser(principal);
-//        MyUser findUser = entityManager.find(MyUser.class, failUser.getUserId());
-//        failUser = entityManager.merge(failUser);
-        if (failUser != null) {
-            failUser = entityManager.find(MyUser.class, failUser.getUserId());
-        }
+    public MyUser failureCounting(String email) {
+        MyUser failUser = findMyUser(email);
         failUser.loginValueSetting(true);
         return failUser;
     }

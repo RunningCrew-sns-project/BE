@@ -3,7 +3,9 @@ package com.github.accountmanagementproject.config.security;
 
 import com.github.accountmanagementproject.repository.redis.RedisRepository;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
@@ -14,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-
 
 import javax.crypto.SecretKey;
 import java.time.Duration;
@@ -67,6 +68,8 @@ public class JwtProvider {
                 .compact();
     }
 
+
+
     //리프레시 토큰의 유효시간만큼 저장기간을 설정하고 레디스에 저장 이후 Dto 생성
     public TokenDto saveRefreshTokenAndCreateTokenDto(String accessToken, String refreshToken, Duration exp){
 
@@ -94,6 +97,7 @@ public class JwtProvider {
     public TokenDto tokenRefresh(String accessToken, String clientRefreshToken){
         //리프레시 토큰 유효성 검사와 파싱
         Jws<Claims> refreshTokenClaims = tokenParsing(clientRefreshToken);
+
         String dbRefreshToken = redisRepository.getAndDeleteValue(accessToken);//가져오면서 지움
         //사용자의 리프레시토큰과 db의 리프레시토큰 대조
         if(!clientRefreshToken.equals(dbRefreshToken)) throw new NoSuchElementException("Not Found Exception");

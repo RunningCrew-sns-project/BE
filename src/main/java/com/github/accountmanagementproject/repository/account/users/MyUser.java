@@ -4,10 +4,9 @@ import com.github.accountmanagementproject.repository.account.socialIds.SocialId
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
 import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -15,8 +14,6 @@ import org.hibernate.annotations.DynamicInsert;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Builder
@@ -50,6 +47,9 @@ public class MyUser {
     @Convert(converter = GenderConverter.class)
     @Column(length = 4)
     private Gender gender;
+
+    @Column(name = "profile_message")
+    private String profileMessage;
 
     @Column(name = "profile_img", nullable = false)
     private String profileImg;
@@ -129,22 +129,19 @@ public class MyUser {
         this.lastLogin = !failure ? LocalDateTime.now() : this.lastLogin;
     }
 
-    public void oAuthSignUpSetting(OAuthSignUpDto oAuthSignUpDto){
-        this.email = oAuthSignUpDto.getEmail();
-        this.nickname = oAuthSignUpDto.getNickname();
+    public void oAuthSignUpSetting(OAuthSignUpRequest oAuthSignUpRequest){
+        this.email = oAuthSignUpRequest.getEmail();
+        this.nickname = oAuthSignUpRequest.getNickname();
         this.status = UserStatus.NORMAL;
-        this.profileImg = oAuthSignUpDto.getProfileImg();
-        this.phoneNumber = oAuthSignUpDto.getPhoneNumber();
-        this.gender = oAuthSignUpDto.getGender();
-        if(oAuthSignUpDto.getDateOfBirth() != null)
-            this.dateOfBirth = LocalDate.parse(oAuthSignUpDto.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
+        this.profileImg = oAuthSignUpRequest.getProfileImg();
+        this.phoneNumber = oAuthSignUpRequest.getPhoneNumber();
+        this.gender = oAuthSignUpRequest.getGender();
+        if(oAuthSignUpRequest.getDateOfBirth() != null)
+            this.dateOfBirth = LocalDate.parse(oAuthSignUpRequest.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
     }
-
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return this.userRoles.stream().map(userRole -> userRole.getRoles())
 //                .map(role -> role.getName())
-//                .map(roles->new SimpleGrantedAuthority(roles))
-//                .toList();
-//    }
+
 }

@@ -1,11 +1,11 @@
 package com.github.accountmanagementproject.web.controller.authAccount;
 
-import com.github.accountmanagementproject.web.dto.accountAuth.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.LoginRequest;
+import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.accountAuth.TokenDto;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.KakaoLoginParams;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.NaverLoginParams;
-import com.github.accountmanagementproject.web.dto.accountAuth.oauth.response.OAuthSignUpDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,7 +36,7 @@ public interface AuthControllerDocs {
                                     }""")
             )
     )
-    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호, 닉네임 세 값중 중복 값 발생",
+    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호 두 값중 중복 값 발생",
             content = @Content(mediaType = "application/json",
                     examples = {
                             @ExampleObject(name = "핸드폰 번호 중복",
@@ -104,7 +104,7 @@ public interface AuthControllerDocs {
                                              }""")
                     })
     )
-    ResponseEntity<CustomSuccessResponse> signUp(@RequestBody AccountInfoDto accountInfoDto);
+    ResponseEntity<CustomSuccessResponse> signUp(@RequestBody SignUpRequest signUpRequest);
 
     @Operation(summary = "로그인", description = "로그인에 필요한 정보들을 입력 받아 로그인 진행")
     @ApiResponse(responseCode = "200", description = "로그인 성공",
@@ -357,7 +357,7 @@ public interface AuthControllerDocs {
                                     }""")
             )
     )
-    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호, 닉네임 세 값중 중복 값 발생",
+    @ApiResponse(responseCode = "409", description = "이메일, 핸드폰 번호 두 값중 중복 값 발생",
             content = @Content(mediaType = "application/json",
                     examples = {
                             @ExampleObject(name = "핸드폰 번호 중복",
@@ -412,5 +412,5 @@ public interface AuthControllerDocs {
                                             }""")
             )
     )
-    ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpDto oAuthSignUpDto);
+    ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpRequest oAuthSignUpRequest);
 }

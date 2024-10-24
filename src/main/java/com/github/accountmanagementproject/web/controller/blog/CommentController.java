@@ -4,13 +4,9 @@ import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.service.blog.BlogCommentService;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
-import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
-import com.github.accountmanagementproject.web.dto.blog.PostCommentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/comment")
