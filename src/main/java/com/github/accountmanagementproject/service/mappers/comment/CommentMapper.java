@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.service.mappers.comment;
 
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
-import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
+import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -14,5 +14,5 @@ public interface CommentMapper {
     @Mapping(source = "user.profileImg", target = "userImg")
     @Mapping(source = "blog.id", target = "blogId")
     @Mapping(source = "id", target = "commentId")
-    BlogCommentResponseDTO commentToCommentResponseDTO(BlogComment comment);
+    CommentResponseDTO commentToCommentResponseDTO(BlogComment comment);
 }

@@ -6,16 +6,12 @@ import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
-import com.github.accountmanagementproject.service.mappers.comment.CommentMapper;
-import com.github.accountmanagementproject.web.dto.blog.BlogCommentRequestDTO;
-import com.github.accountmanagementproject.web.dto.blog.BlogCommentResponseDTO;
-import com.github.accountmanagementproject.web.dto.blog.PostCommentRequest;
+import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +19,9 @@ public class BlogCommentService {
     private final BlogCommentRepository blogCommentRepository;
     private final BlogRepository blogRepository;
 
-
-
     @Transactional
-    public void createComment(PostCommentRequest comment, MyUser user) {
-        Blog blog = blogRepository.findById(comment.getBlogId()).get();
+    public void createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
+        Blog blog = blogRepository.findById(blogId).orElse(null);
         BlogComment blogComment = BlogComment.builder()
                 .blog(blog)
                 .content(comment.getContent())
@@ -38,8 +32,8 @@ public class BlogCommentService {
     }
 
     @Transactional
-    public void updateComment(BlogCommentRequestDTO comment, MyUser user) {
-        BlogComment blogComment = blogCommentRepository.findById(comment.getCommentId()).get();
+    public void updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
+        BlogComment blogComment = blogCommentRepository.findById(commentId).orElse(null);
 
         if(!user.equals(blogComment.getUser())) {
             throw new IllegalArgumentException("권한이 없습니다.");
@@ -47,14 +41,6 @@ public class BlogCommentService {
 
         blogComment.setContent(comment.getContent());
         blogCommentRepository.save(blogComment);
-    }
-
-    public List<BlogCommentResponseDTO> getAllComments() {
-        List<BlogComment> blogComments = blogCommentRepository.findAll();
-        return blogComments
-                .stream()
-                .map(CommentMapper.INSTANCE::commentToCommentResponseDTO)
-                .toList();
     }
 
     public void deleteComment(Integer commentId, MyUser user) {
