@@ -118,6 +118,9 @@ public class ChatService {
 //        this.decreaseUser(roomId);
         UserChatMapping userChatMapping = userChatMappingRepository.findByUserAndChatRoom(user, chatRoom);
         userChatMappingRepository.delete(userChatMapping);
+
+        Objects.requireNonNull(chatRoom).setUserCount(chatRoom.getUserCount() - 1);
+
         userChatMappingRepository.flush();
     }
 

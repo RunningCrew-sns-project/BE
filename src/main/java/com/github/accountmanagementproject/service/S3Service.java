@@ -1,4 +1,5 @@
 package com.github.accountmanagementproject.service;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ public class S3Service {
     upload 메소드 사용법 :
     1. service단에서 MultipartFile과 저장할 폴더 이름(ex. blog_image, chat_image 등) 을 매개변수로 넘겨준다.
     * */
+    @Transactional
     public String upload(MultipartFile file, String dirName) throws IOException {
         //파일명 생성 : (랜덤 UUID_원본파일이름)
         String fileName = UUID.randomUUID() +"_"+file.getOriginalFilename();
@@ -44,6 +46,7 @@ public class S3Service {
         return String.format("https://%s.s3.%s.amazonaws.com/%s",bucket, region, filePath);
     }
 
+    @Transactional
     //DB에 저장된 url을 가져와 추출하여 bucket에 있는 데이터 삭제
     public void delete(String imageUrl){
         String filePath = imageUrl.substring(imageUrl.indexOf(".com/") + 5); //객체 키 추출
@@ -55,6 +58,7 @@ public class S3Service {
         s3Client.deleteObject(deleteObjectRequest);
     }
 
+    @Transactional
     public String update(String imageUrl, MultipartFile file, String dirName) throws IOException {
         delete(imageUrl);
         return upload(file, dirName); //새로운 이미지 url 반환

@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
+import java.util.Set;
 
 
 @Repository
@@ -25,6 +26,7 @@ public class RedisRepository {
         return valueOperations.get(key);
     }
 
+    public Set<String> keys(String pattern){return valueOperations.getOperations().keys(pattern);}
     public String getAndDeleteValue(String key){
         return valueOperations.getAndDelete(key);
     }
