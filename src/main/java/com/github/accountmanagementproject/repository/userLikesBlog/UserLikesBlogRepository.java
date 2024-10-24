@@ -13,6 +13,10 @@ import java.util.List;
 @Repository
 public interface UserLikesBlogRepository extends JpaRepository<UserLikesBlog, Integer> {
 
+    @Query("SELECT  ulb FROM UserLikesBlog ulb " +
+            "JOIN FETCH ulb.blog b " +
+            "JOIN FETCH ulb.user u " +
+            "WHERE u = :user AND b = :blog ")
     UserLikesBlog findByUserAndBlog(MyUser user, Blog blog);
 
 
@@ -20,7 +24,10 @@ public interface UserLikesBlogRepository extends JpaRepository<UserLikesBlog, In
 
     @Query("SELECT ulb FROM UserLikesBlog ulb " +
             "JOIN FETCH ulb.user u " +
+            "JOIN FETCH ulb.blog " +
             "WHERE u = :user ")
     List<UserLikesBlog> findByUser(@Param("user") MyUser user);
 
+    @Query("SELECT COUNT(ulb) FROM UserLikesBlog ulb WHERE ulb.blog = :blog ")
+    Integer countAllByBlog(@Param("blog") Blog blog);
 }

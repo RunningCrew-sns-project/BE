@@ -5,17 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BlogCommentResponseDTO {
-    private Integer blogId;
-    private Integer commentId;
+public class CommentRequestDTO {
     private String content;
-    private String userName;
-    private String userImg;
-    private LocalDateTime createdAt;
 }
