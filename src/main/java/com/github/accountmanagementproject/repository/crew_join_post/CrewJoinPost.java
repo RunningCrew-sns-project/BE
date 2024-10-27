@@ -1,11 +1,9 @@
 package com.github.accountmanagementproject.repository.crew_join_post;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,30 +11,28 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 
+@Builder
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "crew_join_post")
+@Table(name = "crew_join_posts")
+@JsonIgnoreProperties({"crew"})  // 순환 참조 방지
 public class CrewJoinPost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "crew_join_post_id")
+    private Integer id;
 
-    // Users와의 다대일 관계 설정
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private MyUser user;  // userId 대신 User 엔티티로 변경
 
-    // Crews와의 다대일 관계 설정
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "crew_id")
-//    private Crew crew;  // 추가 예정
-
-//    @Column(name = "crew_name", nullable = false)
-//    private String crewName;  // 게시자 이름 : User 의 nickname 과 메핑 -> response 에서 보여줄 예정
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "crew_id")
+    private Crew crew;
 
     @Column(name = "content", nullable = false)
     private String content;  // 게시글 내용
@@ -48,9 +44,6 @@ public class CrewJoinPost {
     @Column(name = "status", nullable = false)
     private CrewJoinPostStatus status;  // 게시글 상태
 
-    @Column(name = "image")
-    private String image;     // 이미지 URL
-
     /** ****************************************************************/
 
     @Column(name = "created_at")
@@ -61,35 +54,39 @@ public class CrewJoinPost {
 
     /** ****************************************************************/
 
-    // 시작 지점 정보
-    @Column(name = "start_location_name")
-    private String startLocationName;  // 출발 장소명
+    // 시작 위치
+    private String inputAddress;
+    private double inputLatitude;
+    private double inputLongitude;
 
-    @Column(name = "start_address")
-    private String startAddress;      // 출발 주소
-
-    @Column(name = "start_latitude", precision = 10, scale = 7)
-    private BigDecimal startLatitude;  // 출발 위도
-
-    @Column(name = "start_longitude", precision = 10, scale = 7)
-    private BigDecimal startLongitude; // 출발 경도
-
-    // 도착 지점 정보
-    @Column(name = "end_location_name")
-    private String endLocationName;    // 도착 장소명
-
-    @Column(name = "end_address")
-    private String endAddress;        // 도착 주소
-
-    @Column(name = "end_latitude", precision = 10, scale = 7)
-    private BigDecimal endLatitude;    // 도착 위도
-
-    @Column(name = "end_longitude", precision = 10, scale = 7)
-    private BigDecimal endLongitude;   // 도착 경도
+    // 종료 위치
+    private String targetAddress;
+    private double targetLatitude;
+    private double targetLongitude;
 
     // 경로 정보
-    @Column(name = "distance_meters")
+    @Column(name = "distance")
     private double distance;    // 총 거리
 
 
+
+    public CrewJoinPost(MyUser user, Crew crew, String content, Integer maxCrewNumber,
+                        CrewJoinPostStatus status, LocalDateTime createdAt, String inputAddress,
+                        double inputLatitude, double inputLongitude,
+                        String targetAddress, double targetLatitude, double targetLongitude,
+                        double distance) {
+        this.user = user;
+        this.crew = crew;
+        this.content = content;
+        this.maxCrewNumber = maxCrewNumber;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.inputAddress = inputAddress;
+        this.inputLatitude = inputLatitude;
+        this.inputLongitude = inputLongitude;
+        this.targetAddress = targetAddress;
+        this.targetLatitude = targetLatitude;
+        this.targetLongitude = targetLongitude;
+        this.distance = distance;
+    }
 }
