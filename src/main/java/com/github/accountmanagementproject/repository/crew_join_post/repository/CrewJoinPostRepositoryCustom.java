@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.repository.crew_join_post.repository;
 
 
-import com.example.geoTest.model.crew_join_post.CrewJoinPost;
+import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 

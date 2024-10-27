@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.repository.crew_join_post.repository;
 
-import com.example.geoTest.model.crew_join_post.CrewJoinPost;
-import com.example.geoTest.model.crew_join_post.QCrewJoinPost;
+import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
+import com.github.accountmanagementproject.repository.crew_join_post.QCrewJoinPost;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Pageable;

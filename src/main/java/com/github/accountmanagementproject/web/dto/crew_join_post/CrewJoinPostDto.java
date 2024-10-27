@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.web.dto.crew_join_post;
 
-import com.example.geoTest.model.crew_join_post.CrewJoinPost;
+import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import lombok.Builder;
 import lombok.Getter;
 

@@ -1,8 +1,8 @@
 package com.github.accountmanagementproject.web.dto.crew_join_post;
 
-import com.example.geoTest.model.crew_join_post.CrewJoinPost;
-import com.example.geoTest.model.ex.User;
-import com.example.geoTest.web.dto.DocumentDto;
+import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
+import com.github.accountmanagementproject.web.dto.crew_join_post.location_dto.DocumentDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class CrewJoinPostUpdateRequest {
     public static CrewJoinPost toEntity(
             CrewJoinPostUpdateRequest updateRequest,
             CrewJoinPost existingPost,
-            User user,
+            MyUser user,
             DocumentDto startAddressDto,
             DocumentDto targetAddressDto,
             double calculatedDistance) {
