@@ -6,6 +6,8 @@ import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
+import com.github.accountmanagementproject.repository.blogImages.BlogImages;
+import com.github.accountmanagementproject.repository.blogImages.BlogImagesRepository;
 import com.github.accountmanagementproject.repository.redis.RedisRepository;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlogRepository;
@@ -33,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +53,7 @@ public class BlogService {
     private final MyUsersJpa myUsersJpa;
     private final RedisTemplate redisTemplate;
     private final RedisRepository redisRepository;
+    private final BlogImagesRepository blogImagesRepository;
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
     @ExeTimer
@@ -98,9 +102,7 @@ public class BlogService {
     @ExeTimer
     @Transactional
     public BlogResponseDTO writeBlog(BlogRequestDTO blogRequestDTO, MyUser user) throws Exception {
-        String imageUrl = blogRequestDTO.getImageUrl();
-        if(imageUrl == null || imageUrl.isEmpty())
-            imageUrl = "https://running-crew.s3.ap-northeast-2.amazonaws.com/default_image/blog_default.jpg";
+        List<BlogImages> blogImagesList = new ArrayList<>();
 
         Blog blog = Blog.builder()
                 .title(blogRequestDTO.getTitle())
@@ -109,10 +111,19 @@ public class BlogService {
                 .distance(blogRequestDTO.getDistance())
                 .user(user)
                 .createdAt(LocalDateTime.now())
-                .imageUrl(imageUrl)
                 .build();
-
         blogRepository.save(blog); //레포지토리에 저장
+
+        for(String imageUrl : blogRequestDTO.getImageUrl()){
+            BlogImages blogImage = BlogImages.builder()
+                    .blog(blog)
+                    .imageUrl(imageUrl)
+                    .build();
+            blogImagesList.add(blogImage);
+        }
+
+        blogImagesRepository.saveAll(blogImagesList);
+
         return BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
     }
     @ExeTimer
