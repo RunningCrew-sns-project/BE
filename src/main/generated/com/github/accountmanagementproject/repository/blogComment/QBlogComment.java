@@ -26,6 +26,8 @@ public class QBlogComment extends EntityPathBase<BlogComment> {
 
     public final StringPath content = createString("content");
 
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
     public final com.github.accountmanagementproject.repository.account.users.QMyUser user;

@@ -20,17 +20,13 @@ public class QSocialId extends EntityPathBase<SocialId> {
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
-    public static final QSocialId socialId1 = new QSocialId("socialId1");
-
-    public final BooleanPath activeStatus = createBoolean("activeStatus");
+    public static final QSocialId socialId = new QSocialId("socialId");
 
     public final DateTimePath<java.time.LocalDateTime> connectAt = createDateTime("connectAt", java.time.LocalDateTime.class);
 
     public final com.github.accountmanagementproject.repository.account.users.QMyUser myUser;
 
-    public final StringPath socialId = createString("socialId");
-
-    public final NumberPath<Integer> tableId = createNumber("tableId", Integer.class);
+    public final QSocialIdPk socialIdPk;
 
     public QSocialId(String variable) {
         this(SocialId.class, forVariable(variable), INITS);
@@ -51,6 +47,7 @@ public class QSocialId extends EntityPathBase<SocialId> {
     public QSocialId(Class<? extends SocialId> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.myUser = inits.isInitialized("myUser") ? new com.github.accountmanagementproject.repository.account.users.QMyUser(forProperty("myUser")) : null;
+        this.socialIdPk = inits.isInitialized("socialIdPk") ? new QSocialIdPk(forProperty("socialIdPk")) : null;
     }
 
 }

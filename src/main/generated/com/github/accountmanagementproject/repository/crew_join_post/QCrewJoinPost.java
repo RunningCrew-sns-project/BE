@@ -26,7 +26,7 @@ public class QCrewJoinPost extends EntityPathBase<CrewJoinPost> {
 
     public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
 
-    public final QCrew crew;
+    public final com.github.accountmanagementproject.repository.crew.crews.QCrew crew;
 
     public final NumberPath<Double> distance = createNumber("distance", Double.class);
 
@@ -70,7 +70,7 @@ public class QCrewJoinPost extends EntityPathBase<CrewJoinPost> {
 
     public QCrewJoinPost(Class<? extends CrewJoinPost> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.crew = inits.isInitialized("crew") ? new QCrew(forProperty("crew")) : null;
+        this.crew = inits.isInitialized("crew") ? new com.github.accountmanagementproject.repository.crew.crews.QCrew(forProperty("crew"), inits.get("crew")) : null;
         this.user = inits.isInitialized("user") ? new com.github.accountmanagementproject.repository.account.users.QMyUser(forProperty("user")) : null;
     }
 

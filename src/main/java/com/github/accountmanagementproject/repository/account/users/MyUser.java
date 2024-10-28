@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.repository.account.users.enums.Gender
 import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.repository.crew.crews.Crew;
+import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
@@ -89,6 +90,9 @@ public class MyUser {
 
     @ManyToMany(mappedBy = "crewUsers")
     private List<Crew> crews;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CrewJoinPost> crewJoinPostList;
 
 
     public boolean isLocked(){

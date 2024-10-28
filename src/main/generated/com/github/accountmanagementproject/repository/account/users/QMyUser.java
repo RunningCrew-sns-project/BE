@@ -24,7 +24,7 @@ public class QMyUser extends EntityPathBase<MyUser> {
 
     public final ListPath<com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost, com.github.accountmanagementproject.repository.crew_join_post.QCrewJoinPost> crewJoinPostList = this.<com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost, com.github.accountmanagementproject.repository.crew_join_post.QCrewJoinPost>createList("crewJoinPostList", com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost.class, com.github.accountmanagementproject.repository.crew_join_post.QCrewJoinPost.class, PathInits.DIRECT2);
 
-    public final SetPath<com.github.accountmanagementproject.repository.crew_join_post.Crew, com.github.accountmanagementproject.repository.crew_join_post.QCrew> crews = this.<com.github.accountmanagementproject.repository.crew_join_post.Crew, com.github.accountmanagementproject.repository.crew_join_post.QCrew>createSet("crews", com.github.accountmanagementproject.repository.crew_join_post.Crew.class, com.github.accountmanagementproject.repository.crew_join_post.QCrew.class, PathInits.DIRECT2);
+    public final ListPath<com.github.accountmanagementproject.repository.crew.crews.Crew, com.github.accountmanagementproject.repository.crew.crews.QCrew> crews = this.<com.github.accountmanagementproject.repository.crew.crews.Crew, com.github.accountmanagementproject.repository.crew.crews.QCrew>createList("crews", com.github.accountmanagementproject.repository.crew.crews.Crew.class, com.github.accountmanagementproject.repository.crew.crews.QCrew.class, PathInits.DIRECT2);
 
     public final DatePath<java.time.LocalDate> dateOfBirth = createDate("dateOfBirth", java.time.LocalDate.class);
 
@@ -46,15 +46,15 @@ public class QMyUser extends EntityPathBase<MyUser> {
 
     public final StringPath profileImg = createString("profileImg");
 
+    public final StringPath profileMessage = createString("profileMessage");
+
     public final SetPath<com.github.accountmanagementproject.repository.account.users.roles.Role, com.github.accountmanagementproject.repository.account.users.roles.QRole> roles = this.<com.github.accountmanagementproject.repository.account.users.roles.Role, com.github.accountmanagementproject.repository.account.users.roles.QRole>createSet("roles", com.github.accountmanagementproject.repository.account.users.roles.Role.class, com.github.accountmanagementproject.repository.account.users.roles.QRole.class, PathInits.DIRECT2);
 
-    public final NumberPath<java.math.BigInteger> socialId = createNumber("socialId", java.math.BigInteger.class);
+    public final SetPath<com.github.accountmanagementproject.repository.account.socialIds.SocialId, com.github.accountmanagementproject.repository.account.socialIds.QSocialId> socialIds = this.<com.github.accountmanagementproject.repository.account.socialIds.SocialId, com.github.accountmanagementproject.repository.account.socialIds.QSocialId>createSet("socialIds", com.github.accountmanagementproject.repository.account.socialIds.SocialId.class, com.github.accountmanagementproject.repository.account.socialIds.QSocialId.class, PathInits.DIRECT2);
 
     public final EnumPath<com.github.accountmanagementproject.repository.account.users.enums.UserStatus> status = createEnum("status", com.github.accountmanagementproject.repository.account.users.enums.UserStatus.class);
 
     public final NumberPath<Integer> userId = createNumber("userId", Integer.class);
-
-    public final SetPath<com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog, com.github.accountmanagementproject.repository.userLikesBlog.QUserLikesBlog> userLikesBlogs = this.<com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog, com.github.accountmanagementproject.repository.userLikesBlog.QUserLikesBlog>createSet("userLikesBlogs", com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog.class, com.github.accountmanagementproject.repository.userLikesBlog.QUserLikesBlog.class, PathInits.DIRECT2);
 
     public final DateTimePath<java.time.LocalDateTime> withdrawalDate = createDateTime("withdrawalDate", java.time.LocalDateTime.class);
 

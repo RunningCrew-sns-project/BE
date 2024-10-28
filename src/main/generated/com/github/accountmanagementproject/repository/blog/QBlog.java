@@ -24,9 +24,13 @@ public class QBlog extends EntityPathBase<Blog> {
 
     public final StringPath content = createString("content");
 
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+
+    public final StringPath distance = createString("distance");
+
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final StringPath image = createString("image");
+    public final StringPath imageUrl = createString("imageUrl");
 
     public final NumberPath<Integer> likeCount = createNumber("likeCount", Integer.class);
 
