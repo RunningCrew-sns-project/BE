@@ -27,12 +27,17 @@ public class BlogController implements BlogControllerDocs{
     //TODO : 내가 쓴 글만 보여지게 할지? 필터링 구현 필요할듯
     @Override
     @GetMapping
-    public CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size, @AuthenticationPrincipal String principal) {
+    public CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size,
+                                             @RequestParam(required = false) Integer cursor,
+                                             @AuthenticationPrincipal String principal) {
+
+        System.out.println("Size: " + size + ", Cursor: " + cursor);
+
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
                 .message("모든 블로그를 조회했습니다.")
-                .responseData(blogService.getAllBlogs(size, user))
+                .responseData(blogService.getAllBlogs(size,cursor ,user))
                 .build();
     }
 
@@ -75,16 +80,15 @@ public class BlogController implements BlogControllerDocs{
 
     //블로그 수정
     @Override
-    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CustomSuccessResponse updateBlog(@RequestPart(required = false, value = "image") MultipartFile image,
-                                            @RequestPart BlogRequestDTO blogRequestDTO,
+    @PutMapping
+    public CustomSuccessResponse updateBlog(@RequestBody BlogRequestDTO blogRequestDTO,
                                             @RequestParam Integer blogId,
                                             @AuthenticationPrincipal String principal) throws IOException {
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
                 .message("성공적으로 수정되었습니다.")
-                .responseData(blogService.updateBlog(image,blogRequestDTO,blogId, user))
+                .responseData(blogService.updateBlog(blogRequestDTO,blogId, user))
                 .build();
     }
 

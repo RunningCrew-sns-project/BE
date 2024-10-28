@@ -13,6 +13,7 @@ import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlo
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlogRepository;
 import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.S3Service;
+import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
 import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
 import com.github.accountmanagementproject.service.mappers.blog.BlogMapper;
@@ -48,46 +49,82 @@ public class BlogService {
     private final BlogRepository blogRepository;
     private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
-    private final AccountConfig accountConfig;
-    private final S3Service s3Service;
     private final MyUsersJpa myUsersJpa;
-    private final RedisTemplate redisTemplate;
     private final RedisRepository redisRepository;
     private final BlogImagesRepository blogImagesRepository;
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
-    @ExeTimer
-    public List<BlogResponseDTO> getAllBlogs(Integer size, MyUser user) {
+//    @ExeTimer
+//    public List<BlogResponseDTO> getAllBlogs(Integer size, MyUser user) {
+//
+//        List<UserLikesBlog> userLikesBlogs = userLikesBlogRepository.findByUser(user);
+//
+//        if(size == null || size <= 0)
+//            size = 10;
+//
+//        Blog lastBlog = blogRepository.findTopByOrderByIdDesc();
+//
+//        if(lastBlog == null)
+//            return Collections.emptyList();
+//
+//        Integer lastBlogId = lastBlog.getId();
+//
+//        PageRequest pageRequest = PageRequest.of(0, size);
+//        Page<Blog> blogPage = blogRepository.findByIdLessThanOrderByIdDesc(lastBlogId + 1, pageRequest);
+//        List<Blog> blogs = blogPage.getContent();
+//
+//        return blogs.stream()
+//                .map(blog -> {
+//                    BlogResponseDTO blogResponseDTO = BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
+//                    blogResponseDTO.setLiked(userLikesBlogs.stream().map(UserLikesBlog::getBlog).toList().contains(blog));
+//                    blogResponseDTO.setImageUrl(blogImagesRepository.findAllByBlog(blog).stream().map(BlogImages::getImageUrl).toList());
+//                    return blogResponseDTO;
+//                })
+//                .toList();
+//    }
 
+    public ScrollPaginationCollection<BlogResponseDTO> getAllBlogs(Integer size, Integer cursor, MyUser user) {
         List<UserLikesBlog> userLikesBlogs = userLikesBlogRepository.findByUser(user);
 
-        if(size == null || size <= 0)
+        if (size == null || size <= 0)
             size = 10;
 
-        Blog lastBlog = blogRepository.findTopByOrderByIdDesc();
+        Integer lastBlogId;
+        if (cursor != null) {
+            lastBlogId = cursor;
+        } else {
+            Blog topBlog = blogRepository.findTopByOrderByIdDesc();
+            lastBlogId = topBlog != null ? topBlog.getId() : 0; // 블로그가 없을 경우 0
+        }
 
-        if(lastBlog == null)
-            return Collections.emptyList();
-
-        Integer lastBlogId = lastBlog.getId();
-
-        PageRequest pageRequest = PageRequest.of(0, size);
+        PageRequest pageRequest = PageRequest.of(0, size + 1);
         Page<Blog> blogPage = blogRepository.findByIdLessThanOrderByIdDesc(lastBlogId + 1, pageRequest);
         List<Blog> blogs = blogPage.getContent();
 
-        return blogs.stream()
+        List<BlogResponseDTO> responseItems = blogs.stream()
                 .map(blog -> {
                     BlogResponseDTO blogResponseDTO = BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
                     blogResponseDTO.setLiked(userLikesBlogs.stream().map(UserLikesBlog::getBlog).toList().contains(blog));
+                    blogResponseDTO.setImageUrl(blogImagesRepository.findAllByBlog(blog).stream().map(BlogImages::getImageUrl).toList());
                     return blogResponseDTO;
                 })
                 .toList();
+
+        boolean lastScroll = responseItems.size() <= size;
+        List<BlogResponseDTO> currentScrollItems = lastScroll ? responseItems : responseItems.subList(0, size);
+        BlogResponseDTO nextCursor = lastScroll ? null : responseItems.get(size);
+
+        return ScrollPaginationCollection.of(currentScrollItems, size, lastScroll, nextCursor);
     }
 
     @ExeTimer
     public BlogWithComment getBlogById(Integer blogId, MyUser user) {
         // 블로그에 대한 댓글 가져오기
         Blog blog = blogRepository.findById(blogId).orElse(null);
+        List<String> imageUrlList = blogImagesRepository.findAllByBlog(blog)
+                .stream()
+                .map(BlogImages::getImageUrl)
+                .toList();
 
         List<CommentResponseDTO> comments = blogCommentRepository.findAllByBlog(blog).
                 stream().map(CommentMapper.INSTANCE::commentToCommentResponseDTO)
@@ -96,6 +133,7 @@ public class BlogService {
         BlogWithComment blogWithComment = BlogMapper.INSTANCE.blogToBlogWithCommentResponseDTO(blog);
         blogWithComment.setComments(comments);
         blogWithComment.setLiked(userLikesBlogRepository.findByUserAndBlog(user, blog) != null);
+        blogWithComment.setImageUrl(imageUrlList);
 
         return blogWithComment;
     }
@@ -103,6 +141,7 @@ public class BlogService {
     @Transactional
     public BlogResponseDTO writeBlog(BlogRequestDTO blogRequestDTO, MyUser user) throws Exception {
         List<BlogImages> blogImagesList = new ArrayList<>();
+
 
         Blog blog = Blog.builder()
                 .title(blogRequestDTO.getTitle())
@@ -112,14 +151,24 @@ public class BlogService {
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .build();
+
         blogRepository.save(blog); //레포지토리에 저장
 
-        for(String imageUrl : blogRequestDTO.getImageUrl()){
-            BlogImages blogImage = BlogImages.builder()
+        if(blogRequestDTO.getImageUrl() == null || blogRequestDTO.getImageUrl().isEmpty())
+            blogImagesList.add(
+                    BlogImages.builder()
                     .blog(blog)
-                    .imageUrl(imageUrl)
-                    .build();
-            blogImagesList.add(blogImage);
+                    .imageUrl("https://running-crew.s3.ap-northeast-2.amazonaws.com/default_image/blog_default.jpg")
+                    .build()
+            );
+        else {
+            for(String imageUrl : blogRequestDTO.getImageUrl()){
+                BlogImages blogImage = BlogImages.builder()
+                        .blog(blog)
+                        .imageUrl(imageUrl)
+                        .build();
+                blogImagesList.add(blogImage);
+            }
         }
 
         blogImagesRepository.saveAll(blogImagesList);
@@ -195,8 +244,12 @@ public class BlogService {
 
 
     @ExeTimer
-    public String updateBlog(MultipartFile image, BlogRequestDTO blogRequestDTO,Integer blogId, MyUser user) throws IOException {
+    @Transactional
+    public String updateBlog(BlogRequestDTO blogRequestDTO,Integer blogId, MyUser user) throws IOException {
         Blog blog = blogRepository.findById(blogId).orElse(null);
+
+        blogImagesRepository.deleteAllByBlog(blog);
+
         if(!blog.getUser().equals(user)){
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .customMessage("권한이 없습니다.")
@@ -208,14 +261,20 @@ public class BlogService {
         blog.setRecord(blogRequestDTO.getRecord());
         blog.setDistance(blogRequestDTO.getDistance());
 
-        if (image != null) {
-            String imageUrl = s3Service.update(blog.getImageUrl(), image, "blog_images");
-            blog.setImageUrl(imageUrl);
-        }
         blogRepository.save(blog);
+
+        for(String imageUrl : blogRequestDTO.getImageUrl()){
+            blogImagesRepository.save(BlogImages.builder()
+                    .blog(blog)
+                    .imageUrl(imageUrl)
+                    .build());
+        }
+
         return "성공적으로 수정하였습니다.";
     }
 
+    @ExeTimer
+    @Transactional
     public String deleteBlog(Integer blogId, MyUser user) {
         Blog blog = blogRepository.findById(blogId).orElse(null);
         if(!blog.getUser().equals(user)){
@@ -224,7 +283,8 @@ public class BlogService {
                     .request("작성자의 권한이 필요합니다.")
                     .build();
         }
-        s3Service.delete(blog.getImageUrl());
+        //TODO:
+
         blogRepository.delete(blog);
 
         return "성공적으로 삭제하였습니다.";

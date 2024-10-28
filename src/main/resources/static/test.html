@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Scroll Test</title>
+    <style>
+        .heart {
+            font-size: 20px;
+            margin-left: 10px;
+        }
+        .liked {
+            color: red; /* 빨간 하트 색상 */
+        }
+        .unliked {
+            color: grey; /* 빈 하트 색상 */
+        }
+    </style>
+</head>
+<body>
+<div id="blog-container"></div>
+<div id="loading" style="display: none;">Loading...</div>
+
+<script>
+	let isLoading = false;
+	let nextCursor = {}; // nextCursor를 빈 객체로 초기화
+	const size = 10;
+
+	async function loadBlogs() {
+		if (isLoading || (nextCursor === null && nextCursor !== undefined)) return;
+
+		isLoading = true; // 로딩 상태 표시
+		document.getElementById("loading").style.display = "block";
+
+		console.log("loadBlogs 호출");
+
+		try {
+			const url = `http://localhost:8080/api/blog?size=${size}` + (nextCursor.blogId ? `&cursor=${nextCursor.blogId}` : "");
+			const response = await fetch(url, {
+				headers: {
+					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzAxMDcwOTksImV4cCI6MTczMDExMDY5OSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.rBL4wXVqZYE2YobavUiHakrsLR4c8a7pzUmaBFiIP_8'  // 실제 토큰 값으로 교체해야 합니다.
+				}
+			});
+
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+
+			const data = await response.json();
+
+			if (data.success && data.success.responseData) {
+				const responseData = data.success.responseData;
+				renderBlogs(responseData.currentScrollItems);
+
+				// 다음 스크롤을 위해 nextCursor를 갱신하거나, lastScroll일 경우 null로 설정
+				nextCursor = responseData.lastScroll ? null : responseData.nextCursor;
+
+				// 마지막 페이지 도달 시 스크롤 이벤트 제거
+				if (responseData.lastScroll) {
+					window.removeEventListener('scroll', handleScroll);
+				}
+			}
+		} catch (error) {
+			console.error("Error loading blogs:", error);
+		} finally {
+			isLoading = false; // 로딩 상태 해제
+			document.getElementById("loading").style.display = "none"; // 로딩 메시지 숨김
+		}
+	}
+
+	function renderBlogs(blogs) {
+		const container = document.getElementById("blog-container");
+		blogs.forEach(blog => {
+			const blogDiv = document.createElement("div");
+			blogDiv.innerHTML = `
+                <h3>블로그 제목 : ${blog.title}</h3>
+                <p>블로그 아이디 : ${blog.blogId}</p>
+                <p>블로그내용 : ${blog.content}</p>
+                <p>작성자 : ${blog.userName}</p>
+                <img src="${blog.userImg}" alt="User Image" width="50"/>
+                <p>Record: ${blog.record} | Distance: ${blog.distance}</p>
+                 <span class="heart ${blog.liked ? 'liked' : 'unliked'}">❤</span>
+                <p>Likes: ${blog.likeCount}</p>
+                <p>Created at: ${new Date(blog.createdAt).toLocaleString()}</p>
+                ${blog.imageUrl.map(url => `<img src="${url}" alt="Blog Image" width="100" />`).join("")}
+            `;
+
+			container.appendChild(blogDiv);  // 블로그 내용 추가
+		});
+	}
+
+	function handleScroll() {
+		const scrollY = window.scrollY;
+		const windowHeight = window.innerHeight;
+		const documentHeight = document.body.offsetHeight;
+
+		console.log(`스크롤 위치: ${scrollY}, 창 높이: ${windowHeight}, 문서 높이: ${documentHeight}`);  // 디버깅 로그
+
+		// 스크롤이 바닥에 가까운지 확인
+		if (scrollY + windowHeight >= documentHeight - 100 && !isLoading) {
+			console.log("스크롤 바닥에 도달");  // 스크롤 이벤트 확인 로그
+			loadBlogs();  // 스크롤이 바닥에 도달하면 블로그 로드
+		}
+	}
+
+	window.addEventListener('scroll', handleScroll);
+
+	// 페이지가 완전히 로드된 후 첫 데이터 로드
+	window.onload = function() {
+		console.log("페이지 로드 완료, 블로그 로드 시작");
+		loadBlogs();
+	}
+</script>
+</body>
+</html>
