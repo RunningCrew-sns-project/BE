@@ -3,13 +3,11 @@ package com.github.accountmanagementproject.repository.account.users;
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
 import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.repository.crew_join_post.Crew;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
@@ -88,17 +86,8 @@ public class MyUser {
     private Set<UserLikesBlog> userLikesBlogs = new HashSet<>();
 
     /** ***********************************************************************/
-
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "crews_users", // 중간 테이블 이름
-            joinColumns = @JoinColumn(name = "user_id"), // User 엔티티의 조인 컬럼
-            inverseJoinColumns = @JoinColumn(name = "crew_id") // Crew 엔티티의 조인 컬럼
-    )
-    private Set<Crew> crews;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CrewJoinPost> crewJoinPostList;
+    private List<CrewJoinPost> crewJoinPostList;  //
     /** ***********************************************************************/
 
 
