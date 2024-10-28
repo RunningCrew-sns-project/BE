@@ -17,7 +17,7 @@ public class DuplicateKeyException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public DuplicateKeyException build() {
             return new DuplicateKeyException(this);
         }
     }

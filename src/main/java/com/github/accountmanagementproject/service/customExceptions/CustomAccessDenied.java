@@ -14,7 +14,7 @@ public class CustomAccessDenied extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomAccessDenied build() {
             return new CustomAccessDenied(this);
         }
     }

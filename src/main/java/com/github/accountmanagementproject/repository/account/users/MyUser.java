@@ -1,36 +1,37 @@
 package com.github.accountmanagementproject.repository.account.users;
 
+import com.github.accountmanagementproject.repository.account.socialIds.SocialId;
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
 import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlog;
+import com.github.accountmanagementproject.repository.crew.crews.Crew;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
+import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Set;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Setter
 @Getter
 @DynamicInsert
 @Entity
 @Table(name = "users")
+@EqualsAndHashCode(of = "userId")
 public class MyUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Integer userId;
-
-    @Column(name = "social_id", unique = true)
-    private BigInteger socialId;
 
     @Column(unique = true, nullable = false, length = 50)
     private String email;
@@ -48,6 +49,9 @@ public class MyUser {
     @Convert(converter = GenderConverter.class)
     @Column(length = 4)
     private Gender gender;
+
+    @Column(name = "profile_message")
+    private String profileMessage;
 
     @Column(name = "profile_img", nullable = false)
     private String profileImg;
@@ -80,15 +84,17 @@ public class MyUser {
             inverseJoinColumns = @JoinColumn(name = "role_id"))//상대 엔티티에서 참조할 fk
     private Set<Role> roles;
 
-//    @Builder.Default
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private Set<UserLikesBlog> userLikesBlogs = new HashSet<>();
+    @OneToMany(mappedBy = "myUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)//orphanRemoval 고아제거
+    private Set<SocialId> socialIds;
 
+    @ManyToMany(mappedBy = "crewUsers")
+    private List<Crew> crews;
 
 
     public boolean isLocked(){
         return this.status == UserStatus.LOCK;
     }
+
     public boolean isTempAccount(){
         return this.status == UserStatus.TEMP;
     }
@@ -97,6 +103,9 @@ public class MyUser {
     }
     public boolean isExpired(){
         return lastLogin != null && this.lastLogin.isBefore(LocalDateTime.now().minusMonths(3));
+    }
+    public boolean isEnabled(){
+        return this.status == UserStatus.NORMAL;
     }
     public boolean isCredentialsExpired(){
         return false;
@@ -125,12 +134,19 @@ public class MyUser {
         this.lastLogin = !failure ? LocalDateTime.now() : this.lastLogin;
     }
 
-
-//    @Override
+    public void oAuthSignUpSetting(OAuthSignUpRequest oAuthSignUpRequest){
+        this.email = oAuthSignUpRequest.getEmail();
+        this.nickname = oAuthSignUpRequest.getNickname();
+        this.status = UserStatus.NORMAL;
+        this.profileImg = oAuthSignUpRequest.getProfileImg();
+        this.phoneNumber = oAuthSignUpRequest.getPhoneNumber();
+        this.gender = oAuthSignUpRequest.getGender();
+        if(oAuthSignUpRequest.getDateOfBirth() != null)
+            this.dateOfBirth = LocalDate.parse(oAuthSignUpRequest.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
+    }
+    //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
 //        return this.userRoles.stream().map(userRole -> userRole.getRoles())
 //                .map(role -> role.getName())
-//                .map(roles->new SimpleGrantedAuthority(roles))
-//                .toList();
-//    }
+
 }

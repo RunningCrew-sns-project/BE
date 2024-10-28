@@ -2,7 +2,8 @@ package com.github.accountmanagementproject.service.authAccount.userDetailsServi
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.service.customExceptions.*;
+import com.github.accountmanagementproject.service.customExceptions.AccountLockedException;
+import com.github.accountmanagementproject.service.customExceptions.CustomAccessDenied;
 import com.github.accountmanagementproject.web.dto.accountAuth.AuthFailureMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -34,6 +35,7 @@ public class CustomUserDetailService implements UserDetailsService {
 
         HttpSession session = request.getSession();
         session.setAttribute("myUser", myUser);
+
 
         return User.builder()
                 .username(myUser.getEmail())
