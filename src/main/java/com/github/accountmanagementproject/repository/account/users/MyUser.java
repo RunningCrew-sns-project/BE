@@ -85,11 +85,6 @@ public class MyUser {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<UserLikesBlog> userLikesBlogs = new HashSet<>();
 
-    /** ***********************************************************************/
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CrewJoinPost> crewJoinPostList;  //
-    /** ***********************************************************************/
-
 
     public boolean isLocked(){
         return this.status == UserStatus.LOCK;

@@ -59,6 +59,10 @@ dependencies {
     implementation 'software.amazon.awssdk:s3:2.21.46'
 }
 
+sourceSets {
+    main.java.srcDirs += [generatedDir+"/queryDsl"]
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
@@ -71,7 +75,5 @@ tasks.named('bootJar'){
     archiveVersion = "3.9.3"
 }
 clean {
-    delete file('./src/main/generated/'), file('./BuildFile')
+    delete file(buildDir), file(generatedDir)
 }
-
-
