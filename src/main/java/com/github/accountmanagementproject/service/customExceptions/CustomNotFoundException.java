@@ -17,7 +17,7 @@ public class CustomNotFoundException extends MakeRuntimeException{
             return this;
         }
         @Override
-        public MakeRuntimeException build() {
+        public CustomNotFoundException build() {
             return new CustomNotFoundException(this);
         }
     }
