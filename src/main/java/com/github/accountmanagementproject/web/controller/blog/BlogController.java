@@ -60,13 +60,6 @@ public class BlogController implements BlogControllerDocs{
                 .build();
     }
 
-    //블로그 작성시 사진업로드 따로 분리
-    //s3에 이미지 업로드 후 url만 리턴 -> 프론트에서 받아서 바로 블로그 작성 요청에 imageUrl 담아서 보내도록 구현
-    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String uploadImageToS3(@RequestPart(required = false, value = "image") MultipartFile image) throws IOException {
-        return s3Service.upload(image, "blog_images");
-    }
-
     //블로그 좋아요
     @Override
     @PostMapping("/like")

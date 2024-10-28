@@ -10,6 +10,6 @@ import org.mapstruct.factory.Mappers;
 public interface UserResponseMapper {
     UserResponseMapper INSTANCE = Mappers.getMapper(UserResponseMapper.class);
 
-    @Mapping(target = "userName", source = "nickname")
+    @Mapping(target = "userName", source = "email")
     UserResponse myUserToUserResponse(MyUser myUser);
 }

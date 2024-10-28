@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public interface UserChatMappingRepository extends JpaRepository<UserChatMapping, Integer> {
     List<UserChatMapping> findAllByChatRoom(ChatRoom chatRoom);
+    List<UserChatMapping> findAllByUser(MyUser user);
 
-    UserChatMapping findByChatRoom(ChatRoom chatRoom);
     UserChatMapping findByUserAndChatRoom(MyUser user, ChatRoom chatRoom);
 
     void deleteByChatRoomAndUser(ChatRoom chatRoom, MyUser user);
