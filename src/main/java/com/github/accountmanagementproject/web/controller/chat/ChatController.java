@@ -3,8 +3,11 @@ package com.github.accountmanagementproject.web.controller.chat;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatDto;
+import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
+import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -40,6 +43,7 @@ public class ChatController {
     private final ChatService chatService;
     private final AccountConfig accountConfig;
     private final MyUsersJpa myUsersJpa;
+    private final UserChatMappingRepository userChatMappingRepository;
 
 
     @MessageMapping("/chat/enterUser")
@@ -52,16 +56,16 @@ public class ChatController {
 
 //        log.info("enter User {}", principal);
 
-        chatService.addUser(chat.getRoomId(), user);
-
         Objects.requireNonNull(headerAccessor.getSessionAttributes()).put("userID", user.getUserId());
         headerAccessor.getSessionAttributes().put("roomID", chat.getRoomId());
 
-        chat.setType(ChatDto.MessageType.ENTER);
-        chat.setSender(user.getEmail());
-        chat.setUserName(user.getNickname());
-        chat.setMessage(user.getEmail() + "님이 입장하셨습니다. " + changeTime(chat.getTime()));
-        template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+        if(!chatService.addUser(chat.getRoomId(), user)){
+            chat.setType(ChatDto.MessageType.ENTER);
+            chat.setSender(user.getEmail());
+//        chat.setUserName(user.getNickname());
+            chat.setMessage(user.getEmail() + "님이 입장하셨습니다. " + changeTime(chat.getTime()));
+            template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+        }
     }
 
     @MessageMapping("/chat/sendMessage")
@@ -70,7 +74,7 @@ public class ChatController {
         MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
         chat.setType(ChatDto.MessageType.TALK);
         chat.setSender(user.getEmail());
-        chat.setUserName(user.getNickname());
+//        chat.setUserName(user.getNickname());
         chat.setMessage(user.getEmail() + " : " + chat.getMessage() + " " + changeTime(chat.getTime()));
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
@@ -79,9 +83,10 @@ public class ChatController {
     public void leaveUser(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){
         log.info("chat : {}", chat);
         MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
+        chatService.deleteUser(chat.getRoomId(), user);
         chat.setType(ChatDto.MessageType.LEAVE);
         chat.setSender(user.getEmail());
-        chat.setUserName(user.getNickname());
+//        chat.setUserName(user.getNickname());
         chat.setMessage(user.getEmail() + "님이 퇴장하셨습니다. " + changeTime(chat.getTime()));
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
@@ -110,7 +115,7 @@ public class ChatController {
         if(user != null){
             log.info("User disconnected : {}", user.getNickname());
 
-            chatService.deleteUser(roomId, user);
+//            chatService.deleteUser(roomId, user);
 
 //            ChatDto chat = ChatDto.builder()
 //                    .type(ChatDto.MessageType.LEAVE)

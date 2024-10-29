@@ -18,10 +18,10 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/blog")
 @RequiredArgsConstructor
+@CrossOrigin(originPatterns = "*")
 public class BlogController implements BlogControllerDocs{
     private final BlogService blogService;
     private final AccountConfig accountConfig;
-    private final S3Service s3Service;
 
     //블로그 조회
     //TODO : 내가 쓴 글만 보여지게 할지? 필터링 구현 필요할듯

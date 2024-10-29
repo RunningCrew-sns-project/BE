@@ -38,7 +38,7 @@
 			const url = `http://localhost:8080/api/blog?size=${size}` + (nextCursor.blogId ? `&cursor=${nextCursor.blogId}` : "");
 			const response = await fetch(url, {
 				headers: {
-					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzAxMDcwOTksImV4cCI6MTczMDExMDY5OSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.rBL4wXVqZYE2YobavUiHakrsLR4c8a7pzUmaBFiIP_8'  // 실제 토큰 값으로 교체해야 합니다.
+					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzAxOTg3NDcsImV4cCI6MTczMDIwMjM0Nywic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.Ddo8pSmphnas0SM6fUIsFCLK66_KhKDSRL_rVNxCaOc'
 				}
 			});
 
@@ -78,7 +78,7 @@
                 <p>블로그내용 : ${blog.content}</p>
                 <p>작성자 : ${blog.userName}</p>
                 <img src="${blog.userImg}" alt="User Image" width="50"/>
-                <p>Record: ${blog.record} | Distance: ${blog.distance}</p>
+                <p>기록 : ${blog.record} | 달린거리 : ${blog.distance}</p>
                  <span class="heart ${blog.liked ? 'liked' : 'unliked'}">❤</span>
                 <p>Likes: ${blog.likeCount}</p>
                 <p>Created at: ${new Date(blog.createdAt).toLocaleString()}</p>

@@ -54,6 +54,7 @@ public class BlogService {
     private final BlogImagesRepository blogImagesRepository;
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
+
 //    @ExeTimer
 //    public List<BlogResponseDTO> getAllBlogs(Integer size, MyUser user) {
 //
@@ -83,6 +84,7 @@ public class BlogService {
 //                .toList();
 //    }
 
+    //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
     public ScrollPaginationCollection<BlogResponseDTO> getAllBlogs(Integer size, Integer cursor, MyUser user) {
         List<UserLikesBlog> userLikesBlogs = userLikesBlogRepository.findByUser(user);
 
@@ -208,7 +210,7 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-    @Scheduled(fixedDelay = 60000) //비동기 타이머 1분마다
+//    @Scheduled(fixedDelay = 30000) //비동기 타이머 10초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("blog_*"); //레디스에서 blog_ 패턴에 해당 하는 키 모두 가져오기 (중복 없이)
 

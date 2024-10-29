@@ -1,5 +1,5 @@
-let stompClient = null;
-let isConnected = false;
+let stompClients = {};
+let isConnected = {};
 let roomId = null;
 let accessToken;
 let refreshToken
@@ -9,7 +9,7 @@ let userList = [];
 
 // 서버와 연결
 function connect(userList) {
-	if(isConnected) {
+	if(isConnected[roomId]) {
 		console.log("이미 연결된 소켓")
 		return;
 	}
@@ -18,19 +18,21 @@ function connect(userList) {
 	if(userList.includes(userEmail)) {
 		return;
 	}
-	const socket = new WebSocket('ws://localhost:8080/ws');
-	stompClient = Stomp.over(socket);
+
+	const socket = new SockJS('http://localhost:8080/ws');
+	// const socket = new WebSocket("ws://localhost:8080/ws");
+	stompClients[roomId] = Stomp.over(socket);
 	const headers = {
 		'Authorization': getAccessToken(),
 		'RefreshToken': getRefreshToken()
 	};
 
-	stompClient.connect(headers, function (frame) {
-		console.log('Connected: ' + frame);
-		isConnected = true;
+	stompClients[roomId].connect(headers, function (frame) {
+		console.log(`connected to room : ${roomId}`)
+		isConnected[roomId] = true;
 
 		// 채팅방에 입장하면 메시지 구독
-		stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
+		stompClients[roomId].subscribe('/sub/chat/room/' + roomId, function (message) {
 			console.log(message)
 			const chatMessage = JSON.parse(message.body)
 			showMessage(chatMessage);
@@ -43,12 +45,16 @@ function connect(userList) {
 		const formattedDate = new Date().toISOString();  // ISO 포맷으로 현재 시간
 
 		// 채팅방에 입장 메시지 전송
-		stompClient.send('/pub/chat/enterUser', {}, JSON.stringify({
+		stompClients[roomId].send('/pub/chat/enterUser', {}, JSON.stringify({
 			'type': "ENTER",
 			'roomId': roomId,
 			'sender': userEmail,
 			'time': formattedDate
 		}));
+
+		// 클라이언트 상태를 로컬 스토리지에 저장
+		localStorage.setItem(`isConnected`, true);
+		localStorage.setItem(`currentRoomId`, roomId);
 	});
 }
 
@@ -71,6 +77,7 @@ async function login() {
 			console.log(res)
 			accessToken = "Bearer " + res.success.responseData.accessToken
 			refreshToken = res.success.responseData.refreshToken;
+			userEmail = emailOrPhoneNumber
 			localStorage.setItem('accessToken', accessToken);
 			localStorage.setItem('refreshToken', refreshToken);
 			localStorage.setItem('userEmail', emailOrPhoneNumber);
@@ -94,7 +101,7 @@ function getRefreshToken() {
 }
 
 function getUsername() {
-	return localStorage.getItem('username');
+	return localStorage.getItem('userEmail');
 }
 
 
@@ -150,7 +157,10 @@ async function joinRoom(id, title) {
 		console.log("연결된 유저 리스트 : " + userList)
 		console.log("내 이름 : " + userEmail)
 
-		connect(userList);  // 서버 연결 후 메시지 구독
+		if(!stompClients[roomId]){
+			connect(userList)
+		}
+		// connect(userList);  // 서버 연결 후 메시지 구독
 		loadChatRooms();
 
 	} catch (error) {
@@ -159,6 +169,7 @@ async function joinRoom(id, title) {
 }
 
 async function getUserList(){
+
 	return await fetch(`http://localhost:8080/chat/userlist/${roomId}`,{
 		headers: {
 			'Content-Type': 'application/json',
@@ -187,12 +198,10 @@ function displayUserList(userList) {
 		myUserElement.textContent = userEmail + " <나>";  // 현재 사용자 표시
 		userListDiv.appendChild(myUserElement);
 		addedUsers.add(userEmail); // 추가된 유저로 등록
-		console.log("display User List !!!!!")
 	}
 
 	// 나머지 유저들을 추가
 	userList.forEach(user => {
-		console.log("display User List !!!!!")
 		console.log(addedUsers)
 		if (!addedUsers.has(user)) { // 이미 추가된 유저가 아닌 경우에만 추가
 			const userElement = document.createElement('p');
@@ -291,9 +300,13 @@ function sendMessage() {
 	const formattedDate = new Date().toISOString();
 	const message = messageBox.value.trim();
 
-	if (message && stompClient) {
+	console.log("메시지 박스 값:", message);
+	console.log("roomId 값:", roomId);
+	console.log("stompClients:", stompClients);
+
+	if (message && stompClients[roomId]) {
 		console.log("조건문")
-		stompClient.send('/pub/chat/sendMessage', {}, JSON.stringify({
+		stompClients[roomId].send('/pub/chat/sendMessage', {}, JSON.stringify({
 			'type': "TALK",
 			'roomId': roomId,
 			'sender': userEmail,
@@ -307,12 +320,12 @@ function sendMessage() {
 }
 
 // 채팅방 퇴장
-function leaveRoom() {
+async function leaveRoom() {
 	const formattedDate = new Date().toISOString();
 
-	if (stompClient) {
+	if (stompClients[roomId]) {
 
-		stompClient.send('/pub/chat/leaveUser', {}, JSON.stringify({
+		stompClients[roomId].send('/pub/chat/leaveUser', {}, JSON.stringify({
 			'type': "LEAVE",
 			'roomId': roomId,
 			'sender': userEmail,
@@ -321,9 +334,26 @@ function leaveRoom() {
 
 		removeUserFromList(userEmail)
 
-		stompClient.disconnect(() => {
+		try {
+			// UI 업데이트
+			const chatMessagesDiv = document.getElementById('chat-messages');
+			chatMessagesDiv.innerHTML = '';
+			const userListDiv = document.getElementById('user-list');
+			userListDiv.innerHTML = '';
+
+			// 방 목록 다시 로드
+			loadChatRooms();
+
+		} catch (error) {
+			console.error('Error leaving room:', error);
+		}
+
+		stompClients[roomId].disconnect(() => {
 			console.log("Disconnected");
-			isConnected = false;
+			isConnected[roomId] = false;
+			delete stompClients[roomId];
+			localStorage.removeItem(`isConnected`);
+			localStorage.removeItem(`currentRoomId`);
 		});
 	}
 
@@ -347,6 +377,18 @@ document.getElementById('message-box').addEventListener('keydown', function(even
 	}
 });
 
+function initializeStompClients() {
+	const savedRoomId = localStorage.getItem('currentRoomId');
+	const savedIsConnected = localStorage.getItem('isConnected') === 'true';
+
+	if (savedIsConnected && savedRoomId) {
+		roomId = savedRoomId;
+		// 기존의 stompClient를 다시 연결
+		connect(userList);
+	}
+}
+
+
 // 페이지 로드 시 채팅방 목록 불러오기
 window.onload = () => {
 	accessToken = getAccessToken();
@@ -354,8 +396,8 @@ window.onload = () => {
 	userEmail = getUsername();
 
 	if (accessToken && userEmail) {
-		loadChatRooms(); // 토큰이 있을 경우 채팅방 목록 불러오기
-		// connect(); // 웹소켓 연결
+		loadChatRooms();
+		initializeStompClients();
 	} else {
 		login(); // 로그인 함수 호출
 	}

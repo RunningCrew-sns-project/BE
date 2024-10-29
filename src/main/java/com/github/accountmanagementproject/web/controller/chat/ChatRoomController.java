@@ -43,25 +43,25 @@ public class ChatRoomController {
         return "채팅방 생성 : " + chatRoom.getTitle();
     }
 
-    @GetMapping("/chat/joinRoom")
-    public Boolean joinRoom(@RequestParam(name = "roomId") Integer roomId, Model model, @AuthenticationPrincipal String principal){
-        log.info("joinRoom -> roomId : {}", roomId);
-        log.info(principal);
-        model.addAttribute("room", chatService.findByRoomId(roomId));
-        MyUser user = accountConfig.findMyUser(principal);
-        return chatService.addUser(roomId, user);
-//        ChatRoom chatRoom = chatService.findByRoomId(roomId);
-//
-//        return chatRoom.getTitle() + "에 입장했습니다.";
-    }
+//    @GetMapping("/chat/joinRoom")
+//    public Boolean joinRoom(@RequestParam(name = "roomId") Integer roomId, Model model, @AuthenticationPrincipal String principal){
+//        log.info("joinRoom -> roomId : {}", roomId);
+//        log.info(principal);
+//        model.addAttribute("room", chatService.findByRoomId(roomId));
+//        MyUser user = accountConfig.findMyUser(principal);
+//        return chatService.addUser(roomId, user);
+////        ChatRoom chatRoom = chatService.findByRoomId(roomId);
+////
+////        return chatRoom.getTitle() + "에 입장했습니다.";
+//    }
 
-    @GetMapping("/chat/leaveRoom")
-    public String leaveRoom(@RequestParam(name = "roomId") Integer roomId, Model model, @AuthenticationPrincipal String principal){
-        log.info("leaveRoom -> roomId : {}", roomId);
-        MyUser user = accountConfig.findMyUser(principal);
-        chatService.deleteUser(roomId, user);
-        return user.getNickname() + "님이 퇴장하였습니다.";
-    }
+//    @GetMapping("/chat/leaveRoom")
+//    public String leaveRoom(@RequestParam(name = "roomId") Integer roomId, Model model, @AuthenticationPrincipal String principal){
+//        log.info("leaveRoom -> roomId : {}", roomId);
+//        MyUser user = accountConfig.findMyUser(principal);
+//        chatService.deleteUser(roomId, user);
+//        return user.getNickname() + "님이 퇴장하였습니다.";
+//    }
 
     @GetMapping("/chat/userlist/{roomId}")
     @ResponseBody
