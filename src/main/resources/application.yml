@@ -11,6 +11,10 @@ jasypt:
   encryptor:
     password: ${JASYPT_PASSWORD}
 
+map:
+  kakao:
+    rest-api-key: ENC(cQN/WpKnYjJBWjBW04vysFl+5LLsk8eHoTBXKHjzqMB4ZldMG6rJ4PjAXm1QifW2)
+
 oauth:
   kakao:
     client-id: ENC(dGY5idd3p5BT7SmM3jAzcOUtcHM6HNAEuE6unhGyusOBtwmbWGRD/j2GHjuNr+AK)

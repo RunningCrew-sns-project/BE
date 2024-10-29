@@ -2,13 +2,11 @@ package com.github.accountmanagementproject.repository.crew_join_post;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.crew.crews.Crew;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 
 @Builder

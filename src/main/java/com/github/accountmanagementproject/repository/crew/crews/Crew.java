@@ -6,6 +6,7 @@ import com.github.accountmanagementproject.repository.crew.crewImages.CrewImage;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @Table(name = "crews")
 @Getter
 @Setter
+@DynamicInsert
 public class Crew {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

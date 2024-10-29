@@ -11,5 +11,4 @@ public class UrlDto {
     @NotBlank(message = "url은 필수값입니다.")
     @URL(message = "url 형식이 올바르지 않습니다.")
     private String url;
-
 }
