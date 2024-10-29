@@ -1,5 +1,7 @@
-package com.github.accountmanagementproject.web.dto.accountAuth.myPage;
+package com.github.accountmanagementproject.web.dto.accountAuth.myPage.account;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.github.accountmanagementproject.repository.account.users.enums.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -31,7 +33,8 @@ public class AccountInfoDto {
     private String phoneNumber;
 
     @Schema(description = "성별", example = "남성", defaultValue = "미정")
-    private Gender gender;
+    @JsonSetter(nulls = Nulls.SKIP)
+    private Gender gender = Gender.UNKNOWN;
 
     @Pattern(regexp= "^(19|20)\\d{2}-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])$|" +
             "^(19|20)\\d{2}-(02)-(29)$|" +

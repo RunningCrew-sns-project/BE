@@ -2,7 +2,7 @@ package com.github.accountmanagementproject.web.dto.accountAuth.oauth.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.accountmanagementproject.repository.account.users.enums.OAuthProvider;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.account.AccountInfoDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
