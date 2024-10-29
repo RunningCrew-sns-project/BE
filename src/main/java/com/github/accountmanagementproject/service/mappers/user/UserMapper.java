@@ -6,8 +6,8 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
 import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.web.dto.accountAuth.SignUpRequest;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoResponse;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountMain;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.account.AccountInfoResponse;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.account.AccountSummary;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -24,7 +24,7 @@ public interface UserMapper {
     @Mapping(target = "gender", source = "myUser.gender")
     @Mapping(target = "dateOfBirth", dateFormat = "yyyy년 M월 d일")
     @Mapping(target = "lastLogin", dateFormat = "yyyy년 M월 d일 HH:mm:ss")
-    AccountInfoResponse myUserToAccountDto(MyUser myUser);
+    AccountInfoResponse myUserToAccountInfoResponse(MyUser myUser);
 
     @Mapping(target = "dateOfBirth", dateFormat = "yyyy-M-d")
     @Mapping(target = "roles", ignore = true)
@@ -49,5 +49,5 @@ public interface UserMapper {
     OAuthSignUpRequest oAuthUserInfoToOAuthSignUpDto(OAuthUserInfo oAuthUserInfo);
 
 
-    AccountMain myUserToAccountMain(MyUser myUser);
+    AccountSummary myUserToAccountSummary(MyUser myUser);
 }

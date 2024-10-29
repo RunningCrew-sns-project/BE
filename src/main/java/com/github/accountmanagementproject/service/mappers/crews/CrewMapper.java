@@ -4,7 +4,9 @@ import com.github.accountmanagementproject.repository.account.users.MyUser;
 import com.github.accountmanagementproject.repository.crew.crewAttachments.CrewAttachment;
 import com.github.accountmanagementproject.repository.crew.crewImages.CrewImage;
 import com.github.accountmanagementproject.repository.crew.crews.Crew;
+import com.github.accountmanagementproject.repository.crew.crewsUsers.CrewsUsers;
 import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crews.CrewJoinResponse;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
 import org.mapstruct.AfterMapping;
@@ -37,5 +39,9 @@ public interface CrewMapper {
             crew.getCrewAttachments().forEach(crewAttachment -> crewAttachment.setCrew(crew));
         }
     }
+    @Mapping(target = "crewName", source = "joinCrew.crewsUsersPk.crew.crewName")
+    @Mapping(target = "applicationDate", dateFormat = "yyyy-MM-dd")
+    @Mapping(target = "joinCompleted", expression = "java(joinCrew.getStatus() == com.github.accountmanagementproject.repository.crew.crewsUsers.CrewsUsersStatus.COMPLETED)")
+    CrewJoinResponse joinCrewToCrewJoinResponse(CrewsUsers joinCrew);
 
 }

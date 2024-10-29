@@ -1,9 +1,7 @@
 package com.github.accountmanagementproject.web.dto.accountAuth;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.accountmanagementproject.repository.account.users.enums.Gender;
-import com.github.accountmanagementproject.web.dto.accountAuth.myPage.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.account.AccountModifyRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class SignUpRequest extends AccountInfoDto {
+public class SignUpRequest extends AccountModifyRequest{
 
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -33,21 +31,6 @@ public class SignUpRequest extends AccountInfoDto {
         return this.password.equals(this.passwordConfirm);
     }
 
-
-
-    @JsonCreator
-    public SignUpRequest(@JsonProperty("profileImg") String profileImg) {
-        super.setProfileImg( profileImg!=null?profileImg:defaultProfileUrl() );
-    }
-
-    public String defaultProfileUrl() {
-        if (super.getGender() == null || super.getGender() == Gender.UNKNOWN)
-            return "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/anonymous-user-icon.png";
-        else if (super.getGender() == Gender.MALE)
-            return "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/man-user-color-icon.png";
-        else
-            return "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/woman-user-color-icon.png";
-    }
     public void passwordEncryption(String password){
         this.password = password;
     }

@@ -7,6 +7,8 @@ import com.github.accountmanagementproject.repository.account.users.roles.Role;
 import com.github.accountmanagementproject.repository.crew.crews.Crew;
 import com.github.accountmanagementproject.service.mappers.converter.GenderConverter;
 import com.github.accountmanagementproject.service.mappers.converter.UserStatusConverter;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.account.AccountInfoDto;
+import com.github.accountmanagementproject.web.dto.accountAuth.myPage.account.AccountSummary;
 import com.github.accountmanagementproject.web.dto.accountAuth.oauth.request.OAuthSignUpRequest;
 import jakarta.persistence.*;
 import lombok.*;
@@ -143,6 +145,29 @@ public class MyUser {
         this.gender = oAuthSignUpRequest.getGender();
         if(oAuthSignUpRequest.getDateOfBirth() != null)
             this.dateOfBirth = LocalDate.parse(oAuthSignUpRequest.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
+    }
+
+    public void withdrawalProcessing() {
+        this.status = UserStatus.WITHDRAWAL;
+        this.withdrawalDate = LocalDateTime.now();
+    }
+
+    public MyUser updateUserInfo(AccountInfoDto modifyRequest) {
+        this.email = modifyRequest.getEmail();
+        this.nickname = modifyRequest.getNickname();
+        this.phoneNumber = modifyRequest.getPhoneNumber();
+        this.gender = modifyRequest.getGender();
+        this.dateOfBirth = modifyRequest.getDateOfBirth() == null ? null :
+                LocalDate.parse(modifyRequest.getDateOfBirth(), DateTimeFormatter.ofPattern("yyyy-M-d"));
+        this.profileImg = modifyRequest.getProfileImg();
+        return this;
+    }
+
+    public void updateUserSummaryInfo(AccountSummary accountSummary) {
+        if(accountSummary.getNickname() != null) this.nickname = accountSummary.getNickname();
+        this.profileMessage = accountSummary.getProfileMessage() == null||accountSummary.getProfileMessage().isBlank()?
+                null : accountSummary.getProfileMessage();
+        this.profileImg = accountSummary.getProfileImg();
     }
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {

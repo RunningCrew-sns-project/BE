@@ -3,15 +3,27 @@ package com.github.accountmanagementproject.repository.crew.crewsUsers;
 import com.github.accountmanagementproject.service.mappers.converter.CrewsUsersStatusConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "crews_users")
 @Getter
+@NoArgsConstructor
 public class CrewsUsers {
     @EmbeddedId
     private CrewsUsersPk crewsUsersPk;
     @Convert(converter = CrewsUsersStatusConverter.class)
     private CrewsUsersStatus status;
     @Column(name = "join_date")
-    private String joinDate;
+    private LocalDateTime joinDate;
+    @Column(name = "application_date")
+    private LocalDateTime applicationDate;
+
+    public CrewsUsers(CrewsUsersPk crewsUsersPk){
+        this.crewsUsersPk = crewsUsersPk;
+        this.status = CrewsUsersStatus.WAITING;
+        this.applicationDate = LocalDateTime.now();
+    }
 }

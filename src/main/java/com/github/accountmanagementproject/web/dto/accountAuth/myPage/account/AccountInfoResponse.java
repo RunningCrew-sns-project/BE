@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.accountAuth.myPage;
+package com.github.accountmanagementproject.web.dto.accountAuth.myPage.account;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
