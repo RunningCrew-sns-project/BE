@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -412,5 +411,5 @@ public interface AuthControllerDocs {
                                             }""")
             )
     )
-    ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody @Valid OAuthSignUpRequest oAuthSignUpRequest);
+    ResponseEntity<CustomSuccessResponse> oAuthSignUp(@RequestBody OAuthSignUpRequest oAuthSignUpRequest);
 }

@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/crews")
-public class CrewController {
+public class CrewController implements CrewControllerDocs{
     private final CrewService crewService;
 
+    @Override
     @PostMapping
     public ResponseEntity<CustomSuccessResponse> createCrew(@RequestBody @Valid CrewCreationRequest request,
                                                             @AuthenticationPrincipal String email){
