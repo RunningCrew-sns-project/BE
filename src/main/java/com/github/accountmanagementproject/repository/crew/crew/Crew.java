@@ -20,7 +20,7 @@ public class Crew {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "crew_id")
-    private Long crewId;
+    private Integer crewId;
     @Column(name = "crew_name", nullable = false, unique = true)
     private String crewName;
     @Column(name = "crew_introduction")

@@ -10,12 +10,15 @@ import com.github.accountmanagementproject.repository.account.user.role.RolesJpa
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
 public class AccountConfig {
+    private static final Logger log = LoggerFactory.getLogger(AccountConfig.class);
     private final RolesJpa rolesJpa;
     private final MyUsersRepository myUsersRepository;
     private final EntityManager entityManager;

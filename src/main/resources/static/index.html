@@ -3,70 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Application</title>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script> <!-- STOMP.js 추가 -->
-
+    <title>STOMP 채팅</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #messages {
+        #chat-room {
             border: 1px solid #ccc;
-            height: 300px;
+            padding: 10px;
+            width: 300px;
+            height: 400px;
             overflow-y: scroll;
-            margin-bottom: 10px;
+        }
+        #message-box {
+            width: 300px;
+        }
+        #chat-controls {
+            margin-top: 10px;
         }
         .message {
+            display: flex;
             padding: 5px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+        .message p {
+            margin: 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 60%;
+        }
+        .message.right {
+            justify-content: flex-end;
+        }
+        .message.right p {
+            background-color: #d1ffd6;
+            text-align: right;
+        }
+        .message.left p {
+            background-color: #f1f1f1;
+        }
+
+        #user-list {
+            border-left: 1px solid #ccc; /* 유저 목록과 채팅 메시지 구분을 위한 경계선 */
+            padding-left: 10px;
+            max-height: 300px; /* 유저 목록의 최대 높이 */
+            overflow-y: auto; /* 유저 목록이 길어질 경우 스크롤 가능 */
         }
     </style>
 </head>
 <body>
-<h1>Chat Application</h1>
-<div id="messages"></div>
-<input type="text" id="messageInput" placeholder="메시지를 입력하세요..." />
-<button id="sendButton">전송</button>
+<h2>채팅방 목록</h2>
+<div>
+    <input type="text" id="room-name" placeholder="채팅방 이름을 입력하세요" />
+    <button id="create-room-btn">채팅방 생성</button>
+</div>
+<div id="chat-room-list"></div>
+<h3 id="chat-room-title"></h3>
+<div id="chat-room" style="display:none;">
+    <div id="user-list" style="margin-top: 10px;">유저 목록</div> <!-- 유저 목록을 표시할 div -->
+    <div id="chat-messages"></div>
+    <div id="chat-controls" style="display:none;">
+        <input type="text" id="message-box" placeholder="메시지를 입력하세요">
+        <button id="send-btn">전송</button>
+        <button id="leave-btn">퇴장</button>
+    </div>
+</div>
 
-<script>
-	// STOMP 클라이언트 설정
-	const socket = new SockJS('http://localhost:8080/ws'); // SockJS를 사용하여 WebSocket 연결
-	const stompClient = Stomp.over(socket);
 
-	stompClient.connect({}, function (frame) {
-		console.log('Connected: ' + frame);
 
-		// 채팅방 구독 처리 (예: 방 ID가 1인 경우)
-		stompClient.subscribe('/sub/chat/room/1', function (messageOutput) {
-			const message = JSON.parse(messageOutput.body);
-			displayMessage(message);
-		});
-	});
 
-	// 메시지 전송 처리
-	document.getElementById('sendButton').addEventListener('click', function () {
-		const messageInput = document.getElementById('messageInput');
-		const chatMessage = {
-			roomId: 1,
-			sender: 'user1', // 사용자 이름 또는 ID를 동적으로 설정할 수 있습니다.
-			message: messageInput.value,
-			type: 'TALK'
-		};
-		stompClient.send('/pub/chat/sendMessage', {}, JSON.stringify(chatMessage));
-		messageInput.value = ''; // 메시지 입력 필드 초기화
-	});
-
-	// 메시지 화면에 표시
-	function displayMessage(message) {
-		const messagesDiv = document.getElementById('messages');
-		const messageDiv = document.createElement('div');
-		messageDiv.classList.add('message');
-		messageDiv.innerText = `${message.sender}: ${message.message}`;
-		messagesDiv.appendChild(messageDiv);
-		messagesDiv.scrollTop = messagesDiv.scrollHeight; // 스크롤을 아래로 이동
-	}
-</script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script src="chat.js"></script>
 </body>
 </html>

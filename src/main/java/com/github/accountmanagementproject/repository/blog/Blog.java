@@ -32,9 +32,6 @@ public class Blog {
     @Column(name = "distance", length = 100)
     private String distance;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
     @Builder.Default
     @Column(name = "like_count", nullable = false)
     private Integer likeCount = 0;
@@ -65,7 +62,6 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
                 ", user=" + user.getNickname() +
                 '}';
     }
