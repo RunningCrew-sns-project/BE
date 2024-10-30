@@ -1,11 +1,10 @@
 package com.github.accountmanagementproject.repository.blog;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity

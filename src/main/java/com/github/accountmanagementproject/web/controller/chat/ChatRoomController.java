@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;

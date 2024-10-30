@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.web.dto.crew_join_post;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import com.github.accountmanagementproject.web.dto.crew_join_post.location_dto.DocumentDto;
 import lombok.AllArgsConstructor;

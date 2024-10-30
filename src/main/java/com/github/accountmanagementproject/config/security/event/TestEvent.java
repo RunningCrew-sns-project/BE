@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.config.security.event;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 @Getter

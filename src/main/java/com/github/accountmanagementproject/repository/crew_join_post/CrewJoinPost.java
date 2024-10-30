@@ -1,8 +1,8 @@
 package com.github.accountmanagementproject.repository.crew_join_post;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.crew.crews.Crew;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import jakarta.persistence.*;
 import lombok.*;
 

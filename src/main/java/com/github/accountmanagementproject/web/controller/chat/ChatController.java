@@ -1,8 +1,8 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatDto;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class ChatController {
     private final SimpMessageSendingOperations template;
     private final ChatService chatService;
     private final AccountConfig accountConfig;
-    private final MyUsersJpa myUsersJpa;
+    private final MyUsersRepository myUsersJpa;
 
     @MessageMapping("/chat/enterUser")
     public void enterUser(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){

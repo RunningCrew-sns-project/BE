@@ -1,8 +1,10 @@
 package com.github.accountmanagementproject.service.blog;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
@@ -11,10 +13,8 @@ import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlo
 import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlogRepository;
 import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.S3Service;
-import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
-import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
-import com.github.accountmanagementproject.service.mappers.blog.BlogMapper;
-import com.github.accountmanagementproject.service.mappers.comment.CommentMapper;
+import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
+import com.github.accountmanagementproject.service.mapper.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogWithComment;
@@ -47,7 +47,7 @@ public class BlogService {
     private final UserLikesBlogRepository userLikesBlogRepository;
     private final AccountConfig accountConfig;
     private final S3Service s3Service;
-    private final MyUsersJpa myUsersJpa;
+    private final MyUsersRepository myUsersJpa;
     private final RedisTemplate redisTemplate;
     private final RedisRepository redisRepository;
 

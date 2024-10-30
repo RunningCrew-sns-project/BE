@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.repository.userLikesBlog;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import jakarta.persistence.*;
 import lombok.*;

@@ -2,7 +2,7 @@ package com.github.accountmanagementproject.config.client.dto.userInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.accountmanagementproject.repository.account.users.enums.OAuthProvider;
+import com.github.accountmanagementproject.repository.account.user.myenum.OAuthProvider;
 import lombok.Getter;
 
 @Getter

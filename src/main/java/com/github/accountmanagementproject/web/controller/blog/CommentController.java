@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.blog.BlogCommentService;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
 import lombok.RequiredArgsConstructor;

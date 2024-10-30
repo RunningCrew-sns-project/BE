@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
-import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;

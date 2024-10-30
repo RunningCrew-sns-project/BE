@@ -1,12 +1,12 @@
 package com.github.accountmanagementproject.config.security;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
-import com.github.accountmanagementproject.repository.account.users.enums.RolesEnum;
-import com.github.accountmanagementproject.repository.account.users.roles.Role;
-import com.github.accountmanagementproject.repository.account.users.roles.RolesJpa;
-import com.github.accountmanagementproject.service.customExceptions.CustomBadRequestException;
-import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
+import com.github.accountmanagementproject.exception.CustomBadRequestException;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
+import com.github.accountmanagementproject.repository.account.user.myenum.RolesEnum;
+import com.github.accountmanagementproject.repository.account.user.role.Role;
+import com.github.accountmanagementproject.repository.account.user.role.RolesJpa;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccountConfig {
     private final RolesJpa rolesJpa;
-    private final MyUsersJpa myUsersJpa;
+    private final MyUsersRepository myUsersRepository;
     private final EntityManager entityManager;
     private final HttpSession httpSession;
 
@@ -51,10 +51,10 @@ public class AccountConfig {
     public MyUser findMyUserFetchJoin(String emailOrPhoneNumber){
         CustomNotFoundException.ExceptionBuilder exceptionBuilder = new CustomNotFoundException.ExceptionBuilder().request(emailOrPhoneNumber);
         if(emailOrPhoneNumber.matches("01\\d{9}")){
-            return myUsersJpa.findByPhoneNumberJoin(emailOrPhoneNumber).orElseThrow(()->
+            return myUsersRepository.findByPhoneNumberJoin(emailOrPhoneNumber).orElseThrow(()->
                     exceptionBuilder.customMessage("가입되지 않은 핸드폰 번호").build());
         }else if (emailOrPhoneNumber.matches(".+@.+\\..+")){
-            return myUsersJpa.findByEmailJoin(emailOrPhoneNumber).orElseThrow(()->
+            return myUsersRepository.findByEmailJoin(emailOrPhoneNumber).orElseThrow(()->
                     exceptionBuilder.customMessage("가입되지 않은 이메일").build());
         }else throw new CustomBadRequestException.ExceptionBuilder()
                 .customMessage("잘못 입력된 식별자")
@@ -64,10 +64,10 @@ public class AccountConfig {
     public MyUser findMyUser(String emailOrPhoneNumber){
         CustomNotFoundException.ExceptionBuilder exceptionBuilder = new CustomNotFoundException.ExceptionBuilder().request(emailOrPhoneNumber);
         if(emailOrPhoneNumber.matches("01\\d{9}")){
-            return myUsersJpa.findByPhoneNumber(emailOrPhoneNumber).orElseThrow(()->
+            return myUsersRepository.findByPhoneNumber(emailOrPhoneNumber).orElseThrow(()->
                     exceptionBuilder.customMessage("가입되지 않은 핸드폰 번호").build());
         }else if (emailOrPhoneNumber.matches(".+@.+\\..+")){
-            return myUsersJpa.findByEmail(emailOrPhoneNumber).orElseThrow(()->
+            return myUsersRepository.findByEmail(emailOrPhoneNumber).orElseThrow(()->
                     exceptionBuilder.customMessage("가입되지 않은 이메일").build());
         }else throw new CustomBadRequestException.ExceptionBuilder()
                 .customMessage("잘못 입력된 식별자")
