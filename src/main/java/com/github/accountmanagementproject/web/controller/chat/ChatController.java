@@ -3,7 +3,6 @@ package com.github.accountmanagementproject.web.controller.chat;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatDto;
@@ -31,13 +30,8 @@ public class ChatController {
     private final SimpMessageSendingOperations template;
     private final ChatService chatService;
     private final AccountConfig accountConfig;
-<<<<<<< HEAD
     private final MyUsersRepository myUsersJpa;
-=======
-    private final MyUsersJpa myUsersJpa;
     private final UserChatMappingRepository userChatMappingRepository;
-
->>>>>>> ff54ada7d92f3600472cd04a888b9ec26b52217d
 
     @MessageMapping("/chat/enterUser")
     public void enterUser(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){
