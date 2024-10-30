@@ -41,7 +41,7 @@ public interface CrewMapper {
     }
     @Mapping(target = "crewName", source = "joinCrew.crewsUsersPk.crew.crewName")
     @Mapping(target = "applicationDate", dateFormat = "yyyy-MM-dd")
-    @Mapping(target = "joinCompleted", expression = "java(joinCrew.getStatus() == com.github.accountmanagementproject.repository.crew.crewsUsers.CrewsUsersStatus.COMPLETED)")
-    CrewJoinResponse joinCrewToCrewJoinResponse(CrewsUsers joinCrew);
+    @Mapping(target = "joinCompleted", expression = "java(joinCrew.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED)")
+    CrewJoinResponse crewsUsersToCrewJoinResponse(CrewsUsers joinCrew);
 
 }

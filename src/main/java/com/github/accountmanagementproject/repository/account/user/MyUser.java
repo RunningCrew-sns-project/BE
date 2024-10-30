@@ -10,6 +10,7 @@ import com.github.accountmanagementproject.service.mapper.converter.UserStatusCo
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountInfoDto;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountSummary;
+import com.github.accountmanagementproject.web.dto.account.mypage.TempInfoModifyForFigma;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -168,6 +169,13 @@ public class MyUser {
         this.profileMessage = accountSummary.getProfileMessage() == null||accountSummary.getProfileMessage().isBlank()?
                 null : accountSummary.getProfileMessage();
         this.profileImg = accountSummary.getProfileImg();
+    }
+
+    public void updateUserInfoForFigma(TempInfoModifyForFigma modifyRequest) {
+        if(modifyRequest.getNickname()!=null) this.nickname = modifyRequest.getNickname();
+        if(modifyRequest.getEmail()!=null) this.email = modifyRequest.getEmail();
+        this.phoneNumber = modifyRequest.getPhoneNumber();
+        this.profileImg = modifyRequest.getProfileImg();
     }
     //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {

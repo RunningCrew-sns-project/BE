@@ -1,12 +1,14 @@
 package com.github.accountmanagementproject.web.controller.account;
 
+import com.github.accountmanagementproject.web.dto.account.mypage.AccountModifyRequest;
+import com.github.accountmanagementproject.web.dto.account.mypage.AccountSummary;
+import com.github.accountmanagementproject.web.dto.account.mypage.TempInfoModifyForFigma;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "Account", description = "계정 관련 API")
 public interface AccountControllerDocs {
@@ -57,6 +59,15 @@ public interface AccountControllerDocs {
                                      }""")
             )
     )
-    CustomSuccessResponse getMyInfo(@AuthenticationPrincipal String principal);
-
+    CustomSuccessResponse getMyInfo(String principal);
+    @Operation(summary = "간단 계정 정보 수정 FigmaVer", description = "로그인된 계정의 정보를 수정합니다.")
+    CustomSuccessResponse updateMyInfoFigma(String principal, TempInfoModifyForFigma modifyRequest);
+    @Operation(summary = "계정 탈퇴", description = "로그인된 계정을 탈퇴처리 합니다.")
+    CustomSuccessResponse withdrawalFunction(String principal);
+    @Operation(summary = "계정 정보 수정", description = "로그인된 계정의 정보를 수정합니다.")
+    CustomSuccessResponse updateMyInfo(String principal, AccountModifyRequest modifyRequest);
+    @Operation(summary = "간단 계정 정보 조회 (마이페이지 상단)", description = "로그인된 계정의 간단한 정보를 조회합니다.")
+    CustomSuccessResponse simpleInfoInquiry(String principal);
+    @Operation(summary = "간단 계정 정보 수정 (마이페이지 상단)", description = "로그인된 계정의 간단한 정보를 수정합니다.")
+    CustomSuccessResponse simpleInfoModify(String principal, AccountSummary accountSummary);
 }

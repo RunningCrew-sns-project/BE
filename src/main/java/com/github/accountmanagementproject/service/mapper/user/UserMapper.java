@@ -9,6 +9,7 @@ import com.github.accountmanagementproject.web.dto.account.auth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountInfoResponse;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountSummary;
+import com.github.accountmanagementproject.web.dto.account.mypage.TempInfoModifyForFigma;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -50,4 +51,6 @@ public interface UserMapper {
 
 
     AccountSummary myUserToAccountSummary(MyUser myUser);
+
+    TempInfoModifyForFigma myUserToTempInfoModifyForFigma(MyUser user);
 }

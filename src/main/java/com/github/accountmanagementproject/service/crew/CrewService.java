@@ -12,10 +12,10 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRe
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
 import com.github.accountmanagementproject.web.dto.crews.CrewJoinResponse;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,25 +23,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrewService {
     private final AccountConfig accountConfig;
-    private final CrewsRepository crewsJpa;
+    private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
 
     @Transactional
     public void crewCreation(@Valid CrewCreationRequest request, String email) {
         MyUser crewMaster = accountConfig.findMyUser(email);
         Crew newCrew = CrewMapper.INSTANCE.crewCreationRequestToCrew(request, crewMaster);
-        crewsJpa.save(newCrew);
+        crewsRepository.save(newCrew);
     }
 
     @Transactional
     public CrewJoinResponse joinTheCrew(String email, Long crewId) {
         MyUser user = accountConfig.findMyUser(email);
-        Crew crew = crewsJpa.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, user);
 
         CrewsUsers joinCrewsUsers = crewJoinValidationCheckAndSave(crew, user, crewsUsersPk);
-        return CrewMapper.INSTANCE.joinCrewToCrewJoinResponse(joinCrewsUsers);
+        return CrewMapper.INSTANCE.crewsUsersToCrewJoinResponse(joinCrewsUsers);
     }
 
     private CrewsUsers crewJoinValidationCheckAndSave(Crew crew, MyUser user, CrewsUsersPk crewsUsersPk) {
@@ -55,8 +55,8 @@ public class CrewService {
     }
 
     //테스트를 위한 가입요청내역 반환
+    @Transactional(readOnly = true)
     public List<CrewJoinResponse> requestTest(String email) {
-        List<CrewsUsers> crewsUsers = crewsUsersRepository.findByMyEmail(email);
-        return crewsUsers.stream().map(CrewMapper.INSTANCE::joinCrewToCrewJoinResponse).toList();
+        return crewsUsersRepository.findSimpleCrewsUsersByUserEmail(email);
     }
 }

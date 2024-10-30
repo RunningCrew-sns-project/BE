@@ -7,7 +7,6 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.web.dto.account.auth.AuthFailureMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 

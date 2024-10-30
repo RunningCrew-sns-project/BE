@@ -16,11 +16,11 @@ import com.github.accountmanagementproject.web.dto.account.auth.TokenDto;
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.request.OAuthLoginParams;
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.request.OAuthSignUpRequest;
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.response.AuthResult;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DateTimeException;
 import java.time.Duration;
@@ -94,18 +94,9 @@ public class OAuthLoginService {
 
     @Transactional
     public void signUp(OAuthSignUpRequest oAuthSignUpRequest) {
-        SocialId socialId = socialIdsRepository.findBySocialIdPkJoinMyUser(new SocialIdPk(oAuthSignUpRequest.getSocialId(), oAuthSignUpRequest.getProvider()))
-                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
-                        .customMessage("임시 계정이 존재하지 않습니다.")
-                        .request(oAuthSignUpRequest)
-                        .systemMessage("NotFoundException")
-                        .build());
 
-        if( socialId.getMyUser().isEnabled() )
-            throw new CustomBadRequestException.ExceptionBuilder()
-                    .customMessage("이미 가입된 계정입니다.")
-                    .request(oAuthSignUpRequest)
-                    .build();
+        SocialId socialId = socialSignUpCheckAndFindSocialId(oAuthSignUpRequest);
+        oAuthSignUpRequest.defaultProfileUrlSetting(oAuthSignUpRequest.getGender());
         try {
             socialId.socialConnectSetting();
             socialId.getMyUser().oAuthSignUpSetting(oAuthSignUpRequest);
@@ -116,5 +107,19 @@ public class OAuthLoginService {
                     .request(oAuthSignUpRequest.getDateOfBirth())
                     .build();
         }
+    }
+    private SocialId socialSignUpCheckAndFindSocialId(OAuthSignUpRequest oAuthSignUpRequest){
+        SocialId socialId = socialIdsRepository.findBySocialIdPkJoinMyUser(new SocialIdPk(oAuthSignUpRequest.getSocialId(), oAuthSignUpRequest.getProvider()))
+                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                        .customMessage("임시 계정이 존재하지 않습니다.")
+                        .request(oAuthSignUpRequest)
+                        .systemMessage("NotFoundException")
+                        .build());
+        if( socialId.getMyUser().isEnabled() )
+            throw new CustomBadRequestException.ExceptionBuilder()
+                    .customMessage("이미 가입된 계정입니다.")
+                    .request(oAuthSignUpRequest)
+                    .build();
+        return socialId;
     }
 }

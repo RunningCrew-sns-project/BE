@@ -43,10 +43,8 @@ public class SignUpLoginService {
 
         //비번 암호화
         signUpRequest.passwordEncryption(passwordEncoder.encode(signUpRequest.getPassword()));
-        if(signUpRequest.getProfileImg() == null){ //기본프사설정
-            String defaultProfileUrl = signUpRequest.defaultProfileUrl(signUpRequest.getGender());
-            signUpRequest.setProfileImg(defaultProfileUrl);
-        }
+        //기본프사설정
+        signUpRequest.defaultProfileUrlSetting(signUpRequest.getGender());
         //세이브 실행하면서 중복값 발생시 발생되는 익셉션 예외처리
         try {
             MyUser signUpMyUser = UserMapper.INSTANCE.accountDtoToMyUser(signUpRequest);

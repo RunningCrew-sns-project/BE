@@ -6,9 +6,10 @@ import com.github.accountmanagementproject.service.mapper.user.UserMapper;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountInfoResponse;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountModifyRequest;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountSummary;
-import jakarta.transaction.Transactional;
+import com.github.accountmanagementproject.web.dto.account.mypage.TempInfoModifyForFigma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +29,7 @@ public class AccountService {
     //개인정보 수정
     @Transactional
     public AccountInfoResponse myInfoEdit(String principal, AccountModifyRequest modifyRequest) {
-        if(modifyRequest.getProfileImg() == null){
-            String defaultProfileUrl = modifyRequest.defaultProfileUrl(modifyRequest.getGender());
-            modifyRequest.setProfileImg(defaultProfileUrl);
-        }
+        modifyRequest.defaultProfileUrlSetting(modifyRequest.getGender());
         MyUser updatedUser = accountConfig.findMyUser(principal).updateUserInfo(modifyRequest);
         return UserMapper.INSTANCE.myUserToAccountInfoResponse(updatedUser);
     }
@@ -45,11 +43,15 @@ public class AccountService {
     @Transactional
     public AccountSummary mySummaryInfoEdit(String principal, AccountSummary accountSummary) {
         MyUser user = accountConfig.findMyUser(principal);
-        if(accountSummary.getProfileImg() == null){
-            String defaultProfileUrl = accountSummary.defaultProfileUrl(user.getGender());
-            accountSummary.setProfileImg(defaultProfileUrl);
-        }
+        accountSummary.defaultProfileUrlSetting(user.getGender());
         user.updateUserSummaryInfo(accountSummary);
         return UserMapper.INSTANCE.myUserToAccountSummary(user);
+    }
+    @Transactional
+    public TempInfoModifyForFigma myInfoEditForFigma(String principal, TempInfoModifyForFigma modifyRequest) {
+        MyUser user = accountConfig.findMyUser(principal);
+        modifyRequest.defaultProfileUrlSetting(user.getGender());
+        user.updateUserInfoForFigma(modifyRequest);
+        return UserMapper.INSTANCE.myUserToTempInfoModifyForFigma(user);
     }
 }

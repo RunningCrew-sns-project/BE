@@ -3,6 +3,7 @@ package com.github.accountmanagementproject.web.controller.account;
 import com.github.accountmanagementproject.service.account.AccountService;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountModifyRequest;
 import com.github.accountmanagementproject.web.dto.account.mypage.AccountSummary;
+import com.github.accountmanagementproject.web.dto.account.mypage.TempInfoModifyForFigma;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,10 +55,10 @@ public class AccountController implements AccountControllerDocs{
 
     //피그마버전 개인정보 수정
     @PutMapping("/my-info/figma")
-    public CustomSuccessResponse updateMyInfoFigma(@AuthenticationPrincipal String principal,@RequestBody @Valid AccountModifyRequest modifyRequest){
+    public CustomSuccessResponse updateMyInfoFigma(@AuthenticationPrincipal String principal,@RequestBody @Valid TempInfoModifyForFigma modifyRequest){
         return new CustomSuccessResponse.SuccessDetail()
                 .message("유저 정보 수정 성공")
-                .responseData(accountService.myInfoEdit(principal, modifyRequest))
+                .responseData(accountService.myInfoEditForFigma(principal, modifyRequest))
                 .build();
     }
 }
