@@ -1,12 +1,12 @@
 package com.github.accountmanagementproject.service.chat;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
-import com.github.accountmanagementproject.service.mappers.chatRoom.ChatRoomMapper;
-import com.github.accountmanagementproject.service.mappers.user.UserResponseMapper;
+import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
+import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
 import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
@@ -23,7 +23,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
-    private final MyUsersJpa myUsersJpa;
+    private final MyUsersRepository myUsersJpa;
     private final AccountConfig accountConfig;
     private final UserChatMappingRepository userChatMappingRepository;
 

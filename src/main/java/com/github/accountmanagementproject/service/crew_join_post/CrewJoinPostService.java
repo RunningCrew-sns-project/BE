@@ -1,9 +1,9 @@
 package com.github.accountmanagementproject.service.crew_join_post;
 
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
-import com.github.accountmanagementproject.repository.crew.crews.CrewsJpa;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
+import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPostStatus;
 import com.github.accountmanagementproject.repository.crew_join_post.repository.CrewJoinPostRepository;
@@ -38,8 +38,8 @@ public class CrewJoinPostService {
 
     private final KakaoAddressSearchService kakaoAddressSearchService;
     private final CrewJoinPostRepository crewJoinPostRepository;
-    private final CrewsJpa crewRepository;
-    private final MyUsersJpa userRepository;
+    private final CrewsRepository crewRepository;
+    private final MyUsersRepository userRepository;
     private final GeoRedisTemplateService geoRedisTemplateService;
 
 

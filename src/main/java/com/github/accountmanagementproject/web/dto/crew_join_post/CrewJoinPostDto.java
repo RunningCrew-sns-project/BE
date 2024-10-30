@@ -13,7 +13,7 @@ public class CrewJoinPostDto {
 
     private Integer crewJoinPostId;
     private Long crewId;
-    private Integer userId;
+    private Long userId;
 
     private String content;
     private Integer maxCrewNumber;

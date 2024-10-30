@@ -1,17 +1,14 @@
 package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.service.S3Service;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.blog.BlogService;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
-import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 

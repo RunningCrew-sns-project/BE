@@ -1,8 +1,10 @@
 package com.github.accountmanagementproject.service.blog;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
@@ -14,10 +16,8 @@ import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlo
 import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.S3Service;
 import com.github.accountmanagementproject.service.ScrollPaginationCollection;
-import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
-import com.github.accountmanagementproject.service.customExceptions.CustomNotFoundException;
-import com.github.accountmanagementproject.service.mappers.blog.BlogMapper;
-import com.github.accountmanagementproject.service.mappers.comment.CommentMapper;
+import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
+import com.github.accountmanagementproject.service.mapper.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogWithComment;
@@ -29,15 +29,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +46,10 @@ public class BlogService {
     private final BlogRepository blogRepository;
     private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
-    private final MyUsersJpa myUsersJpa;
+    private final AccountConfig accountConfig;
+    private final S3Service s3Service;
+    private final MyUsersRepository myUsersJpa;
+    private final RedisTemplate redisTemplate;
     private final RedisRepository redisRepository;
     private final BlogImagesRepository blogImagesRepository;
 
