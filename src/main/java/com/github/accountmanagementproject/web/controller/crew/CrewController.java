@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.controller.crew;
 
 import com.github.accountmanagementproject.service.crew.CrewService;
-import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,4 +43,11 @@ public class CrewController implements CrewControllerDocs{
                 .build();
     }
 
+    @GetMapping("/{crewId}")
+    public CustomSuccessResponse getCrewDetail(@PathVariable Long crewId){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 상세 조회 성공")
+                .responseData(crewService.getCrewDetail(crewId))
+                .build();
+    }
 }

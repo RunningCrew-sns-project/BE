@@ -10,8 +10,9 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersPk;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
-import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
-import com.github.accountmanagementproject.web.dto.crews.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -58,5 +59,12 @@ public class CrewService {
     @Transactional(readOnly = true)
     public List<CrewJoinResponse> requestTest(String email) {
         return crewsUsersRepository.findSimpleCrewsUsersByUserEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public CrewDetailResponse getCrewDetail(Long crewId) {
+        return crewsRepository.findCrewDetailByCrewId(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+
     }
 }

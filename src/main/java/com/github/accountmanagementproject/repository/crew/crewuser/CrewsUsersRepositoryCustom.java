@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.repository.crew.crewuser;
 
-import com.github.accountmanagementproject.web.dto.crews.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
 
 import java.util.List;
 

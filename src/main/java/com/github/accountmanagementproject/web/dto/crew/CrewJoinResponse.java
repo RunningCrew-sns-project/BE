@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.crews;
+package com.github.accountmanagementproject.web.dto.crew;
 
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import lombok.Getter;

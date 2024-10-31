@@ -33,7 +33,7 @@ public class Crew {
     @Column(name = "activity_region")
     private String activityRegion;
     @Column(name = "max_capacity")
-    private Integer maxCapacity;
+    private int maxCapacity;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.crews;
+package com.github.accountmanagementproject.web.dto.crew;
 
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
@@ -57,5 +57,5 @@ public class CrewCreationRequest {
     @NotBlank(message = "크루 활동 지역은 필수입니다.")
     private String activityRegion;
     @NotNull(message = "크루 최대 인원 설정은 필수입니다.")
-    private Integer maxCapacity;
+    private int maxCapacity;
 }
