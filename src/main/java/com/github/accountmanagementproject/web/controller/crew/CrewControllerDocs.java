@@ -166,6 +166,6 @@ public interface CrewControllerDocs {
                                      }""")
             )
     )
-    CustomSuccessResponse getCrewDetail(@Parameter(name = "크루 고유번호") Long crewId);
+    CustomSuccessResponse getCrewDetail(@Parameter(description = "크루 고유번호", example = "5") Long crewId);
 
 }
