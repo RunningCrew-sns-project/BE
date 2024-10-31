@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.web.dto.chat;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -2,7 +2,7 @@ package com.github.accountmanagementproject.web.controller.storage;
 
 
 import com.github.accountmanagementproject.service.storage.StorageService;
-import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

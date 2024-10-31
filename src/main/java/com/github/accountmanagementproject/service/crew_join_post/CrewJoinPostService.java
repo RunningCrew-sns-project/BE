@@ -1,9 +1,8 @@
 package com.github.accountmanagementproject.service.crew_join_post;
 
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
-import com.github.accountmanagementproject.repository.crew.crews.CrewRepository;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPostStatus;
 import com.github.accountmanagementproject.repository.crew_join_post.repository.CrewJoinPostRepository;
@@ -11,12 +10,10 @@ import com.github.accountmanagementproject.service.crew_join_post.redis_cache.Ge
 import com.github.accountmanagementproject.web.dto.crew_join_post.CrewJoinPOstRequest;
 import com.github.accountmanagementproject.web.dto.crew_join_post.CrewJoinPostDto;
 import com.github.accountmanagementproject.web.dto.crew_join_post.CrewJoinPostUpdateRequest;
-
 import com.github.accountmanagementproject.web.dto.crew_join_post.kakao.DocumentDto;
 import com.github.accountmanagementproject.web.dto.crew_join_post.kakao.KakaoApiResponseDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
@@ -40,9 +37,8 @@ public class CrewJoinPostService {
 
     private final KakaoAddressSearchService kakaoAddressSearchService;
     private final CrewJoinPostRepository crewJoinPostRepository;
-    private final CrewRepository crewRepository;
-    private final MyUsersJpa userRepository;
     private final GeoRedisTemplateService geoRedisTemplateService;
+    private final MyUsersRepository userRepository;
 
 
     // (dto -> entity 변환 후 )

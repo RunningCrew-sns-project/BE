@@ -1,8 +1,9 @@
 package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
-import com.github.accountmanagementproject.web.dto.responseSystem.CustomSuccessResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -34,8 +34,12 @@ public interface BlogControllerDocs {
                                             "}")
                     })
     )
+    @Parameter(name = "size", description = "한번에 보여질 갯수")
+    @Parameter(name = "cursor", description = "시작할 블로그 번호")
     @GetMapping
-    CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size, @AuthenticationPrincipal String principal);
+    public CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size,
+                                             @RequestParam(required = false) Integer cursor,
+                                             @AuthenticationPrincipal String principal);
 
     @Operation(summary = "블로그 작성", description = "제목, 내용, 기록, 사진을 입력 받아 블로그 작성")
     @ApiResponse(responseCode = "201",description = "블로그 작성 성공",
@@ -74,9 +78,8 @@ public interface BlogControllerDocs {
                     @AuthenticationPrincipal String principal) throws Exception;
 
 
-    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    CustomSuccessResponse updateBlog(@RequestPart(required = false, value = "image") MultipartFile image,
-                                     @RequestPart BlogRequestDTO blogRequestDTO,
+    @PutMapping
+    CustomSuccessResponse updateBlog(@RequestBody BlogRequestDTO blogRequestDTO,
                                      @RequestParam Integer blogId,
                                      @AuthenticationPrincipal String principal) throws IOException;
 

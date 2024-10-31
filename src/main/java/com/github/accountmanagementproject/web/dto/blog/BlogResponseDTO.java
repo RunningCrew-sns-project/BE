@@ -3,6 +3,7 @@ package com.github.accountmanagementproject.web.dto.blog;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,7 +19,7 @@ public class BlogResponseDTO {
     private String content;
     private String record;
     private String distance;
-    private String imageUrl;
+    private List<String> imageUrl;
     private Integer likeCount;
     private boolean liked;
     private LocalDateTime createdAt;

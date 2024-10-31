@@ -1,31 +1,22 @@
 package com.github.accountmanagementproject.service;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
+@Setter
 public class ScrollPaginationCollection<T> {
-    private final List<T> itemsWithNextCursor; // 현재 스크롤의 요소 + 다음 스크롤의 요소 1개 (다음 스크롤이 있는지 확인을 위한)
+    private final List<T> currentScrollItems; // 현재 스크롤의 요소들
     private final int countPerScroll;
+    private final boolean lastScroll; // 스크롤의 마지막 여부
+    private final T nextCursor; // 다음 스크롤의 커서 정보
 
-    public static <T> ScrollPaginationCollection<T> of(List<T> itemsWithNextCursor, int size) {
-        return new ScrollPaginationCollection<>(itemsWithNextCursor, size);
-    }
-
-    public boolean isLastScroll() {
-        return this.itemsWithNextCursor.size() <= countPerScroll;
-    }
-
-    public List<T> getCurrentScrollItems() {
-        if (isLastScroll()) {
-            return this.itemsWithNextCursor;
-        }
-        return this.itemsWithNextCursor.subList(0, countPerScroll);
-    }
-
-    public T getNextCursor() {
-        return itemsWithNextCursor.get(countPerScroll - 1);
+    public static <T> ScrollPaginationCollection<T> of(List<T> currentScrollItems, int size, boolean lastScroll, T nextCursor) {
+        return new ScrollPaginationCollection<>(currentScrollItems, size, lastScroll, nextCursor);
     }
 }

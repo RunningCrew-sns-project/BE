@@ -73,9 +73,6 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-    // retry
-    implementation 'org.springframework.retry:spring-retry'
-
 }
 
 sourceSets {
@@ -96,4 +93,3 @@ tasks.named('bootJar'){
 clean {
     delete file(buildDir), file(generatedDir)
 }
-

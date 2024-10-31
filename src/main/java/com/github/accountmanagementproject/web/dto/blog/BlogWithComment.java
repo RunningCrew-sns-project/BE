@@ -19,7 +19,7 @@ public class BlogWithComment {
     private String content;
     private String record;
     private String distance;
-    private String imageUrl;
+    private List<String> imageUrl;
     private Integer likeCount;
     private boolean liked;
 

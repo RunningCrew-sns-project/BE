@@ -1,12 +1,12 @@
 package com.github.accountmanagementproject.service.chat;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.MyUsersJpa;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
-import com.github.accountmanagementproject.service.mappers.chatRoom.ChatRoomMapper;
-import com.github.accountmanagementproject.service.mappers.user.UserResponseMapper;
+import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
+import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
 import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
@@ -23,7 +23,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
-    private final MyUsersJpa myUsersJpa;
+    private final MyUsersRepository myUsersJpa;
     private final AccountConfig accountConfig;
     private final UserChatMappingRepository userChatMappingRepository;
 
@@ -46,6 +46,13 @@ public class ChatService {
     // roomId 기준으로 채팅방 찾기
     public ChatRoom findByRoomId(Integer roomId){
         return chatRoomRepository.findById(roomId).orElse(null);
+    }
+
+    public List<ChatRoomResponse> findMyRoomList(MyUser user) {
+        return userChatMappingRepository.findAllByUser(user).stream()
+                .map(UserChatMapping::getChatRoom)
+                .map(ChatRoomMapper.INSTANCE::chatRoomToChatRoomResponse)
+                .toList();
     }
 
     @Transactional
@@ -87,14 +94,13 @@ public class ChatService {
 
     @Transactional
     //채팅방 유저 리스트에 유저추가
-    public Integer addUser(Integer roomId, MyUser user){
+    public Boolean addUser(Integer roomId, MyUser user){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
         //아이디 중복 확인 후 userList에 추가
-        List<UserChatMapping> userChatMappings = userChatMappingRepository.findAllByChatRoom(chatRoom);
-        List<MyUser> userList = userChatMappings.stream().map(UserChatMapping::getUser).toList();
+        List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
 
         if(userList.contains(user)){
-            return user.getUserId();
+            return true;
         }
 
         UserChatMapping userChatMapping = UserChatMapping.builder()
@@ -108,7 +114,7 @@ public class ChatService {
 
         chatRoomRepository.save(chatRoom);
 
-        return user.getUserId();
+        return false;
     }
 
     @Transactional
@@ -127,13 +133,12 @@ public class ChatService {
     //채팅방 전체 userList 조회
     public List<String> getUserList(Integer roomId){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-        List<UserChatMapping> userChatMappings = userChatMappingRepository.findAllByChatRoom(chatRoom);
-        List<MyUser> userList = userChatMappings.stream()
-                .map(UserChatMapping::getUser)
-                .toList();
 
-        return userList.stream()
-                .map(MyUser::getNickname)
+        return userChatMappingRepository.findAllByChatRoom(chatRoom).stream()
+                .map(UserChatMapping::getUser)
+                .map(MyUser::getEmail)
                 .toList();
     }
+
+
 }

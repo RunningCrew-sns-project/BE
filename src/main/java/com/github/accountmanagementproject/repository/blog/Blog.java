@@ -1,11 +1,10 @@
 package com.github.accountmanagementproject.repository.blog;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -32,9 +31,6 @@ public class Blog {
 
     @Column(name = "distance", length = 100)
     private String distance;
-
-    @Column(name = "image_url")
-    private String imageUrl;
 
     @Builder.Default
     @Column(name = "like_count", nullable = false)
@@ -66,7 +62,6 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", imageUrl='" + imageUrl + '\'' +
                 ", user=" + user.getNickname() +
                 '}';
     }
