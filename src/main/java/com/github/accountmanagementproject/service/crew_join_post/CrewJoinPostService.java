@@ -3,7 +3,6 @@ package com.github.accountmanagementproject.service.crew_join_post;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
-import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPost;
 import com.github.accountmanagementproject.repository.crew_join_post.CrewJoinPostStatus;
 import com.github.accountmanagementproject.repository.crew_join_post.repository.CrewJoinPostRepository;
@@ -11,8 +10,8 @@ import com.github.accountmanagementproject.service.crew_join_post.redis_cache.Ge
 import com.github.accountmanagementproject.web.dto.crew_join_post.CrewJoinPOstRequest;
 import com.github.accountmanagementproject.web.dto.crew_join_post.CrewJoinPostDto;
 import com.github.accountmanagementproject.web.dto.crew_join_post.CrewJoinPostUpdateRequest;
-import com.github.accountmanagementproject.web.dto.crew_join_post.location_dto.DocumentDto;
-import com.github.accountmanagementproject.web.dto.crew_join_post.location_dto.KakaoApiResponseDto;
+import com.github.accountmanagementproject.web.dto.crew_join_post.kakao.DocumentDto;
+import com.github.accountmanagementproject.web.dto.crew_join_post.kakao.KakaoApiResponseDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +37,8 @@ public class CrewJoinPostService {
 
     private final KakaoAddressSearchService kakaoAddressSearchService;
     private final CrewJoinPostRepository crewJoinPostRepository;
-    private final CrewsRepository crewRepository;
-    private final MyUsersRepository userRepository;
     private final GeoRedisTemplateService geoRedisTemplateService;
+    private final MyUsersRepository userRepository;
 
 
     // (dto -> entity 변환 후 )

@@ -1,6 +1,5 @@
 package com.github.accountmanagementproject.service.crew_join_post;
 
-import com.github.accountmanagementproject.web.dto.crew_join_post.location_dto.KakaoApiResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,6 @@ public class KakaoAddressSearchService {
     private final KakaoUriBuilderService kakaoUriBuilderService;
     private final RestTemplate restTemplate;
 
-    @Value("${map.kakao.rest-api-key}")
     private String kakaoRestApiKey;
 
 

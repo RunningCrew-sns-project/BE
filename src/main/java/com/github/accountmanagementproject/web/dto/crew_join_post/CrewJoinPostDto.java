@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 public class CrewJoinPostDto {
 
     private Integer crewJoinPostId;
-    private Long crewId;
-    private Long userId;
 
     private String content;
     private Integer maxCrewNumber;
@@ -36,7 +34,6 @@ public class CrewJoinPostDto {
     public static CrewJoinPostDto toDto(CrewJoinPost crewJoinPost) {
         return CrewJoinPostDto.builder()
                 .crewJoinPostId(crewJoinPost.getId())
-                .crewId(crewJoinPost.getCrew() != null ? crewJoinPost.getCrew().getCrewId() : null)
                 .userId(crewJoinPost.getUser() != null ? crewJoinPost.getUser().getUserId() : null)
                 .content(crewJoinPost.getContent())
                 .maxCrewNumber(crewJoinPost.getMaxCrewNumber())
