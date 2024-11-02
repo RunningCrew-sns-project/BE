@@ -49,15 +49,21 @@ public class CrewRunJoinPostController {
 
 
     /** crew run post 시작 -----------------------------------------> */
-    @PostMapping("/{crewId}")
+    @PostMapping("/{crewId}/create")
     @ResponseStatus(HttpStatus.CREATED)
     public CustomSuccessResponse createCrewPost(
             @RequestBody @Valid CrewRunPostCreateRequest request,
             @PathVariable Long crewId,
             @RequestParam String email) {
 
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        MyUser user = accountConfig.findMyUser(principal);  TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)   //  TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
 
         RunJoinPost createdPost = crewRunJoinPostService.createCrewPost(request, user, crewId);
         CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(createdPost);
@@ -91,10 +97,16 @@ public class CrewRunJoinPostController {
     public CustomSuccessResponse updateCrewPost(@PathVariable Long crewId, @PathVariable Integer crewPostSequence,
                                                 @RequestBody @Valid CrewRunPostUpdateRequest request, @RequestParam String email) {
 
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        MyUser user = accountConfig.findMyUser(principal); // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)    // TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
 
-        RunJoinPost updatedPost = crewRunJoinPostService.updateCrewPostByCrewPostSequence(crewPostSequence, crewId, user.getUserId(), request);
+        RunJoinPost updatedPost = crewRunJoinPostService.updateCrewPostByCrewPostSequence(crewPostSequence, crewId, user, request);
         CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(updatedPost);
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
@@ -108,8 +120,14 @@ public class CrewRunJoinPostController {
     @DeleteMapping("/{crewId}/delete/{crewPostSequence}")
     public CustomSuccessResponse deleteCrewPost(@PathVariable Long crewId, @PathVariable Integer crewPostSequence,
                                                 @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)      // TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
 
         crewRunJoinPostService.deleteCrewPostByCrewPostSequence(crewPostSequence, user.getUserId());
 

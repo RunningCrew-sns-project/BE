@@ -23,12 +23,23 @@ public interface RunJoinPostRepository extends JpaRepository<RunJoinPost, Intege
     Integer findMaxGeneralPostSequenceByUserId(@Param("userId") Long userId);
 
     // crewPostSequence 로 게시물 찾기
-    @Query("SELECT r FROM RunJoinPost r WHERE r.crewPostSequence = :crewPostSequence")
+//    @Query("SELECT r FROM RunJoinPost r WHERE r.crewPostSequence = :crewPostSequence")
+//    Optional<RunJoinPost> findByCrewPostSequence(@Param("crewPostSequence") Integer crewPostSequence);
+//
+//    // generalPostSequence 로 게시물 찾기
+//    @Query("SELECT r FROM RunJoinPost r WHERE r.generalPostSequence = :generalPostSequence")
+//    Optional<RunJoinPost> findByGeneralPostSequence(Integer generalPostSequence);
+
+
+    // crewPostSequence로 게시물 찾기 (이미지 포함)
+    @Query("SELECT DISTINCT r FROM RunJoinPost r " +
+            "LEFT JOIN FETCH r.joinPostImages " +
+            "WHERE r.crewPostSequence = :crewPostSequence")
     Optional<RunJoinPost> findByCrewPostSequence(@Param("crewPostSequence") Integer crewPostSequence);
 
-    // generalPostSequence 로 게시물 찾기
-    @Query("SELECT r FROM RunJoinPost r WHERE r.generalPostSequence = :generalPostSequence")
+    // generalPostSequence로 게시물 찾기 (이미지 포함)
+    @Query("SELECT DISTINCT r FROM RunJoinPost r " +
+            "LEFT JOIN FETCH r.joinPostImages " +
+            "WHERE r.generalPostSequence = :generalPostSequence")
     Optional<RunJoinPost> findByGeneralPostSequence(Integer generalPostSequence);
-
-
 }

@@ -2,8 +2,10 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.general;
 
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
+import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,10 +23,8 @@ public class GeneralPostSequenceResponseDto {
                     .map(post -> GeneralRunPostResponse.builder()
                             .postId(post.getPostId())
                             .generalPostSequence(post.getGeneralPostSequence())
-                            .crewId(post.getCrew() != null ? Math.toIntExact(post.getCrew().getCrewId()) : null)  // crewId가 null일 경우 처리
-                            .authorId(post.getAuthor() != null && post.getAuthor().getUserId() != null
-                                    ? Math.toIntExact(post.getAuthor().getUserId())
-                                    : null)  // authorId가 null일 경우 처리
+                            .crewId(post.getCrew() != null ? Math.toIntExact(post.getCrew().getCrewId()) : null)
+                            .authorId(Math.toIntExact(post.getAuthor().getUserId()))
                             .title(post.getTitle())
                             .content(post.getContent())
                             .maxParticipants(post.getMaxParticipants())
@@ -39,6 +39,15 @@ public class GeneralPostSequenceResponseDto {
                             .distance(post.getDistance())
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
+                            // 이미지 정보 추가
+                            .fileDtos(post.getJoinPostImages() != null ?
+                                    post.getJoinPostImages().stream()
+                                            .map(image -> new FileDto(
+                                                    image.getFileName(),
+                                                    image.getImageUrl()
+                                            ))
+                                            .collect(Collectors.toList())
+                                    : new ArrayList<>())
                             .build())
                     .collect(Collectors.toList());
         }

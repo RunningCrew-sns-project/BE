@@ -2,11 +2,10 @@ package com.github.accountmanagementproject.exception;
 
 import lombok.Getter;
 
-
 @Getter
-public class ResourceNotFoundException extends MakeRuntimeException {
+public class StorageDeleteFailedException extends MakeRuntimeException {
 
-    private ResourceNotFoundException(ExceptionBuilder exceptionBuilder) {
+    private StorageDeleteFailedException(ExceptionBuilder exceptionBuilder) {
         super(exceptionBuilder);
     }
 
@@ -18,8 +17,8 @@ public class ResourceNotFoundException extends MakeRuntimeException {
         }
 
         @Override
-        public ResourceNotFoundException build() {
-            return new ResourceNotFoundException(this);
+        public StorageDeleteFailedException build() {
+            return new StorageDeleteFailedException(this);
         }
     }
 }

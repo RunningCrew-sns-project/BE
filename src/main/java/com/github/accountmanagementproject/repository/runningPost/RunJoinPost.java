@@ -3,12 +3,15 @@ package com.github.accountmanagementproject.repository.runningPost;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
+import com.github.accountmanagementproject.repository.crew.crewimage.CrewImage;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
+import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -57,6 +60,9 @@ public class RunJoinPost {
     @Enumerated(EnumType.STRING)
     @Column(name = "post_type", nullable = false)
     private PostType postType;   // 게시자 분류
+
+    @OneToMany(mappedBy = "runJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RunJoinPostImage> joinPostImages;
 
     /** ****************************************************************/
 

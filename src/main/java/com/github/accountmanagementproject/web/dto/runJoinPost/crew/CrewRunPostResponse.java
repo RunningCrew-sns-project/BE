@@ -3,10 +3,14 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
+import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Data
@@ -37,8 +41,21 @@ public class CrewRunPostResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private List<FileDto> fileDtos;  // 파일 이미지
+
     // 엔티티 -> DTO 변환
     public static CrewRunPostResponse toDto(RunJoinPost runJoinPost) {
+
+        // 이미지 정보를 FileDto로 변환
+        List<FileDto> fileDtos = runJoinPost.getJoinPostImages() != null ?
+                runJoinPost.getJoinPostImages().stream()
+                        .map(image -> new FileDto(
+                                image.getFileName(),
+                                image.getImageUrl()
+                        ))
+                        .toList()
+                : new ArrayList<>();
+
         return CrewRunPostResponse.builder()
                 .postId(runJoinPost.getPostId())
                 .crewPostSequence(runJoinPost.getCrewPostSequence())
@@ -58,6 +75,7 @@ public class CrewRunPostResponse {
                 .distance(runJoinPost.getDistance())
                 .createdAt(runJoinPost.getCreatedAt())
                 .updatedAt(runJoinPost.getUpdatedAt())
+                .fileDtos(fileDtos)  // 변환된 이미지 정보 추가
                 .build();
     }
 }
