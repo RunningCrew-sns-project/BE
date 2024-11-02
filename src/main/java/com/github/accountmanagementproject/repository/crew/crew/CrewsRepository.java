@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CrewsRepository extends JpaRepository<Crew, Long> {
+
+    Crew findByCrewMasterUserId(Long userId);
 }
