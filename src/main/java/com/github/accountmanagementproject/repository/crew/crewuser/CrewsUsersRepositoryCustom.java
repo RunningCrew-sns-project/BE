@@ -7,4 +7,6 @@ import java.util.List;
 public interface CrewsUsersRepositoryCustom {
 
     List<CrewJoinResponse> findSimpleCrewsUsersByUserEmail(String userEmail);
+
+    List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll);
 }

@@ -10,7 +10,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class MyCrewResponse {
+    private long crewId;
     private String crewName;
-    private String crewDescription;
     private String crewImageUrl;
+    private String crewDescription;
 }

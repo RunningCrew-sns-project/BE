@@ -3,10 +3,12 @@ package com.github.accountmanagementproject.repository.crew.crew;
 import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
 import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
+import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -17,7 +19,7 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
     @Override
     public Optional<CrewDetailResponse> findCrewDetailByCrewId(Long crewId) {
 
-        CrewDetailResponse response = queryFactory
+        List<CrewDetailResponse> response = queryFactory
                 .select(Projections.constructor(CrewDetailResponse.class,
                         QCREW.crewName,
                         QCREW.crewIntroduction,
@@ -32,13 +34,21 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                         QCREW.maxCapacity
                 ))
                 .from(QCREW)
-                .distinct()
                 .leftJoin(QCREW.crewImages, QCrewImage.crewImage)
                 .where(QCREW.crewId.eq(crewId))
-                .fetchOne();
+                .groupBy(QCREW.crewId)
+                .fetch();
 
 
 
-        return Optional.ofNullable(response);
+        return Optional.ofNullable(response.get(0));
+    }
+
+    @Override
+    public List<MyCrewResponse> findMyCrewsByEmail(String email, Boolean isAll) {
+
+
+
+        return List.of();
     }
 }

@@ -16,11 +16,11 @@ public class MyPageCrewAndPostController {
     private final MyPageCrewAndPostService myPageCrewAndPostService;
 
     @GetMapping("/my-crew")
-    public CustomSuccessResponse getMyCrew(@AuthenticationPrincipal String email, @RequestParam Boolean isRequesting){
+    public CustomSuccessResponse getMyCrew(@AuthenticationPrincipal String email, @RequestParam(required = false) Boolean isAll){
 
         return new CustomSuccessResponse.SuccessDetail()
                 .message("내 크루 조회 성공")
-                .responseData(myPageCrewAndPostService.getMyCrew(email, isRequesting))
+                .responseData(myPageCrewAndPostService.getMyCrew(email, isAll))
                 .build();
     }
 }
