@@ -16,7 +16,7 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
     private final JPAQueryFactory queryFactory;
     QCrewsUsers qCrewsUsers = QCrewsUsers.crewsUsers;
 
-    @Override
+    @Override//프론트 테스트를 위한 임시 메서드
     public List<CrewJoinResponse> findSimpleCrewsUsersByUserEmail(String userEmail) {
 
         return queryFactory.select(Projections.constructor(CrewJoinResponse.class,
@@ -33,27 +33,26 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
     public List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll) {
         BooleanExpression expression = myCrewSearchConditions(email, isAll);
 
-
-//        List<CrewsUsers> crewsUsersList = queryFactory
-//                .select(qCrewsUsers)
-//                .from(qCrewsUsers)
-//                .join(qCrewsUsers.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
-//                .join(qCrewsUsers.crewsUsersPk.crew, QCrew.crew).fetchJoin() // Crew 즉시 로딩
-//                .leftJoin(qCrewsUsers.crewsUsersPk.crew.crewImages, QCrewImage.crewImage) // CrewImage 즉시 로딩
-//                .where(expression)
-//                .groupBy(qCrewsUsers.crewsUsersPk)
-//                .fetch();
-
-        List<CrewsUsers> crewsUsersList = queryFactory
+        return queryFactory
                 .selectFrom(qCrewsUsers)
                 .join(qCrewsUsers.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
                 .join(qCrewsUsers.crewsUsersPk.crew, QCrew.crew).fetchJoin()
                 .leftJoin(qCrewsUsers.crewsUsersPk.crew.crewImages, QCrewImage.crewImage).fetchJoin()
                 .where(expression)
                 .fetch();
-
-        return crewsUsersList;
     }
+
+    @Override
+    public List<CrewsUsers> findIMadeCrewsByEmail(String email) {
+
+        return queryFactory.selectFrom(qCrewsUsers)
+                .join(qCrewsUsers.crewsUsersPk.crew, QCrew.crew).fetchJoin()
+                .join(qCrewsUsers.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
+                .leftJoin(qCrewsUsers.crewsUsersPk.crew.crewImages, QCrewImage.crewImage).fetchJoin()
+                .where(QMyUser.myUser.email.eq(email))
+                .fetch();
+    }
+
     private BooleanExpression myCrewSearchConditions(String email, Boolean isAll){
         BooleanExpression expression = QMyUser.myUser.email.eq(email);
         if(isAll == null){//완료된것만

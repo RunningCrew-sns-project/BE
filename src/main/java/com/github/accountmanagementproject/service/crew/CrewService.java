@@ -55,7 +55,7 @@ public class CrewService {
         return crewsUsersRepository.save(new CrewsUsers(crewsUsersPk));
     }
 
-    //테스트를 위한 가입요청내역 반환
+    //프론트 테스트를 위한 가입요청내역 반환
     @Transactional(readOnly = true)
     public List<CrewJoinResponse> requestTest(String email) {
         return crewsUsersRepository.findSimpleCrewsUsersByUserEmail(email);

@@ -9,4 +9,6 @@ public interface CrewsUsersRepositoryCustom {
     List<CrewJoinResponse> findSimpleCrewsUsersByUserEmail(String userEmail);
 
     List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll);
+
+    List<CrewsUsers> findIMadeCrewsByEmail(String email);
 }
