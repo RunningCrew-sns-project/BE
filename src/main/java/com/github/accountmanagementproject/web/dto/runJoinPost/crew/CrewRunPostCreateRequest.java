@@ -44,8 +44,8 @@ public class CrewRunPostCreateRequest {
 
     public static RunJoinPost toEntity(CrewRunPostCreateRequest request, MyUser user, Crew crew) {
         RunJoinPost post = RunJoinPost.builder()
-                .author(user)
-                .crew(crew)
+                .author(user)  // 크루 마스터일 수도 있고, 크루에 승인된 일반 회원일 수도 있음
+                .crew(crew)   // RunJoinPost 가 작성될 크루 (크루가 이미 가입 승인된 상태임)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .maxParticipants(request.getMaxParticipants())

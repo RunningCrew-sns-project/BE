@@ -8,6 +8,7 @@ import com.github.accountmanagementproject.repository.account.user.MyUsersReposi
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
+import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.repository.RunJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
@@ -16,7 +17,6 @@ import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewPostSequenceResponseDto;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.RequiredArgsConstructor;
@@ -47,16 +47,24 @@ public class CrewRunJoinPostService {
     /** crew run post 시작 -----------------------------------------> */
 
     @Transactional
-    public RunJoinPost createCrewPost(CrewRunPostCreateRequest request, MyUser user, Long crewId) {
-        Crew crew = crewRepository.findByCrewMasterUserId(user.getUserId());
-        if(!crew.getCrewId().equals(crewId)) {
-            throw new ResourceNotFoundException.ExceptionBuilder()
-                    .customMessage("크루를 찾을 수 없습니다")
-                    .systemMessage("Crew does not exist")
-                    .request("crewId: " + crewId)
-                    .build();
+    public RunJoinPost createCrewPost(CrewRunPostCreateRequest request, MyUser user, Long crewId) { // TODO : 비동기 처리
+        // 사용자 자격 확인 - 크루 마스터 또는 크루 회원으로 승인(COMPLETED) 여부 확인
+        Crew crew = crewRepository.findById(crewId)
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("크루를 찾을 수 없습니다.")
+                        .systemMessage("Crew does not exist with id: " + crewId)
+                        .request("crewId: " + crewId)
+                        .build());
+
+        boolean isCrewMaster = crew.getCrewMaster().getUserId().equals(user.getUserId());
+        boolean isCrewMember = crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
+                crewId, user.getUserId(), CrewsUsersStatus.COMPLETED); // 특정 사용자가 특정 크루에 가입되어 있고, 승인된 상태인지 확인
+
+        if (!isCrewMaster && !isCrewMember) {
+            throw new UnauthorizedException("게시글을 작성할 권한이 없습니다.");
         }
 
+        // 게시글 생성
         RunJoinPost runJoinPost = CrewRunPostCreateRequest.toEntity(request, user, crew);
 
         // 거리 계산
@@ -87,7 +95,7 @@ public class CrewRunJoinPostService {
 
     // 크루 게시글 상세보기
     @Transactional(readOnly = true)
-    public RunJoinPost getPostByCrewPostSequence(Integer crewPostSequence) {
+    public RunJoinPost getPostByCrewPostSequence(Integer crewPostSequence, MyUser user) {
 
         RunJoinPost crewPost = runJoinPostRepository.findByCrewPostSequence(crewPostSequence)
                 .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
@@ -95,12 +103,33 @@ public class CrewRunJoinPostService {
                         .systemMessage("Post not found with crewPostSequence: " + crewPostSequence)
                         .request("crewPostSequence: " + crewPostSequence)
                         .build());
+
+        if (!isAuthorizedUser(crewPost.getCrew().getCrewId(), user)) {
+            throw new UnauthorizedException("해당 게시물을 조회할 권한이 없습니다.");
+        }
         return crewPost;
     }
 
     // 크루 글 수정
     @Transactional
     public RunJoinPost updateCrewPostByCrewPostSequence(Integer crewPostSequence, Long crewId, MyUser user, CrewRunPostUpdateRequest request) {
+
+        // 사용자 자격 확인 - 크루 마스터 또는 크루 회원으로 승인(COMPLETED) 여부 확인
+        Crew crew = crewRepository.findById(crewId)
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("크루를 찾을 수 없습니다.")
+                        .systemMessage("Crew does not exist with id: " + crewId)
+                        .request("crewId: " + crewId)
+                        .build());
+
+        boolean isAuthorizedUser = crew.getCrewMaster().getUserId().equals(user.getUserId()) ||
+                crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
+                        crewId, user.getUserId(), CrewsUsersStatus.COMPLETED);
+
+        if (!isAuthorizedUser) {
+            throw new UnauthorizedException("게시글을 수정할 권한이 없습니다.");
+        }
+
         RunJoinPost crewPost = runJoinPostRepository.findByCrewPostSequence(crewPostSequence)
                 .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
                         .customMessage("게시글을 찾을 수 없습니다")
@@ -108,12 +137,9 @@ public class CrewRunJoinPostService {
                         .request("crewPostSequence: " + crewPostSequence)
                         .build()
                 );
-//        if(!crewPost.getCrew().getCrewId().equals(crewId)) {
-//            throw new ResourceNotFoundException("Crew does not exist");
-//        }
 
-        if(!crewPost.getAuthor().getUserId().equals(user.getUserId())) {
-            throw new UnauthorizedException("게시글 작성자가 아닙니다. 수정 권한이 없습니다.");
+        if (!crewPost.getAuthor().getUserId().equals(user.getUserId())) {
+            throw new UnauthorizedException("게시글 작성자만 수정할 수 있습니다.");
         }
 
 //        // 거리 재계산
@@ -125,7 +151,7 @@ public class CrewRunJoinPostService {
 //
 //        return runJoinPostRepository.save(updatedPost);
         try {
-            // 기존 이미지 URL 목록 저장 (롤백을 위해)
+            // 기존 이미지 URL 목록 저장 (롤백 시 사용)
             List<String> oldImageUrls = crewPost.getJoinPostImages().stream()
                     .map(RunJoinPostImage::getImageUrl)
                     .toList();
@@ -176,7 +202,22 @@ public class CrewRunJoinPostService {
 
     // 게시글 삭제
     @Transactional
-    public void deleteCrewPostByCrewPostSequence(Integer crewPostSequence, Long userId) {
+    public void deleteCrewPostByCrewPostSequence(Integer crewPostSequence, MyUser user, Long crewId) {
+        Crew crew = crewRepository.findById(crewId)
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("크루를 찾을 수 없습니다.")
+                        .systemMessage("Crew does not exist with id: " + crewId)
+                        .request("crewId: " + crewId)
+                        .build());
+
+        boolean isAuthorizedUser = crew.getCrewMaster().getUserId().equals(user.getUserId()) ||
+                crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
+                        crewId, user.getUserId(), CrewsUsersStatus.COMPLETED);
+
+        if (!isAuthorizedUser) {
+            throw new UnauthorizedException("게시글을 삭제할 권한이 없습니다.");
+        }
+
         RunJoinPost crewPost = runJoinPostRepository.findByCrewPostSequence(crewPostSequence)
                 .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
                         .customMessage("게시글을 찾을 수 없습니다")
@@ -184,11 +225,10 @@ public class CrewRunJoinPostService {
                         .request("crewPostSequence: " + crewPostSequence)
                         .build());
 
-        if(!crewPost.getAuthor().getUserId().equals(userId)) {
-            throw new UnauthorizedException("게시글 작성자가 아닙니다. 삭제 권한이 없습니다.");
+        if (!crewPost.getAuthor().getUserId().equals(user.getUserId())) {
+            throw new UnauthorizedException("게시글 작성자만 삭제할 수 있습니다.");
         }
 
-//        runJoinPostRepository.delete(crewPost);
         try {
             // S3에서 이미지 파일 삭제
             List<String> imageUrls = crewPost.getJoinPostImages().stream()
@@ -234,8 +274,13 @@ public class CrewRunJoinPostService {
      *  크루 게시물만 가져오기
      *  filter 적용
      */
-    public PageResponseDto<CrewPostSequenceResponseDto> getAllCrewPosts(PageRequestDto pageRequestDto) {
+    public PageResponseDto<CrewPostSequenceResponseDto> getAllCrewPosts(PageRequestDto pageRequestDto, MyUser user) {
         Pageable pageable = pageRequestDto.getPageable();
+        Long crewId = pageRequestDto.getCrewId();
+
+        if (crewId != null && !isAuthorizedUser(crewId, user)) {
+            throw new UnauthorizedException("크루 목록을 조회할 권한이 없습니다.");
+        }
 
         Slice<RunJoinPost> crewJoinPosts = runJoinPostRepository
                 .findPosts(pageRequestDto.getCrewId(), pageRequestDto.getDate(), pageRequestDto.getLocation(), pageable);
@@ -256,6 +301,16 @@ public class CrewRunJoinPostService {
 
         // PageResponseDto에 변환된 Slice 결과를 감싸서 반환
         return new PageResponseDto<>(resultSlice);
+    }
+
+
+    // 권한 확인하기
+    public boolean isAuthorizedUser(Long crewId, MyUser user) {
+        return crewRepository.findById(crewId)
+                .map(crew -> crew.getCrewMaster().getUserId().equals(user.getUserId()) ||
+                        crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
+                                crewId, user.getUserId(), CrewsUsersStatus.COMPLETED))
+                .orElse(false);
     }
 
 
