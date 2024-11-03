@@ -92,6 +92,20 @@ public class ExceptionControllerAdvice {
         return makeResponse(HttpStatus.UNPROCESSABLE_ENTITY, messageAndRequest);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public CustomErrorResponse handleResourceNotFoundException(ResourceNotFoundException messageAndRequest) {
+        return makeResponse(HttpStatus.NOT_FOUND, messageAndRequest);
+    }
+
+    @ExceptionHandler(StorageDeleteFailedException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public CustomErrorResponse handleStorageDeleteFailedException(StorageDeleteFailedException messageAndRequest) {
+        return makeResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageAndRequest);
+    }
+
+
+
     @ExceptionHandler(DataIntegrityViolationException.class)//데이터 무결성 위반
     public CustomErrorResponse handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
         Map<String, String> duplicateInfo = getDuplicateKeyAndValue(ex.getMessage());

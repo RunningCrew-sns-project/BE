@@ -3,12 +3,14 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.general;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
@@ -36,6 +38,8 @@ public class GeneralRunPostUpdateRequest {
     private String targetLocation; // 종료 위치
     private double targetLatitude; // 종료 위도
     private double targetLongitude; // 종료 경도
+
+    private List<FileDto> fileDtos;  // 파일 이미지
 
 
     public RunJoinPost updateEntity(RunJoinPost post, MyUser user) {

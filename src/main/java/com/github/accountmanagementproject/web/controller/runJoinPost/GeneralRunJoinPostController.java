@@ -38,15 +38,21 @@ public class GeneralRunJoinPostController {
 
 
     // user 가 crew 인 경우
-    @PostMapping("/{crewId}")
+    @PostMapping("/{crewId}/create")
     @ResponseStatus(HttpStatus.CREATED)
     public CustomSuccessResponse createCrewPost(
             @RequestBody @Valid GeneralRunPostCreateRequest request,
             @PathVariable Long crewId,
             @RequestParam String email) {
 
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)      // TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
 
         RunJoinPost runJoinPost = generalRunJoinPostService.createGeneralPostByCrew(request, user, crewId);
         GeneralRunPostResponse responseDto = GeneralRunPostResponse.toDto(runJoinPost);
@@ -60,12 +66,18 @@ public class GeneralRunJoinPostController {
 
 
     // user 가 crew 가 아닌 경우
-    @PostMapping("")
+    @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public CustomSuccessResponse createGeneralPost(
             @RequestBody @Valid GeneralRunPostCreateRequest request, @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)      // TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
 
         RunJoinPost runJoinPost = generalRunJoinPostService.createGeneralPost(request, user);
         GeneralRunPostResponse responseDto = GeneralRunPostResponse.toDto(runJoinPost);
@@ -97,8 +109,14 @@ public class GeneralRunJoinPostController {
     public CustomSuccessResponse updatePostByGeneralPostSequence(@PathVariable Integer generalPostSequence,
                                                                  @RequestBody @Valid GeneralRunPostUpdateRequest request,
                                                                  @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//        MyUser user = accountConfig.findMyUser(principal); // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)    // TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
         RunJoinPost updatedPost = generalRunJoinPostService.updateGeneralPost(generalPostSequence, user, request);
         GeneralRunPostResponse responseDto = GeneralRunPostResponse.toDto(updatedPost);
 
@@ -114,8 +132,14 @@ public class GeneralRunJoinPostController {
     @DeleteMapping("/delete/{generalPostSequence}")
     public CustomSuccessResponse deletePostByGeneralPostSequence(@PathVariable Integer generalPostSequence,
                                                                  @RequestParam String email) {
-        //        MyUser user = accountConfig.findMyUser(principal);
-        MyUser user = usersRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        //        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)   // TODO: 수정 예정
+                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
+                        .customMessage("사용자를 찾을 수 없습니다")
+                        .systemMessage("User not found with email: " + email)
+                        .request("email: " + email)
+                        .build()
+                );
         generalRunJoinPostService.deleteGeneralPost(generalPostSequence, user);
 
         return new CustomSuccessResponse.SuccessDetail()

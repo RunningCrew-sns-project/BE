@@ -1,8 +1,10 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,15 @@ public class CrewPostSequenceResponseDto {
                             .distance(post.getDistance())
                             .createdAt(post.getCreatedAt())
                             .updatedAt(post.getUpdatedAt())
+                            // 이미지 정보 추가
+                            .fileDtos(post.getJoinPostImages() != null ?
+                                    post.getJoinPostImages().stream()
+                                            .map(image -> new FileDto(
+                                                    image.getFileName(),
+                                                    image.getImageUrl()
+                                            ))
+                                            .collect(Collectors.toList())
+                                    : new ArrayList<>())
                             .build())
                     .collect(Collectors.toList());
         }
