@@ -23,7 +23,10 @@ public class CrewsUsers {
 
     public CrewsUsers(CrewsUsersPk crewsUsersPk){
         this.crewsUsersPk = crewsUsersPk;
+    }
+    public CrewsUsers requestToJoin(){
         this.status = CrewsUsersStatus.WAITING;
         this.applicationDate = LocalDateTime.now();
+        return this;
     }
 }

@@ -14,18 +14,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-    QCrewsUsers qCrewsUsers = QCrewsUsers.crewsUsers;
+    private final QCrewsUsers QCREWSUSERS = QCrewsUsers.crewsUsers;
 
     @Override//프론트 테스트를 위한 임시 메서드
     public List<CrewJoinResponse> findSimpleCrewsUsersByUserEmail(String userEmail) {
 
         return queryFactory.select(Projections.constructor(CrewJoinResponse.class,
-                        qCrewsUsers.crewsUsersPk.crew.crewName,
-                        qCrewsUsers.status,
-                        qCrewsUsers.applicationDate))
-                .from(qCrewsUsers)
-                .join(qCrewsUsers.crewsUsersPk.crew)
-                .where(qCrewsUsers.crewsUsersPk.user.email.eq(userEmail))
+                        QCREWSUSERS.crewsUsersPk.crew.crewName,
+                        QCREWSUSERS.status,
+                        QCREWSUSERS.applicationDate))
+                .from(QCREWSUSERS)
+                .join(QCREWSUSERS.crewsUsersPk.crew)
+                .where(QCREWSUSERS.crewsUsersPk.user.email.eq(userEmail))
                 .fetch();
     }
 
@@ -33,25 +33,19 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
     public List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll) {
         BooleanExpression expression = myCrewSearchConditions(email, isAll);
 
+
+
+
         return queryFactory
-                .selectFrom(qCrewsUsers)
-                .join(qCrewsUsers.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
-                .join(qCrewsUsers.crewsUsersPk.crew, QCrew.crew).fetchJoin()
-                .leftJoin(qCrewsUsers.crewsUsersPk.crew.crewImages, QCrewImage.crewImage).fetchJoin()
+                .selectFrom(QCREWSUSERS)
+                .join(QCREWSUSERS.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
+                .join(QCREWSUSERS.crewsUsersPk.crew, QCrew.crew).fetchJoin()
+                .leftJoin(QCREWSUSERS.crewsUsersPk.crew.crewImages, QCrewImage.crewImage).fetchJoin()
                 .where(expression)
+                .orderBy(isAll==null ? QCREWSUSERS.joinDate.desc():QCREWSUSERS.applicationDate.desc())
                 .fetch();
     }
 
-    @Override
-    public List<CrewsUsers> findIMadeCrewsByEmail(String email) {
-
-        return queryFactory.selectFrom(qCrewsUsers)
-                .join(qCrewsUsers.crewsUsersPk.crew, QCrew.crew).fetchJoin()
-                .join(qCrewsUsers.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
-                .leftJoin(qCrewsUsers.crewsUsersPk.crew.crewImages, QCrewImage.crewImage).fetchJoin()
-                .where(QMyUser.myUser.email.eq(email))
-                .fetch();
-    }
 
     private BooleanExpression myCrewSearchConditions(String email, Boolean isAll){
         BooleanExpression expression = QMyUser.myUser.email.eq(email);

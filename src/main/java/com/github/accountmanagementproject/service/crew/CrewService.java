@@ -52,7 +52,8 @@ public class CrewService {
         if(crewsUsersRepository.existsById(crewsUsersPk))
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("이미 가입했거나 가입 요청 중인 크루입니다.").request(crew.getCrewName()).build();
-        return crewsUsersRepository.save(new CrewsUsers(crewsUsersPk));
+        CrewsUsers joinCrewsUsers = new CrewsUsers(crewsUsersPk);
+        return crewsUsersRepository.save(joinCrewsUsers.requestToJoin());
     }
 
     //프론트 테스트를 위한 가입요청내역 반환

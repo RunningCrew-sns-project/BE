@@ -3,7 +3,6 @@ package com.github.accountmanagementproject.repository.crew.crew;
 import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
 import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
-import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -45,10 +44,13 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
     }
 
     @Override
-    public List<MyCrewResponse> findMyCrewsByEmail(String email, Boolean isAll) {
+    public List<Crew> findIMadeCrewsByEmail(String email) {
 
-
-
-        return List.of();
+        return queryFactory.selectFrom(QCREW)
+                .join(QCREW.crewMaster, QMyUser.myUser).fetchJoin()
+                .leftJoin(QCREW.crewImages, QCrewImage.crewImage).fetchJoin()
+                .where(QMyUser.myUser.email.eq(email))
+                .orderBy(QCREW.createdAt.desc())
+                .fetch();
     }
 }

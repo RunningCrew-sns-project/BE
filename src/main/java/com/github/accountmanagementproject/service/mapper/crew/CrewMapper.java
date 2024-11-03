@@ -26,18 +26,22 @@ public interface CrewMapper {
     @Mapping(target = "crewId", source = "crew.crewsUsersPk.crew.crewId")
     @Mapping(target = "crewName", source = "crew.crewsUsersPk.crew.crewName")
     @Mapping(target = "crewIntroduction", source = "crew.crewsUsersPk.crew.crewIntroduction")
-    @Mapping(target = "crewMaster", source = "isMaster")
+    @Mapping(target = "crewMaster", expression = "java(crew.getStatus() == null ? true : false)")
     @Mapping(target = "crewImageUrl", expression = "java(crew.getCrewsUsersPk().getCrew().getCrewImages().isEmpty() ? null : crew.getCrewsUsersPk().getCrew().getCrewImages().get(0).getImageUrl())")
-    @Mapping(target = "requestOrCompletionDate", expression = "java(crew.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ? crew.getJoinDate() : crew.getApplicationDate())")
-    MyCrewResponse crewsUsersToMyCrewResponse(CrewsUsers crew, boolean isMaster);
+    @Mapping(target = "requestOrCompletionDate",
+            expression = "java(crew.getStatus() == " +
+                    "com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ?" +
+                    " crew.getJoinDate() " +
+                    ": (crew.getStatus() == null ? crew.getCrewsUsersPk().getCrew().getCreatedAt() : crew.getApplicationDate()))")
+    @Mapping(target = "status", source = "crew.status")
+    MyCrewResponse crewsUsersToMyCrewResponse(CrewsUsers crew);
 
 
 
 
 
-    default List<MyCrewResponse> crewsUsersListToMyCrewResponseList(List<CrewsUsers> crewsUsers, boolean isCrewMaster) {
-        return crewsUsers.stream()
-                .map(crew -> crewsUsersToMyCrewResponse(crew, isCrewMaster)).toList();
+    default List<MyCrewResponse> crewsUsersListToMyCrewResponseList(List<CrewsUsers> crewsUsers) {
+        return crewsUsers.stream().map(this::crewsUsersToMyCrewResponse).toList();
     }
 
 

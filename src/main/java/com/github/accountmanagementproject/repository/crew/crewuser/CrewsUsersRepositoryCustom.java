@@ -10,5 +10,4 @@ public interface CrewsUsersRepositoryCustom {
 
     List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll);
 
-    List<CrewsUsers> findIMadeCrewsByEmail(String email);
 }
