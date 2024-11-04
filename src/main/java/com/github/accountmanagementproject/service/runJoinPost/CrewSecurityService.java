@@ -1,7 +1,6 @@
 package com.github.accountmanagementproject.service.runJoinPost;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;

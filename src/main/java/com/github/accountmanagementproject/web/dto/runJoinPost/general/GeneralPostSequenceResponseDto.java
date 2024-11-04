@@ -1,7 +1,6 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.general;
 
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Data;
 

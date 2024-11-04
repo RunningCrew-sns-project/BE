@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
-import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Builder;
@@ -10,7 +10,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Data

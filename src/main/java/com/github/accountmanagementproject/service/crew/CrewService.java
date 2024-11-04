@@ -10,8 +10,9 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersPk;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
-import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
-import com.github.accountmanagementproject.web.dto.crews.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,12 +52,20 @@ public class CrewService {
         if(crewsUsersRepository.existsById(crewsUsersPk))
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("이미 가입했거나 가입 요청 중인 크루입니다.").request(crew.getCrewName()).build();
-        return crewsUsersRepository.save(new CrewsUsers(crewsUsersPk));
+        CrewsUsers joinCrewsUsers = new CrewsUsers(crewsUsersPk);
+        return crewsUsersRepository.save(joinCrewsUsers.requestToJoin());
     }
 
-    //테스트를 위한 가입요청내역 반환
+    //프론트 테스트를 위한 가입요청내역 반환
     @Transactional(readOnly = true)
     public List<CrewJoinResponse> requestTest(String email) {
         return crewsUsersRepository.findSimpleCrewsUsersByUserEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public CrewDetailResponse getCrewDetail(Long crewId) {
+        return crewsRepository.findCrewDetailByCrewId(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+
     }
 }

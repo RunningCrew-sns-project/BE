@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost;
 
-import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
 import lombok.Builder;
 import lombok.Data;

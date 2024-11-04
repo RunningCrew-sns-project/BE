@@ -3,7 +3,6 @@ package com.github.accountmanagementproject.repository.runningPost;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
-import com.github.accountmanagementproject.repository.crew.crewimage.CrewImage;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;

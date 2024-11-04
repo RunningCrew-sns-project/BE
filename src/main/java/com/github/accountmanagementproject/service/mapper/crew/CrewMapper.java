@@ -5,8 +5,9 @@ import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crewattachment.CrewAttachment;
 import com.github.accountmanagementproject.repository.crew.crewimage.CrewImage;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
-import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
-import com.github.accountmanagementproject.web.dto.crews.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
 import org.mapstruct.AfterMapping;
@@ -14,9 +15,36 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
+
+import java.util.List;
+
 @Mapper
 public interface CrewMapper {
     CrewMapper INSTANCE = Mappers.getMapper(CrewMapper.class);
+
+
+    @Mapping(target = "crewId", source = "crew.crewsUsersPk.crew.crewId")
+    @Mapping(target = "crewName", source = "crew.crewsUsersPk.crew.crewName")
+    @Mapping(target = "crewIntroduction", source = "crew.crewsUsersPk.crew.crewIntroduction")
+    @Mapping(target = "crewMaster", expression = "java(crew.getStatus() == null ? true : false)")
+    @Mapping(target = "crewImageUrl", expression = "java(crew.getCrewsUsersPk().getCrew().getCrewImages().isEmpty() ? null : crew.getCrewsUsersPk().getCrew().getCrewImages().get(0).getImageUrl())")
+    @Mapping(target = "requestOrCompletionDate",
+            expression = "java(crew.getStatus() == " +
+                    "com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ?" +
+                    " crew.getJoinDate() " +
+                    ": (crew.getStatus() == null ? crew.getCrewsUsersPk().getCrew().getCreatedAt() : crew.getApplicationDate()))")
+    @Mapping(target = "status", source = "crew.status")
+    MyCrewResponse crewsUsersToMyCrewResponse(CrewsUsers crew);
+
+
+
+
+
+    default List<MyCrewResponse> crewsUsersListToMyCrewResponseList(List<CrewsUsers> crewsUsers) {
+        return crewsUsers.stream().map(this::crewsUsersToMyCrewResponse).toList();
+    }
+
+
 
     @Mapping(target = "crewImages", source = "creationRequest.crewImageUrls")
     @Mapping(target = "crewAttachments", source = "creationRequest.fileDtos")

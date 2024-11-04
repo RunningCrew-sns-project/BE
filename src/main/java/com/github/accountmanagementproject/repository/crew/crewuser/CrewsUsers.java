@@ -21,9 +21,16 @@ public class CrewsUsers {
     @Column(name = "application_date")
     private LocalDateTime applicationDate;
 
+    @Column(name = "caveat")
+    private Integer caveat;
+
     public CrewsUsers(CrewsUsersPk crewsUsersPk){
         this.crewsUsersPk = crewsUsersPk;
+    }
+    public CrewsUsers requestToJoin(){
         this.status = CrewsUsersStatus.WAITING;
         this.applicationDate = LocalDateTime.now();
+        this.caveat = 0;
+        return this;
     }
 }

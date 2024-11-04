@@ -69,6 +69,7 @@ public class SignUpLoginService {
             try {
                 return jwtProvider.saveRefreshTokenAndCreateTokenDto(accessToken, refreshToken, Duration.ofMinutes(3));
             }catch (RedisConnectionFailureException e){
+                e.printStackTrace();
                 throw new CustomServerException.ExceptionBuilder()
                         .systemMessage(e.getMessage())
                         .customMessage("Redis 서버 연결 실패")

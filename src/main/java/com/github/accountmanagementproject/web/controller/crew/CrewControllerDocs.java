@@ -1,8 +1,9 @@
 package com.github.accountmanagementproject.web.controller.crew;
 
-import com.github.accountmanagementproject.web.dto.crews.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -120,4 +121,51 @@ public interface CrewControllerDocs {
 
     @Operation(summary = "나의 크루 가입 요청내역보기", description = "테스트를 위한 가입요청내역 반환")
     CustomSuccessResponse requestTest(String email);
+
+    @Operation(summary = "크루 상세 조회", description = "크루 상세 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "크루 상세 조회 성공",
+            content = @Content(mediaType = "application/json",
+                    examples =
+                    @ExampleObject(name = "크루 상세 조회 응답",
+                            description = "⬆️⬆️ 상태코드 200, responseData에 상세 정보를 담아 응답합니다.",
+                            value = """
+                                    {
+                                       "success": {
+                                         "code": 200,
+                                         "httpStatus": "OK",
+                                         "message": "크루 상세 조회 성공",
+                                         "responseData": {
+                                           "crewName": "런닝크루6",
+                                           "crewIntroduction": "크루설명입니당",
+                                           "crewImageUrl": "https://png.pngtree.com/png-clipart/20200625/ourmid/pngtree-boys-sports-running-fitness-png-image_2266304.jpg",
+                                           "crewMaster": "졸령",
+                                           "activityRegion": "송파",
+                                           "createdAt": "2024-10-28T12:46:38",
+                                           "memberCount": 1,
+                                           "maxCapacity": 70
+                                         },
+                                         "timestamp": "2024-10-31T21:21:57.8307578"
+                                       }
+                                     }""")
+            )
+    )
+    @ApiResponse(responseCode = "404", description = "크루 없음",
+            content = @Content(mediaType = "application/json",
+                    examples =
+                    @ExampleObject(name = "크루 찾기 실패 응답",
+                            description = "⬆️⬆️ 상태코드 404 해당 crewId로 크루를 찾을 수 없을때",
+                            value = """
+                                    {
+                                       "error": {
+                                         "code": 404,
+                                         "httpStatus": "NOT_FOUND",
+                                         "customMessage": "해당 크루를 찾을 수 없습니다.",
+                                         "request": 1,
+                                         "timestamp": "2024-10-31 21:25:20"
+                                       }
+                                     }""")
+            )
+    )
+    CustomSuccessResponse getCrewDetail(@Parameter(description = "크루 고유번호", example = "5") Long crewId);
+
 }
