@@ -38,7 +38,7 @@
 			const url = `http://localhost:8080/api/blog?size=${size}` + (nextCursor.blogId ? `&cursor=${nextCursor.blogId}` : "");
 			const response = await fetch(url, {
 				headers: {
-					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzAxOTg3NDcsImV4cCI6MTczMDIwMjM0Nywic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.Ddo8pSmphnas0SM6fUIsFCLK66_KhKDSRL_rVNxCaOc'
+					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA2OTgzMDUsImV4cCI6MTczMDcwMTkwNSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.jRS0n7ILe4hCUuauZLYWdNwh5uIZfZSLBS53bJYtxiA'
 				}
 			});
 
