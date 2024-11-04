@@ -57,7 +57,7 @@ public class GeneralRunJoinPostService {
         }
 
         // 거리 계산
-        double calculatedDistance = this.calculateDistance(
+        double calculatedDistance = GeoUtil.calculateDistance(
                 request.getInputLatitude(), request.getInputLongitude(), request.getTargetLatitude(), request.getTargetLongitude());
 
 
@@ -89,7 +89,7 @@ public class GeneralRunJoinPostService {
     @Transactional
     public RunJoinPost createGeneralPost(GeneralRunPostCreateRequest request, MyUser user) {
         // 거리 계산
-        double calculatedDistance = this.calculateDistance(
+        double calculatedDistance = GeoUtil.calculateDistance(
                 request.getInputLatitude(), request.getInputLongitude(), request.getTargetLatitude(), request.getTargetLongitude());
 
         RunJoinPost generalPost = GeneralRunPostCreateRequest.toEntity(request, user, null);
@@ -159,7 +159,7 @@ public class GeneralRunJoinPostService {
             }
 
             // 거리 재계산
-            double calculatedDistance = this.calculateDistance(
+            double calculatedDistance = GeoUtil.calculateDistance(
                     request.getInputLatitude(),
                     request.getInputLongitude(),
                     request.getTargetLatitude(),
@@ -247,19 +247,5 @@ public class GeneralRunJoinPostService {
         return new PageResponseDto<>(resultSlice);
     }
 
-
-
-    // TODO : 공통 함수로 만들기
-    // 거리계산 Haversine formula
-    // double lat1, double lon1 : 시작위치,   double lat2, double lon2 : 종료위치
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        lat1 = Math.toRadians(lat1);
-        lon1 = Math.toRadians(lon1);
-        lat2 = Math.toRadians(lat2);
-        lon2 = Math.toRadians(lon2);
-
-        double earthRadius = 6371; //Kilometers
-        return earthRadius * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
-    }
 
 }
