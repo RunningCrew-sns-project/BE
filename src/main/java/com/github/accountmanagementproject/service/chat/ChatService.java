@@ -30,8 +30,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatService{
     private final ChatRoomRepository chatRoomRepository;
-    private final MyUsersRepository myUsersJpa;
-    private final AccountConfig accountConfig;
     private final UserChatMappingRepository userChatMappingRepository;
     private final ChatMongoRepository chatMongoRepository;
     private final MongoTemplate mongoTemplate;
