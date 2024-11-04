@@ -210,7 +210,7 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-//    @Scheduled(fixedDelay = 30000) //비동기 타이머 10초마다
+    @Scheduled(fixedDelay = 30000) //비동기 타이머 30초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("blog_*"); //레디스에서 blog_ 패턴에 해당 하는 키 모두 가져오기 (중복 없이)
 

@@ -36,7 +36,7 @@ public class CrewJoinPostDto {
     public static CrewJoinPostDto toDto(CrewJoinPost crewJoinPost) {
         return CrewJoinPostDto.builder()
                 .crewJoinPostId(crewJoinPost.getId())
-                .crewId(crewJoinPost.getCrew() != null ? crewJoinPost.getCrew().getCrewId() : null)
+                .crewId(Long.valueOf(crewJoinPost.getCrew() != null ? crewJoinPost.getCrew().getCrewId() : null))
                 .userId(crewJoinPost.getUser() != null ? crewJoinPost.getUser().getUserId() : null)
                 .content(crewJoinPost.getContent())
                 .maxCrewNumber(crewJoinPost.getMaxCrewNumber())

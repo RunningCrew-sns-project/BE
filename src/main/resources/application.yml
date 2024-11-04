@@ -52,6 +52,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+    mongodb:
+      uri: ENC(ZXsw7oaZXEdF+xz0JNOb1KW8DrKs5DOJlAQpOI/DCBvWUyJYl8FbhN5BWeVxsK2eXoD1TeEaqxseSqNoLZB818YvxmRDaR+W4ktr5VpEx7UjiNIcwifbLVlURfS8KlOEt8UE+sbuJNgAFdws+HbxgnhnxGvEJ+MK)
+      database: RunningCrewChat
+
   mail:  #메일설정
     host: smtp.gmail.com
     port: 587

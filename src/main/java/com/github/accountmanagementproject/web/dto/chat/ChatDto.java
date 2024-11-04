@@ -1,6 +1,9 @@
 package com.github.accountmanagementproject.web.dto.chat;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -20,5 +23,8 @@ public class ChatDto {
     private String sender;//채팅을 보낸 사람 (id)
 //    private String userName; //유저 이름
     private String message;// 메세지
-    private String time; // 채팅 발송 시간
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime time; // 채팅 발송 시간
+
 }

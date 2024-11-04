@@ -1,63 +1,197 @@
-let stompClients = {};
-let isConnected = {};
+let stompClient = null;
+let isConnected = false;
 let roomId = null;
 let accessToken;
 let refreshToken
 let userEmail;
 let userList = [];
+const headers = {
+	'Content-Type': 'application/json',
+	'Authorization' : getAccessToken(),
+	'RefreshToken' : getRefreshToken()
+}
 
 
 // 서버와 연결
-function connect(userList) {
-	if(isConnected[roomId]) {
-		console.log("이미 연결된 소켓")
-		return;
-	}
+function connect() {
+	console.log("connect 함수 실행")
 
-	console.log(userList, userEmail)
-	if(userList.includes(userEmail)) {
+	if(isConnected) {
+		console.log("이미 연결된 소켓")
 		return;
 	}
 
 	const socket = new SockJS('http://localhost:8080/ws');
 	// const socket = new WebSocket("ws://localhost:8080/ws");
-	stompClients[roomId] = Stomp.over(socket);
-	const headers = {
-		'Authorization': getAccessToken(),
-		'RefreshToken': getRefreshToken()
-	};
+	stompClient = Stomp.over(socket);
 
-	stompClients[roomId].connect(headers, function (frame) {
+	stompClient.connect(headers, function (frame) {
 		console.log(`connected to room : ${roomId}`)
-		isConnected[roomId] = true;
+		isConnected = true;
 
 		// 채팅방에 입장하면 메시지 구독
-		stompClients[roomId].subscribe('/sub/chat/room/' + roomId, function (message) {
+		stompClient.subscribe('/sub/chat/room/' + roomId, function (message) {
 			console.log(message)
 			const chatMessage = JSON.parse(message.body)
 			showMessage(chatMessage);
-			if(chatMessage.type === "ENTER")
-				updateUserList(chatMessage.sender);
-			else if (chatMessage.type === "LEAVE")
+
+			updateUserList(chatMessage.sender);
+
+			if (chatMessage.type === "LEAVE")
 				removeUserFromList(chatMessage.sender);
 		});
 
-		const formattedDate = new Date().toISOString();  // ISO 포맷으로 현재 시간
+		const formattedDate = new Date().toISOString()
 
 		// 채팅방에 입장 메시지 전송
-		stompClients[roomId].send('/pub/chat/enterUser', {}, JSON.stringify({
+		stompClient.send('/pub/chat/enterUser', {}, JSON.stringify({
 			'type': "ENTER",
 			'roomId': roomId,
 			'sender': userEmail,
+			'message' : `${userEmail} 입장`,
 			'time': formattedDate
 		}));
 
 		// 클라이언트 상태를 로컬 스토리지에 저장
 		localStorage.setItem(`isConnected`, true);
 		localStorage.setItem(`currentRoomId`, roomId);
+
 	});
+
 }
 
+
+// 메시지 화면에 표시
+function showMessage(chat) {
+	const chatMessagesDiv = document.getElementById('chat-messages');
+
+
+	// 메시지를 감싸는 div 요소 생성 및 클래스 할당
+	const messageWrapper = document.createElement("div");
+	messageWrapper.className = 'message'; // 기본 message 클래스 할당
+
+	const usernameElement = document.createElement('span');
+	usernameElement.className = 'username'
+	usernameElement.innerText = chat.sender;
+
+	// p 요소에 텍스트 추가
+
+	const timeMessageWrapper = document.createElement("div");
+	timeMessageWrapper.className = 'time-message-wrapper';
+
+	const messageElement = document.createElement('p');
+	messageElement.innerText = chat.message
+
+	const timeElement = document.createElement('span');
+	timeElement.className = 'time'
+	timeElement.innerText = formatDateToHHMMSS(chat.time)
+
+	messageWrapper.appendChild(usernameElement)
+
+	// 발신자에 따라 messageWrapper에 추가 클래스 할당
+	if (chat.sender === userEmail) {
+		messageWrapper.classList.add('right'); // message right 클래스 설정
+		timeMessageWrapper.appendChild(timeElement)
+		timeMessageWrapper.appendChild(messageElement)
+	} else {
+		messageWrapper.classList.add('left'); // message left 클래스 설정
+
+		timeMessageWrapper.appendChild(messageElement)
+		timeMessageWrapper.appendChild(timeElement)
+	}
+
+	messageWrapper.appendChild(timeMessageWrapper)
+
+	// messageWrapper에 messageElement 추가하고 chatMessagesDiv에 추가
+	chatMessagesDiv.appendChild(messageWrapper);
+
+	// chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight
+}
+
+let hasMoreMessages = true;
+let lastMessageTime = null
+async function loadPreviousMessages(roomId){
+
+	if(!hasMoreMessages){
+		return;
+	}
+	try {
+		console.log(lastMessageTime)
+		const url = lastMessageTime
+			? `http://localhost:8080/chat/message?roomId=${roomId}&limit=30&lastTime=${lastMessageTime}`
+			: `http://localhost:8080/chat/message?roomId=${roomId}&limit=30`;
+
+		const response = await fetch(url,{
+			headers : headers
+		});
+
+		const data = await response.json();
+		// data.forEach((message) => {
+		// 	showMessage(message);
+		// })
+
+		if(data.length > 0){
+			lastMessageTime = data[data.length -1].time;
+			// lastMessageTime = data[0].time;
+
+			console.log(data)
+			data.forEach((message) => {
+
+				const chatMessagesDiv = document.getElementById('chat-messages');
+
+
+				// 메시지를 감싸는 div 요소 생성 및 클래스 할당
+				const messageWrapper = document.createElement("div");
+				messageWrapper.className = 'message'; // 기본 message 클래스 할당
+
+				const usernameElement = document.createElement('span');
+				usernameElement.className = 'username'
+				usernameElement.innerText = message.sender;
+
+				// p 요소에 텍스트 추가
+
+				const timeMessageWrapper = document.createElement("div");
+				timeMessageWrapper.className = 'time-message-wrapper';
+
+				const messageElement = document.createElement('p');
+				messageElement.innerText = message.message
+
+				const timeElement = document.createElement('span');
+				timeElement.className = 'time'
+				timeElement.innerText = formatDateToHHMMSS(message.time)
+
+				messageWrapper.appendChild(usernameElement)
+
+				// 발신자에 따라 messageWrapper에 추가 클래스 할당
+				if (message.sender === userEmail) {
+					messageWrapper.classList.add('right'); // message right 클래스 설정
+					timeMessageWrapper.appendChild(timeElement)
+					timeMessageWrapper.appendChild(messageElement)
+				} else {
+					messageWrapper.classList.add('left'); // message left 클래스 설정
+
+					timeMessageWrapper.appendChild(messageElement)
+					timeMessageWrapper.appendChild(timeElement)
+				}
+
+				messageWrapper.appendChild(timeMessageWrapper)
+
+				// messageWrapper에 messageElement 추가하고 chatMessagesDiv에 추가
+
+				chatMessagesDiv.prepend(messageWrapper);// prepend 사용하여 위에 추가
+			});
+		}else
+			hasMoreMessages = false;
+
+		data.forEach((message) => {
+			console.log("데이터입니다 : " + message.message)
+		})
+
+	}catch (error){
+		console.log("메세지를 불러오는데 실패했습니다.")
+	}
+
+}
 
 async function login() {
 	const emailOrPhoneNumber = prompt("아이디를 입력하세요");
@@ -100,7 +234,7 @@ function getRefreshToken() {
 	return localStorage.getItem('refreshToken');
 }
 
-function getUsername() {
+function getUserEmail() {
 	return localStorage.getItem('userEmail');
 }
 
@@ -109,12 +243,14 @@ function getUsername() {
 async function loadChatRooms() {
 	try {
 		const response = await fetch('http://localhost:8080/chat/rooms',{
-			headers:{
-				'Content-Type': 'application/json',
-				'Authorization': accessToken,
-				'RefreshToken': refreshToken
-			}
+			headers: headers
 		});  // ChatRoomResponse 데이터를 반환하는 API 호출
+		if(!response.ok) {
+			localStorage.removeItem('accessToken');
+			localStorage.removeItem('refreshToken');
+			localStorage.removeItem('userEmail');
+			login()
+		}
 		const rooms = await response.json();
 		displayChatRooms(rooms);
 	} catch (error) {
@@ -143,6 +279,9 @@ function displayChatRooms(rooms) {
 // 채팅방 입장
 async function joinRoom(id, title) {
 	roomId = id;
+
+	console.log("joinroom 함수에서 룸 아이디"+roomId)
+
 	document.getElementById('chat-room').style.display = 'block';
 	document.getElementById('chat-controls').style.display = 'block';
 	document.getElementById('chat-room-title').innerText = title;
@@ -153,35 +292,37 @@ async function joinRoom(id, title) {
 	try {
 		const response = await getUserList();  // 채팅방 유저 리스트 불러오기
 		userList = await response.json();
+
+		console.log("응답 유저 리스트 : " + userList)
 		displayUserList(userList);  // 유저 목록 표시
+
 		console.log("연결된 유저 리스트 : " + userList)
 		console.log("내 이름 : " + userEmail)
 
-		if(!stompClients[roomId]){
-			connect(userList)
+		if(!stompClient){
+			connect()
 		}
 		// connect(userList);  // 서버 연결 후 메시지 구독
 		loadChatRooms();
+		loadPreviousMessages(roomId);
 
 	} catch (error) {
 		console.error('Error loading user list:', error);
 	}
 }
 
+
+
 async function getUserList(){
 
 	return await fetch(`http://localhost:8080/chat/userlist/${roomId}`,{
-		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': localStorage.getItem('accessToken'),
-			'RefreshToken': localStorage.getItem('refreshToken'),
-		}
+		headers: headers
 	});
 }
 
 // 유저 목록 표시
 function displayUserList(userList) {
-
+	console.log("userList ::::::" + userList)
 	const userListDiv = document.getElementById('user-list');
 	userListDiv.innerHTML = '';  // 이전 유저 목록 제거
 
@@ -202,7 +343,10 @@ function displayUserList(userList) {
 
 	// 나머지 유저들을 추가
 	userList.forEach(user => {
-		console.log(addedUsers)
+		addedUsers.forEach(value => {
+			console.log("추가된 유저 : " + value)
+		})
+
 		if (!addedUsers.has(user)) { // 이미 추가된 유저가 아닌 경우에만 추가
 			const userElement = document.createElement('p');
 			userElement.textContent = user;
@@ -241,6 +385,11 @@ async function removeUserFromList(userToRemove) {
 			break;  // 제거한 후 반복 종료
 		}
 	}
+
+	const response = await getUserList();
+	userList = await response.json();
+	displayUserList(userList);
+	loadChatRooms()
 }
 
 
@@ -256,11 +405,7 @@ async function createChatRoom() {
 	try {
 		const response = await fetch('http://localhost:8080/chat/createRoom', {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': accessToken,
-				'RefreshToken': refreshToken
-			},
+			headers: headers,
 			body: roomName,  // roomName을 JSON 형태로 전달
 		});
 
@@ -280,59 +425,63 @@ async function createChatRoom() {
 // 이벤트 리스너 추가
 document.getElementById('create-room-btn').addEventListener('click', createChatRoom);
 
-// 메시지 화면에 표시
-function showMessage(chat) {
-	const chatMessagesDiv = document.getElementById('chat-messages');
-	const messageElement = document.createElement('p');
-	if(chat.sender === userEmail)
-		messageElement.className = 'message right'
-	else
-		messageElement.className = 'message left';
+function formatDateToHHMMSS(isoString) {
+	// ISO 문자열을 Date 객체로 변환
+	const date = new Date(isoString);
 
-	messageElement.innerText = `${chat.message}`;
-	chatMessagesDiv.appendChild(messageElement);
+	// 시간을 HH:mm:ss 형식으로 포맷팅
+	const pad = (n) => (n < 10 ? '0' + n : n); // 한 자리 수를 두 자리로 포맷
+
+	const month = date.getMonth() + 1;
+	const day = date.getDate();
+
+	const hours = pad(date.getHours());
+	const minutes = pad(date.getMinutes());
+
+	return `${month}/${day} ${hours}:${minutes}`;
 }
 
 // 메시지 전송
 function sendMessage() {
 	console.log("sendMessage 호출")
 	const messageBox = document.getElementById('message-box');
-	const formattedDate = new Date().toISOString();
+	const formattedDate = new Date().toISOString()
+
 	const message = messageBox.value.trim();
 
 	console.log("메시지 박스 값:", message);
 	console.log("roomId 값:", roomId);
-	console.log("stompClients:", stompClients);
+	console.log("stompClient:", stompClient);
 
-	if (message && stompClients[roomId]) {
+	if (message && stompClient) {
 		console.log("조건문")
-		stompClients[roomId].send('/pub/chat/sendMessage', {}, JSON.stringify({
+		stompClient.send('/pub/chat/sendMessage', {}, JSON.stringify({
 			'type': "TALK",
 			'roomId': roomId,
 			'sender': userEmail,
 			'message': message,
 			'time': formattedDate
 		}));
-		// showMessage(message)
 		messageBox.value = '';  // 메시지 보낸 후 입력창 초기화
 	}
 	console.log("sendMessage 호출 끝")
 }
 
+
 // 채팅방 퇴장
 async function leaveRoom() {
-	const formattedDate = new Date().toISOString();
+	const formattedDate = new Date().toISOString()
 
-	if (stompClients[roomId]) {
+	if (stompClient) {
 
-		stompClients[roomId].send('/pub/chat/leaveUser', {}, JSON.stringify({
+		stompClient.send('/pub/chat/leaveUser', {}, JSON.stringify({
 			'type': "LEAVE",
 			'roomId': roomId,
 			'sender': userEmail,
 			'time': formattedDate
 		}));
 
-		removeUserFromList(userEmail)
+		await removeUserFromList(userEmail)
 
 		try {
 			// UI 업데이트
@@ -348,10 +497,9 @@ async function leaveRoom() {
 			console.error('Error leaving room:', error);
 		}
 
-		stompClients[roomId].disconnect(() => {
+		stompClient.disconnect(() => {
 			console.log("Disconnected");
-			isConnected[roomId] = false;
-			delete stompClients[roomId];
+			isConnected = false;
 			localStorage.removeItem(`isConnected`);
 			localStorage.removeItem(`currentRoomId`);
 		});
@@ -361,8 +509,6 @@ async function leaveRoom() {
 	chatMessagesDiv.innerHTML = '';
 	const userListDiv = document.getElementById('user-list');
 	userListDiv.innerHTML = '';
-
-	loadChatRooms()
 }
 
 // 이벤트 리스너 설정
@@ -377,28 +523,29 @@ document.getElementById('message-box').addEventListener('keydown', function(even
 	}
 });
 
-function initializeStompClients() {
-	const savedRoomId = localStorage.getItem('currentRoomId');
-	const savedIsConnected = localStorage.getItem('isConnected') === 'true';
-
-	if (savedIsConnected && savedRoomId) {
-		roomId = savedRoomId;
-		// 기존의 stompClient를 다시 연결
-		connect(userList);
-	}
-}
-
 
 // 페이지 로드 시 채팅방 목록 불러오기
 window.onload = () => {
 	accessToken = getAccessToken();
 	refreshToken = getRefreshToken();
-	userEmail = getUsername();
+	userEmail = getUserEmail();
 
-	if (accessToken && userEmail) {
-		loadChatRooms();
-		initializeStompClients();
-	} else {
-		login(); // 로그인 함수 호출
+	if(accessToken && userEmail) {
+		loadChatRooms()
 	}
+	else
+		login()
 };
+
+const chatMessages = document.getElementById('chat-messages');
+let isLoading = false;
+
+chatMessages.addEventListener('scroll', () => {
+	// 스크롤이 맨 위에 도달했는지 확인
+	if (chatMessages.scrollTop === 0 && !isLoading) {
+		isLoading = true; // 로딩 상태로 설정
+		loadPreviousMessages(roomId).then(() => {
+			isLoading = false; // 로딩이 끝난 후 상태를 원래대로 되돌림
+		});
+	}
+});
