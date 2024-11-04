@@ -63,6 +63,19 @@ public class RunJoinPost {
     @OneToMany(mappedBy = "runJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RunJoinPostImage> joinPostImages;
 
+
+    public void addJoinPostImage(RunJoinPostImage image) {
+        joinPostImages.add(image);
+        image.setRunJoinPost(this);  // 연관관계 설정
+    }
+
+    public void clearJoinPostImages() {
+        for (RunJoinPostImage image : joinPostImages) {
+            image.setRunJoinPost(null);  // 참조 해제
+        }
+        joinPostImages.clear();  // 고아 상태로 만들기
+    }
+
     /** ****************************************************************/
 
     // 시작 위치
