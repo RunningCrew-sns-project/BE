@@ -1,8 +1,10 @@
 package com.github.accountmanagementproject.service.runJoinPost;
 
 import com.github.accountmanagementproject.exception.ResourceNotFoundException;
+import com.github.accountmanagementproject.exception.SimpleRunAppException;
 import com.github.accountmanagementproject.exception.StorageDeleteFailedException;
 import com.github.accountmanagementproject.exception.UnauthorizedException;
+import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
@@ -51,11 +53,7 @@ public class GeneralRunJoinPostService {
     public RunJoinPost createGeneralPostByCrew(GeneralRunPostCreateRequest request, MyUser user, Long crewId) {
         Crew crew = crewRepository.findByCrewMasterUserId(user.getUserId());
         if(!crew.getCrewId().equals(crewId)) {
-            throw new ResourceNotFoundException.ExceptionBuilder()
-                    .customMessage("크루를 찾을 수 없습니다")
-                    .systemMessage("Crew does not exist")
-                    .request("crewId: " + crewId)
-                    .build();
+            throw new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found with ID: " + crewId);
         }
 
         // 거리 계산
@@ -122,11 +120,7 @@ public class GeneralRunJoinPostService {
     @Transactional(readOnly = true)
     public RunJoinPost getPostByGeneralPostSequence(Integer generalPostSequence) {
         RunJoinPost crewPost = runJoinPostRepository.findByGeneralPostSequence(generalPostSequence)
-                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
-                        .customMessage("게시글을 찾을 수 없습니다")
-                        .systemMessage("Post not found with generalPostSequence: " + generalPostSequence)
-                        .request("generalPostSequence: " + generalPostSequence)
-                        .build());
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with generalPostSequence: " + generalPostSequence));
         return crewPost;
     }
 
@@ -135,14 +129,10 @@ public class GeneralRunJoinPostService {
     public RunJoinPost updateGeneralPost(Integer generalPostSequence, MyUser user, GeneralRunPostUpdateRequest request) {
 
         RunJoinPost crewPost = runJoinPostRepository.findByGeneralPostSequence(generalPostSequence)
-                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
-                        .customMessage("게시글을 찾을 수 없습니다")
-                        .systemMessage("Post not found with generalPostSequence: " + generalPostSequence)
-                        .request("crewPostSequence: " + generalPostSequence)
-                        .build());
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with generalPostSequence: " + generalPostSequence));
 
         if(!crewPost.getAuthor().getUserId().equals(user.getUserId())) {
-            throw new UnauthorizedException("게시글 작성자가 아닙니다. 수정 권한이 없습니다.");
+            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_EDIT, "게시물 작성자가 아닙니다. userId: " + user.getUserId());
         }
 
         try {
@@ -190,7 +180,8 @@ public class GeneralRunJoinPostService {
                         .collect(Collectors.toList());
                 storageService.uploadCancel(newImageUrls);
             }
-            throw e;
+            throw new SimpleRunAppException(ErrorCode.STORAGE_UPDATE_FAILED,
+                    String.format("Error while updating post: %s", e.getMessage()));
         }
     }
 
@@ -199,14 +190,11 @@ public class GeneralRunJoinPostService {
     @Transactional
     public void deleteGeneralPost(Integer generalPostSequence, MyUser user) {
         RunJoinPost crewPost = runJoinPostRepository.findByGeneralPostSequence(generalPostSequence)
-                .orElseThrow(() -> new ResourceNotFoundException.ExceptionBuilder()
-                        .customMessage("게시글을 찾을 수 없습니다")
-                        .systemMessage("Post not found with generalPostSequence: " + generalPostSequence)
-                        .request("generalPostSequence: " + generalPostSequence)
-                        .build());
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with generalPostSequence: " + generalPostSequence));
+
 
         if(!crewPost.getAuthor().getUserId().equals(user.getUserId())) {
-            throw new UnauthorizedException("게시글 작성자가 아닙니다. 수정 권한이 없습니다.");
+            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_EDIT, "게시물 작성자가 아닙니다. userId: " + user.getUserId());
         }
 
 //        runJoinPostRepository.delete(crewPost);
@@ -225,11 +213,8 @@ public class GeneralRunJoinPostService {
 
         } catch (Exception e) {
             log.error("게시글 삭제 중 오류 발생: {}", e.getMessage());
-            throw new StorageDeleteFailedException.ExceptionBuilder()
-                    .customMessage("게시글 삭제 중 오류가 발생했습니다")
-                    .systemMessage("Error while deleting post: " + e.getMessage())
-                    .request("") // 또는 관련 식별자
-                    .build();
+            throw new SimpleRunAppException(ErrorCode.STORAGE_DELETE_FAILED,
+                    String.format("Error while deleting post: %s", e.getMessage()));
         }
     }
 
