@@ -1,8 +1,6 @@
 package com.github.accountmanagementproject.service.runJoinPost;
 
-import com.github.accountmanagementproject.exception.ResourceNotFoundException;
 import com.github.accountmanagementproject.exception.SimpleRunAppException;
-import com.github.accountmanagementproject.exception.StorageDeleteFailedException;
 import com.github.accountmanagementproject.exception.UnauthorizedException;
 import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
@@ -23,20 +21,26 @@ import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostU
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@CacheConfig(cacheNames = "crewPosts")
 public class CrewRunJoinPostService {
 
     private final RunJoinPostRepository runJoinPostRepository;
@@ -46,9 +50,48 @@ public class CrewRunJoinPostService {
     private final StorageService storageService;
 
 
-    /** crew run post 시작 -----------------------------------------> */
+    /**
+     * crew run post 시작 ----------------------------------------->
+     */
+
+    @Async
+    @Transactional
+    public CompletableFuture<Void> processPostDetails(Long postId, CrewRunPostCreateRequest request) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                RunJoinPost post = runJoinPostRepository.findById(Math.toIntExact(postId))
+                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId));
+
+                // 거리 계산
+                double calculatedDistance = GeoUtil.calculateDistance(
+                        request.getInputLatitude(), request.getInputLongitude(),
+                        request.getTargetLatitude(), request.getTargetLongitude());
+
+                // 이미지 처리
+                if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
+                    post.clearJoinPostImages();  // 기존 이미지를 제거하여 orphan 상태로 만듦
+
+                    // 새로운 이미지 DTO를 순회하며 엔티티를 생성하고 기존 컬렉션에 추가
+                    for (FileDto fileDto : request.getFileDtos()) {
+                        RunJoinPostImage newImage = RunJoinPostImage.builder()
+                                .fileName(fileDto.getFileName())
+                                .imageUrl(fileDto.getFileUrl())
+                                .build();
+                        post.addJoinPostImage(newImage);  // 연관관계 편의 메서드 사용
+                    }
+                }
+
+                post.setDistance(calculatedDistance);
+                runJoinPostRepository.save(post);
+            } catch (Exception e) {
+                log.error("Failed to process post details: {}", e.getMessage(), e);
+            }
+        });
+    }
+
 
     @Transactional
+    @CacheEvict(allEntries = true)
     public RunJoinPost createCrewPost(CrewRunPostCreateRequest request, MyUser user, Long crewId) {
 
         // 사용자 자격 확인 - 크루 마스터 또는 크루 회원으로 승인(COMPLETED) 여부 확인
@@ -74,24 +117,18 @@ public class CrewRunJoinPostService {
         runJoinPost.setCrewPostSequence(maxCrewPostSequence + 1);
         runJoinPost.setDistance(calculatedDistance);
 
-        // 이미지 정보가 있다면 추가
-        if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
-            List<RunJoinPostImage> images = request.getFileDtos().stream()
-                    .map(fileDto -> RunJoinPostImage.builder()
-                            .runJoinPost(runJoinPost)
-                            .fileName(fileDto.getFileName())
-                            .imageUrl(fileDto.getFileUrl())
-                            .build())
-                    .collect(Collectors.toList());
-            runJoinPost.setJoinPostImages(images);
-        }
+        RunJoinPost savedPost = runJoinPostRepository.save(runJoinPost);
 
-        runJoinPostRepository.save(runJoinPost);
-        return runJoinPost;
+        // 3. 비동기로 추가 정보 처리 (거리 계산, 이미지 처리)
+        processPostDetails(savedPost.getPostId(), request);
+
+        return savedPost;
     }
+
 
     // 크루 게시글 상세보기
     @Transactional(readOnly = true)
+    @Cacheable(key = "'post_' + #crewPostSequence")
     public RunJoinPost getPostByCrewPostSequence(Integer crewPostSequence, MyUser user) {
 
         RunJoinPost crewPost = runJoinPostRepository.findByCrewPostSequence(crewPostSequence)
@@ -105,6 +142,7 @@ public class CrewRunJoinPostService {
 
     // 크루 글 수정
     @Transactional
+    @CacheEvict(allEntries = true)
     public RunJoinPost updateCrewPostByCrewPostSequence(Integer crewPostSequence, Long crewId, MyUser user, CrewRunPostUpdateRequest request) {
         // 사용자 자격 확인 - 크루 마스터 또는 크루 회원으로 승인(COMPLETED) 여부 확인
         Crew crew = crewRepository.findById(crewId)
@@ -184,6 +222,7 @@ public class CrewRunJoinPostService {
 
     // 게시글 삭제
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteCrewPostByCrewPostSequence(Integer crewPostSequence, MyUser user, Long crewId) {
         Crew crew = crewRepository.findById(crewId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found with ID: " + crewId));
@@ -245,6 +284,7 @@ public class CrewRunJoinPostService {
      *  크루 게시물만 가져오기
      *  filter 적용
      */
+    @Cacheable(key = "'crew_' + #pageRequestDto.crewId + '_page_' + #pageRequestDto.page + '_user_' + #user.userId")
     public PageResponseDto<CrewPostSequenceResponseDto> getAllCrewPosts(PageRequestDto pageRequestDto, MyUser user) {
         Pageable pageable = pageRequestDto.getPageable();
 

@@ -16,26 +16,33 @@ import com.github.accountmanagementproject.repository.runningPost.repository.Run
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralPostSequenceResponseDto;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@CacheConfig(cacheNames = "generalPosts")
 public class GeneralRunJoinPostService {
 
     private final RunJoinPostRepository runJoinPostRepository;
@@ -47,9 +54,42 @@ public class GeneralRunJoinPostService {
 
     /** general run post 시작 -----------------------------------------> */
 
-
-    // (crewId 가 있는) 크루인 유저가 글 생성
+    @Async
     @Transactional
+    public CompletableFuture<Void> processGeneralPostDetails(Long postId, GeneralRunPostCreateRequest request) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                RunJoinPost post = runJoinPostRepository.findById(Math.toIntExact(postId))
+                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId));
+
+                // 거리 계산
+                double calculatedDistance = GeoUtil.calculateDistance(
+                        request.getInputLatitude(), request.getInputLongitude(),
+                        request.getTargetLatitude(), request.getTargetLongitude());
+
+                // 이미지 정보가 있다면 추가
+                if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
+                    post.clearJoinPostImages();  // 기존 이미지를 제거하여 orphan 상태로 만듦
+
+                    for (FileDto fileDto : request.getFileDtos()) {
+                        RunJoinPostImage newImage = RunJoinPostImage.builder()
+                                .fileName(fileDto.getFileName())
+                                .imageUrl(fileDto.getFileUrl())
+                                .build();
+                        post.addJoinPostImage(newImage);  // 연관관계 편의 메서드 사용
+                    }
+                }
+                post.setDistance(calculatedDistance);
+                runJoinPostRepository.save(post);  // 변경 사항을 저장
+            } catch (Exception e) {
+                log.error("Failed to process post details: {}", e.getMessage(), e);
+            }
+        });
+    }
+
+    // (crewId 가 있는) 크루인 유저가 글 생성  TODO: 삭제 예정
+    @Transactional
+    @CacheEvict(allEntries = true)
     public RunJoinPost createGeneralPostByCrew(GeneralRunPostCreateRequest request, MyUser user, Long crewId) {
         Crew crew = crewRepository.findByCrewMasterUserId(user.getUserId());
         if(!crew.getCrewId().equals(crewId)) {
@@ -87,37 +127,26 @@ public class GeneralRunJoinPostService {
 
     // 일반 유저가 글 생성
     @Transactional
+    @CacheEvict(allEntries = true)
     public RunJoinPost createGeneralPost(GeneralRunPostCreateRequest request, MyUser user) {
-        // 거리 계산
-        double calculatedDistance = GeoUtil.calculateDistance(
-                request.getInputLatitude(), request.getInputLongitude(), request.getTargetLatitude(), request.getTargetLongitude());
 
         RunJoinPost generalPost = GeneralRunPostCreateRequest.toEntity(request, user, null);
 
         // crewGeneralSequence 값을 설정
         Integer maxGeneralPostSequence = runJoinPostRepository.findMaxGeneralPostSequenceByUserId(user.getUserId());
-
         generalPost.setGeneralPostSequence(maxGeneralPostSequence + 1);
-        generalPost.setDistance(calculatedDistance);
 
-        // 이미지 정보가 있다면 추가
-        if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
-            List<RunJoinPostImage> images = request.getFileDtos().stream()
-                    .map(fileDto -> RunJoinPostImage.builder()
-                            .runJoinPost(generalPost)
-                            .fileName(fileDto.getFileName())
-                            .imageUrl(fileDto.getFileUrl())
-                            .build())
-                    .collect(Collectors.toList());
-            generalPost.setJoinPostImages(images);
-        }
+        // 엔티티 저장 후 ID를 기반으로 비동기 작업 호출
+        RunJoinPost savedPost = runJoinPostRepository.save(generalPost);
+        processGeneralPostDetails(savedPost.getPostId(), request);
 
-        return runJoinPostRepository.save(generalPost);
+        return savedPost;
     }
 
 
     // 게시글 상세보기
     @Transactional(readOnly = true)
+    @Cacheable(key = "'post_' + #generalPostSequence")
     public RunJoinPost getPostByGeneralPostSequence(Integer generalPostSequence) {
         RunJoinPost crewPost = runJoinPostRepository.findByGeneralPostSequence(generalPostSequence)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with generalPostSequence: " + generalPostSequence));
@@ -126,6 +155,7 @@ public class GeneralRunJoinPostService {
 
     // 글 수정
     @Transactional
+    @CacheEvict(allEntries = true)
     public RunJoinPost updateGeneralPost(Integer generalPostSequence, MyUser user, GeneralRunPostUpdateRequest request) {
 
         RunJoinPost crewPost = runJoinPostRepository.findByGeneralPostSequence(generalPostSequence)
@@ -188,6 +218,7 @@ public class GeneralRunJoinPostService {
 
     // 게시글 삭제
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteGeneralPost(Integer generalPostSequence, MyUser user) {
         RunJoinPost crewPost = runJoinPostRepository.findByGeneralPostSequence(generalPostSequence)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with generalPostSequence: " + generalPostSequence));
@@ -223,8 +254,8 @@ public class GeneralRunJoinPostService {
      * 목록 가져오기
      *  General post 게시물만 가져오기
      *  filter 적용
-     *  TODO: 이미지 response
      */
+    @Cacheable(key = "'all_' + #pageRequestDto.page + '_' + #pageRequestDto.size + '_date_' + #pageRequestDto.date + '_location_' + #pageRequestDto.location")
     public PageResponseDto<GeneralPostSequenceResponseDto> getAllGeneralPosts(PageRequestDto pageRequestDto) {
         Pageable pageable = pageRequestDto.getPageable();
 
