@@ -1,9 +1,11 @@
 package com.github.accountmanagementproject.service.crew;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
+import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
 import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.exception.DuplicateKeyException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
@@ -26,6 +28,7 @@ public class CrewService {
     private final AccountConfig accountConfig;
     private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
+    private final MyUsersRepository myUsersRepository;
 
     @Transactional
     public void crewCreation(@Valid CrewCreationRequest request, String email) {
@@ -67,5 +70,34 @@ public class CrewService {
         return crewsRepository.findCrewDetailByCrewId(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
 
+    }
+
+    //크루원 퇴장시키기
+    @Transactional
+    public String sendOutCrew(String crewMasterEmail, Long crewId, Integer outCrewId) {
+        //요청한 사람 유저 확인
+        MyUser crewMaster = accountConfig.findMyUser(crewMasterEmail);
+
+        //내보낼 유저
+        MyUser outCrewUser = myUsersRepository.findById(outCrewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 유저를 찾을 수 없습니다.").request(outCrewId).build());
+
+        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+
+        //크루마스터인지 확인
+        if(!crew.getCrewMaster().equals(crewMaster)){
+            throw new CustomBadCredentialsException.ExceptionBuilder()
+                    .customMessage("크루 마스터가 아닙니다")
+                    .build();
+        }
+
+        CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, outCrewUser);
+
+        CrewsUsers crewsUser = crewsUsersRepository.findByCrewsUsersPk(crewsUsersPk);
+
+        crewsUsersRepository.delete(crewsUser);
+
+        return "crewUser : " + crewsUser +" 을/를 성공적으로 퇴장시켰습니다.";
     }
 }

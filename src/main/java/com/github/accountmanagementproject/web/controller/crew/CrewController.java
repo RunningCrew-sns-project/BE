@@ -50,4 +50,13 @@ public class CrewController implements CrewControllerDocs{
                 .responseData(crewService.getCrewDetail(crewId))
                 .build();
     }
+    @DeleteMapping("/sendOutCrew")
+    public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
+                                             @RequestParam Long crewId,
+                                             @RequestParam Integer outCrewId){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("퇴장시키기 성공")
+                .responseData(crewService.sendOutCrew(email, crewId, outCrewId))
+                .build();
+    }
 }

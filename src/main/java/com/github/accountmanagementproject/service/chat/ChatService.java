@@ -1,10 +1,14 @@
 package com.github.accountmanagementproject.service.chat;
 
+import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
+import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
+import com.github.accountmanagementproject.service.ExeTimer;
+import com.github.accountmanagementproject.web.dto.chat.*;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
 import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
@@ -13,19 +17,28 @@ import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
 import com.github.accountmanagementproject.web.dto.chat.UserResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatService {
+public class ChatService{
     private final ChatRoomRepository chatRoomRepository;
     private final MyUsersRepository myUsersJpa;
     private final AccountConfig accountConfig;
     private final UserChatMappingRepository userChatMappingRepository;
+    private final ChatMongoRepository chatMongoRepository;
+    private final MongoTemplate mongoTemplate;
 
     // 전체 채팅방 조회
     public List<ChatRoomResponse> findAllRoom(){
@@ -75,22 +88,6 @@ public class ChatService {
         chatRoom.setUserCount(userList.size());
         return chatRoom;
     }
-//
-//    @Transactional
-//    // 채팅방 인원 +1
-//    public void increaseUser(Integer roomId){
-//        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-//        chatRoom.setUserCount(chatRoom.getUserCount() + 1);
-//        chatRoomRepository.save(chatRoom);
-//    }
-//
-//    @Transactional
-//    // 채팅방 인원 -1
-//    public void decreaseUser(Integer roomId){
-//        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-//        chatRoom.setUserCount(chatRoom.getUserCount()-1);
-//        chatRoomRepository.save(chatRoom);
-//    }
 
     @Transactional
     //채팅방 유저 리스트에 유저추가
@@ -135,10 +132,28 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
 
         return userChatMappingRepository.findAllByChatRoom(chatRoom).stream()
-                .map(UserChatMapping::getUser)
-                .map(MyUser::getEmail)
+                .map(userChatMapping -> userChatMapping.getUser().getEmail())
                 .toList();
     }
 
+    @ExeTimer
+    public List<ChatMongoDto> getMessageByRoomId(Integer roomId, MyUser user, Integer limit, Optional<LocalDateTime> lastTime) {
+        LocalDateTime lastTimeStamp = lastTime.orElse(LocalDateTime.now());
+        log.info(lastTimeStamp.toString());
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+        if(!userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList().contains(user)){
+            throw  new CustomBadCredentialsException.ExceptionBuilder()
+                    .customMessage("참여한 유저가 아닙니다.")
+                    .build();
+        }
+        Query query = new Query();
+        query.addCriteria(Criteria.where("roomId").is(roomId)
+                .and("time").lt(lastTimeStamp));
+        query.with(Sort.by(Sort.Direction.DESC, "time"));
+        query.limit(limit);
 
+        log.info(chatMongoRepository.findAllByRoomId(roomId).toString());
+//        log.info(String.valueOf(mongoTemplate.find(query, ChatMongoDto.class).get(0).toString()));
+        return mongoTemplate.find(query, ChatMongoDto.class);
+    }
 }

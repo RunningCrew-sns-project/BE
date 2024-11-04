@@ -3,9 +3,11 @@ package com.github.accountmanagementproject.web.controller.chat;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
+import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatDto;
+import com.github.accountmanagementproject.web.dto.chat.ChatMongoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -13,32 +15,33 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @Slf4j
+//https://khdscor.tistory.com/122 참고
 public class ChatController {
     private final SimpMessageSendingOperations template;
     private final ChatService chatService;
     private final AccountConfig accountConfig;
     private final MyUsersRepository myUsersJpa;
     private final UserChatMappingRepository userChatMappingRepository;
+    private final ChatMongoRepository chatMongoRepository;
 
+
+    //클라이언트에서 /pub/chat/enterUser로 입장할때 입장 메세지 담아서 요청 보내면 여기서 처리
     @MessageMapping("/chat/enterUser")
-    public void enterUser(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){
+    public void enterUser(
+            @Payload ChatDto chat,
+            StompHeaderAccessor headerAccessor){
 
-        log.info("header accessor : " + headerAccessor.getUser());
-        log.info("user : " + headerAccessor.getUser().getName());
-
+        log.info("principal {}", headerAccessor.getUser().getName());
         MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
 
 //        log.info("enter User {}", principal);
@@ -47,41 +50,52 @@ public class ChatController {
         headerAccessor.getSessionAttributes().put("roomID", chat.getRoomId());
 
         if(!chatService.addUser(chat.getRoomId(), user)){
-            chat.setType(ChatDto.MessageType.ENTER);
-            chat.setSender(user.getEmail());
-//        chat.setUserName(user.getNickname());
-            chat.setMessage(user.getEmail() + "님이 입장하셨습니다. " + changeTime(chat.getTime()));
+            chat.setMessage(user.getEmail() + "님이 입장하셨습니다. ");
             template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+            chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat));
         }
     }
 
+    //클라이언트에서 /pub/chat/sendMessage로 ChatDto의 형태로 담아서 보내면 여기서 처리
     @MessageMapping("/chat/sendMessage")
-    public void sendMessage(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){
+    public void sendMessage(
+            @Payload ChatDto chat,
+            @AuthenticationPrincipal String principal,
+            StompHeaderAccessor headerAccessor){
+
         log.info("chat : {}", chat);
-        MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
-        chat.setType(ChatDto.MessageType.TALK);
-        chat.setSender(user.getEmail());
-//        chat.setUserName(user.getNickname());
-        chat.setMessage(user.getEmail() + " : " + chat.getMessage() + " " + changeTime(chat.getTime()));
+        log.info("principal : {}", principal);
+        log.info("header : {}", headerAccessor.getUser().getName());
+
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+        chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat));
     }
 
+    //클라이언트에서 /pub/chat/leaveUser 로 요청보내면 여기서 처리
     @MessageMapping("/chat/leaveUser")
-    public void leaveUser(@Payload ChatDto chat, StompHeaderAccessor headerAccessor){
+    public void leaveUser(
+            @Payload ChatDto chat,
+            @AuthenticationPrincipal String principal,
+            StompHeaderAccessor headerAccessor){
+
         log.info("chat : {}", chat);
-        MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
+        String userEmail = headerAccessor.getUser().getName();
+
+        MyUser user = accountConfig.findMyUser(userEmail);
         chatService.deleteUser(chat.getRoomId(), user);
-        chat.setType(ChatDto.MessageType.LEAVE);
-        chat.setSender(user.getEmail());
-//        chat.setUserName(user.getNickname());
-        chat.setMessage(user.getEmail() + "님이 퇴장하셨습니다. " + changeTime(chat.getTime()));
+
+        chat.setMessage(user.getEmail() + "님이 퇴장하셨습니다. ");
+
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+        chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat));
     }
 
     @EventListener
     public void handleWebSocketConnectEvent(SessionConnectEvent event){
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
         headerAccessor.setUser(event.getUser());
+        headerAccessor.getSessionAttributes().put("userID", user.getUserId());
 
         log.info("websocket connect event : {}", headerAccessor.getSessionId());
     }
@@ -101,28 +115,6 @@ public class ChatController {
         log.info("headerAccessor : {}", headerAccessor);
         if(user != null){
             log.info("User disconnected : {}", user.getNickname());
-
-//            chatService.deleteUser(roomId, user);
-
-//            ChatDto chat = ChatDto.builder()
-//                    .type(ChatDto.MessageType.LEAVE)
-//                    .sender(user.getNickname())
-//                    .message(user.getNickname() + "님이 퇴장하였습니다.")
-//                    .build();
-//
-//            template.convertAndSend("/sub/chat/room/" + roomId, chat);
         }
-    }
-
-    private String changeTime(String localDateTime){
-        OffsetDateTime utcDateTime = OffsetDateTime.parse(localDateTime);
-
-        ZoneId userZone = ZoneId.of("Asia/Seoul");
-        ZonedDateTime userZoneDateTime = utcDateTime.atZoneSameInstant(userZone);
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-
-        return userZoneDateTime.format(formatter);
-
     }
 }
