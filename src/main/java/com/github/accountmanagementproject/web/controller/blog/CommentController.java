@@ -15,8 +15,15 @@ public class CommentController {
     private final BlogCommentService blogCommentService;
     private final AccountConfig accountConfig;
 
-    @PostMapping("/{blogId}")
-    public String createComment(@PathVariable(name = "blogId") Integer blogId,@RequestBody CommentRequestDTO comment,
+    @GetMapping
+    public String getCommentsByBlogId(@RequestParam(name = "blogId") Integer blogId, @AuthenticationPrincipal String principal) {
+        MyUser user = accountConfig.findMyUser(principal);
+        blogCommentService.getCommentByBlogId(blogId, user);
+        return "댓글 조회 완료";
+    }
+
+    @PostMapping
+    public String createComment(@RequestParam(name = "blogId") Integer blogId,@RequestBody CommentRequestDTO comment,
                                 @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
         blogCommentService.createComment(blogId, comment, user);

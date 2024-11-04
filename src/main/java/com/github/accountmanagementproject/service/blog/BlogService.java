@@ -184,7 +184,7 @@ public class BlogService {
     //비동기적으로 처리 ? redis에 저장해놨다가 나중에 가져와서 db에 저장?
     public CompletableFuture<String> likeBlog(Integer blogId, MyUser user) throws Exception {
 
-        // 좋아요 누르면 redis에 blog_00:11로 저장
+        // 좋아요 누르면 redis에 blog_00:11(유저 아이디)로 저장
         // redis에 저장해놨다가 비동기적으로 나중에 db에 저장
 
         Blog blog = blogRepository.findById(blogId).orElse(null);

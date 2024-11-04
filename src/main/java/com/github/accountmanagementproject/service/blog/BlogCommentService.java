@@ -6,18 +6,29 @@ import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
+import com.github.accountmanagementproject.service.mapper.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
+import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class BlogCommentService {
     private final BlogCommentRepository blogCommentRepository;
     private final BlogRepository blogRepository;
+
+    public List<CommentResponseDTO> getCommentByBlogId(Integer blogId, MyUser user) {
+        Blog blog = blogRepository.findById(blogId).orElseThrow(null);
+
+        return blogCommentRepository.findAllByBlog(blog).stream()
+                .map(CommentMapper.INSTANCE::commentToCommentResponseDTO)
+                .toList();
+    }
 
     @Transactional
     public void createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
@@ -53,4 +64,6 @@ public class BlogCommentService {
         }
         blogCommentRepository.delete(blogComment);
     }
+
+
 }
