@@ -37,7 +37,10 @@ public class GeneralRunJoinPostController {
     private final AccountConfig accountConfig;
 
 
-    // user 가 crew 인 경우
+    /** **************** "일반 User (크루 가입 X)" 또는 "크루"도 이용 가능************************************ */
+
+
+    // user 가 crew 인 경우  TODO: 삭제 예정
     @PostMapping("/{crewId}/create")
     @ResponseStatus(HttpStatus.CREATED)
     public Response<GeneralRunPostResponse> createCrewPost(
@@ -56,7 +59,7 @@ public class GeneralRunJoinPostController {
     }
 
 
-    // user 가 crew 가 아닌 경우
+    // 일반 User (크루 가입 X)
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public Response<GeneralRunPostResponse> createGeneralPost(

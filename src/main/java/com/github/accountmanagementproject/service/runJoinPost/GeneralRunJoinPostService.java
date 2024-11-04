@@ -195,7 +195,6 @@ public class GeneralRunJoinPostService {
                     request.getTargetLatitude(),
                     request.getTargetLongitude());
 
-            // 게시글 정보 업데이트
             RunJoinPost updatedPost = request.updateEntity(crewPost, user);
             updatedPost.setDistance(calculatedDistance);
             updatedPost.setUpdatedAt(LocalDateTime.now());
@@ -239,7 +238,6 @@ public class GeneralRunJoinPostService {
                 storageService.uploadCancel(imageUrls);
             }
 
-            // 게시글 삭제 (이미지 엔티티도 함께 삭제됨 - cascade 설정으로)
             runJoinPostRepository.delete(crewPost);
 
         } catch (Exception e) {

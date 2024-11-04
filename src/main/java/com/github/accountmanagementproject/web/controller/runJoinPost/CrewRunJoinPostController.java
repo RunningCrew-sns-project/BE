@@ -36,6 +36,9 @@ public class CrewRunJoinPostController {
     private final AccountConfig accountConfig;
 
 
+    /** **************** "크루에 가입한 유저(crewId)" 또는 "크루마스터(crewMaster)"만 이용 가능 **************** */
+
+
     // 게시글 생성
     @PostMapping("/{crewId}/create")
     @ResponseStatus(HttpStatus.CREATED)
@@ -61,8 +64,8 @@ public class CrewRunJoinPostController {
     @GetMapping("/sequence/{crewPostSequence}")
     public Response<CrewRunPostResponse> getCrewPostByCrewPostSequence(@PathVariable Integer crewPostSequence, @RequestParam String email) {
         //        MyUser user = accountConfig.findMyUser(principal); // TODO: 수정 예정
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_VIEW));
 
         RunJoinPost findPost = crewRunJoinPostService.getPostByCrewPostSequence(crewPostSequence, user);
         CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(findPost);
@@ -78,7 +81,7 @@ public class CrewRunJoinPostController {
 
 //        MyUser user = accountConfig.findMyUser(principal); // TODO: 수정 예정
         MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_EDIT, "User not found with email: " + email));
 
         RunJoinPost updatedPost = crewRunJoinPostService.updateCrewPostByCrewPostSequence(crewPostSequence, crewId, user, request);
         CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(updatedPost);
@@ -93,7 +96,7 @@ public class CrewRunJoinPostController {
                                                 @RequestParam String email) {
 //        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
         MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
         crewRunJoinPostService.deleteCrewPostByCrewPostSequence(crewPostSequence, user, crewId);
 
@@ -107,8 +110,8 @@ public class CrewRunJoinPostController {
     @GetMapping("/list")
     public Response<PageResponseDto<CrewPostSequenceResponseDto>> getAll(PageRequestDto pageRequestDto, @RequestParam String email) {
         //        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
 
         PageResponseDto<CrewPostSequenceResponseDto> response = crewRunJoinPostService.getAllCrewPosts(pageRequestDto, user);
 

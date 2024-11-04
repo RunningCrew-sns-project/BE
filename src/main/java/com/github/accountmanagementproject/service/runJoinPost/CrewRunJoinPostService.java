@@ -145,8 +145,8 @@ public class CrewRunJoinPostService {
     @CacheEvict(allEntries = true)
     public RunJoinPost updateCrewPostByCrewPostSequence(Integer crewPostSequence, Long crewId, MyUser user, CrewRunPostUpdateRequest request) {
         // 사용자 자격 확인 - 크루 마스터 또는 크루 회원으로 승인(COMPLETED) 여부 확인
-        Crew crew = crewRepository.findById(crewId)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found with ID: " + crewId));
+        Crew crew = crewRepository.findById(crewId)  //
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_EDIT, "Crew not found with ID: " + crewId));
         boolean isAuthorizedUser = crew.getCrewMaster().getUserId().equals(user.getUserId()) ||
                 crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
                         crewId, user.getUserId(), CrewsUsersStatus.COMPLETED);
@@ -161,14 +161,6 @@ public class CrewRunJoinPostService {
             throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_EDIT_AUTHOR_ONLY);
         }
 
-//        // 거리 재계산
-//        double calculatedDistance = this.calculateDistance(
-//                request.getInputLatitude(), request.getInputLongitude(), request.getTargetLatitude(), request.getTargetLongitude());
-//
-//        RunJoinPost updatedPost = request.updateEntity(crewPost, crewPost.getAuthor());
-//        updatedPost.setDistance(calculatedDistance);
-//
-//        return runJoinPostRepository.save(updatedPost);
         try {
             // 기존 이미지 URL 목록 저장 (롤백을 위해)
             List<String> oldImageUrls = crewPost.getJoinPostImages().stream()
@@ -199,7 +191,6 @@ public class CrewRunJoinPostService {
                     request.getTargetLatitude(),
                     request.getTargetLongitude());
 
-            // 게시글 정보 업데이트
             RunJoinPost updatedPost = request.updateEntity(crewPost, user);
             updatedPost.setDistance(calculatedDistance);
             updatedPost.setUpdatedAt(LocalDateTime.now());
@@ -225,7 +216,7 @@ public class CrewRunJoinPostService {
     @CacheEvict(allEntries = true)
     public void deleteCrewPostByCrewPostSequence(Integer crewPostSequence, MyUser user, Long crewId) {
         Crew crew = crewRepository.findById(crewId)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found with ID: " + crewId));
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "Crew not found with ID: " + crewId));
         boolean isAuthorizedUser = crew.getCrewMaster().getUserId().equals(user.getUserId()) ||
                 crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
                         crewId, user.getUserId(), CrewsUsersStatus.COMPLETED);
@@ -240,7 +231,6 @@ public class CrewRunJoinPostService {
             throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE_AUTHOR_ONLY);
         }
 
-//        runJoinPostRepository.delete(crewPost);
         try {
             // S3에서 이미지 파일 삭제
             List<String> imageUrls = crewPost.getJoinPostImages().stream()
@@ -251,7 +241,6 @@ public class CrewRunJoinPostService {
                 storageService.uploadCancel(imageUrls);
             }
 
-            // 게시글 삭제 (이미지 엔티티도 함께 삭제됨 - cascade 설정으로)
             runJoinPostRepository.delete(crewPost);
 
         } catch (Exception e) {
@@ -269,7 +258,7 @@ public class CrewRunJoinPostService {
      * filter 적용
      */
     public PageResponseDto<RunJoinPost> getAll(PageRequestDto pageRequestDto) {
-        // Pageable 객체 생성
+
         Pageable pageable = pageRequestDto.getPageable();
 
         Slice<RunJoinPost> crewJoinPosts = runJoinPostRepository
@@ -289,18 +278,18 @@ public class CrewRunJoinPostService {
         Pageable pageable = pageRequestDto.getPageable();
 
         Long crewId = pageRequestDto.getCrewId();
+        Crew crew = crewRepository.findById(crewId)
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW, "Crew not found with ID: " + crewId));
         if (crewId != null && !isAuthorizedUser(crewId, user)) {
-            throw new UnauthorizedException("크루 목록을 조회할 권한이 없습니다.");
+            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW);
         }
 
         Slice<RunJoinPost> crewJoinPosts = runJoinPostRepository
                 .findPosts(pageRequestDto.getCrewId(), pageRequestDto.getDate(), pageRequestDto.getLocation(), pageable);
 
-        // RunJoinPost 목록을 CrewPostSequenceResponseDto로 변환
-//        Slice<CrewPostSequenceResponseDto> responseDtos = crewJoinPosts.map(CrewPostSequenceResponseDto::new);
         // crewPostSequence로 그룹화한 후, 각 그룹을 CrewPostSequenceResponseDto로 변환
         List<CrewPostSequenceResponseDto> responseDtos = crewJoinPosts.getContent().stream()
-                .filter(post -> post.getCrewPostSequence() != null)  // crewPostSequence가 null이 아닌 항목만 필터링
+                .filter(post -> post.getCrewPostSequence() != null)
                 .collect(Collectors.groupingBy(RunJoinPost::getCrewPostSequence))  // crewPostSequence로 그룹화
                 .values().stream()
                 .map(CrewPostSequenceResponseDto::new)  // 각 그룹을 CrewPostSequenceResponseDto로 변환
