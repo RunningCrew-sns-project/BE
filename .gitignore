@@ -39,6 +39,7 @@ out/
 #자동 생성파일 제외
 
 ./src/main/generated/
+./BuildFile/
 
 src/main/resources/application-local.yml
 

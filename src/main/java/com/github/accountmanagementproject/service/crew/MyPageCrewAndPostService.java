@@ -24,18 +24,16 @@ public class MyPageCrewAndPostService {
     @Transactional(readOnly = true)
     public List<MyCrewResponse> getMyCrew(String email, Boolean isAll){
         List<Crew> theCrewIMade = crewsRepository.findIMadeCrewsByEmail(email);
-        List<CrewsUsers> crewIJoined = crewsUsersRepository.findMyCrewsByEmail(email, isAll);
-        List<CrewsUsers> theCrewIMadeUsers = theCrewIMade.stream()
-                .map(crew -> new CrewsUsers(new CrewsUsersPk(crew, crew.getCrewMaster()))).toList();
+        List<CrewsUsers> entityList = new ArrayList<>();
 
-
-        List<MyCrewResponse> response = new ArrayList<>();
         if(isAll==null||isAll)//요청중인 크루만 조회시 내가만든 크루는 제외
-            response.addAll(CrewMapper.INSTANCE.crewsUsersListToMyCrewResponseList(theCrewIMadeUsers));
+            entityList.addAll(theCrewIMade.stream()
+                    .map(crew -> new CrewsUsers(new CrewsUsersPk(crew, crew.getCrewMaster()))).toList());
 
-        response.addAll(CrewMapper.INSTANCE.crewsUsersListToMyCrewResponseList(crewIJoined));
+        entityList.addAll(crewsUsersRepository.findMyCrewsByEmail(email, isAll));
 
-        return response;
+        return entityList.stream().
+                map(CrewMapper.INSTANCE::crewsUsersToMyCrewResponse).toList();
     }
 
 }

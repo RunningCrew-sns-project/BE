@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "MyPage-Crew-Post", description = "마이페이지 크루 및 게시글 관련 API")
+@Tag(name = "MyPage Crew Post", description = "마이페이지 크루 및 게시글 관련 API")
 public interface MyPageCrewAndPostControllerDocs {
 
     @Operation(summary = "내 크루 조회", description = "내가 만든 크루와 가입한 크루를 조회합니다.")
