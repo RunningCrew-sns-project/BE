@@ -55,44 +55,11 @@ public class BlogService {
     private final BlogImagesRepository blogImagesRepository;
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
-
-//    @ExeTimer
-//    public List<BlogResponseDTO> getAllBlogs(Integer size, MyUser user) {
-//
-//        List<UserLikesBlog> userLikesBlogs = userLikesBlogRepository.findByUser(user);
-//
-//        if(size == null || size <= 0)
-//            size = 10;
-//
-//        Blog lastBlog = blogRepository.findTopByOrderByIdDesc();
-//
-//        if(lastBlog == null)
-//            return Collections.emptyList();
-//
-//        Integer lastBlogId = lastBlog.getId();
-//
-//        PageRequest pageRequest = PageRequest.of(0, size);
-//        Page<Blog> blogPage = blogRepository.findByIdLessThanOrderByIdDesc(lastBlogId + 1, pageRequest);
-//        List<Blog> blogs = blogPage.getContent();
-//
-//        return blogs.stream()
-//                .map(blog -> {
-//                    BlogResponseDTO blogResponseDTO = BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
-//                    blogResponseDTO.setLiked(userLikesBlogs.stream().map(UserLikesBlog::getBlog).toList().contains(blog));
-//                    blogResponseDTO.setImageUrl(blogImagesRepository.findAllByBlog(blog).stream().map(BlogImages::getImageUrl).toList());
-//                    return blogResponseDTO;
-//                })
-//                .toList();
-//    }
-
-    //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
-    public ScrollPaginationCollection<BlogResponseDTO> getAllBlogs(Integer size, Integer cursor, MyUser user) {
+    public ScrollPaginationCollection<BlogResponseDTO> getAllBlogs(Integer size, Integer cursor, MyUser user, Boolean isMyBlog) {
         List<UserLikesBlog> userLikesBlogs = userLikesBlogRepository.findByUser(user);
 
-        if (size == null || size <= 0)
-            size = 10;
+        Integer lastBlogId = null;
 
-        Integer lastBlogId;
         if (cursor != null) {
             lastBlogId = cursor;
         } else {
@@ -105,6 +72,7 @@ public class BlogService {
         List<Blog> blogs = blogPage.getContent();
 
         List<BlogResponseDTO> responseItems = blogs.stream()
+                .filter(blog -> !isMyBlog || blog.getUser().equals(user))
                 .map(blog -> {
                     BlogResponseDTO blogResponseDTO = BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
                     blogResponseDTO.setLiked(userLikesBlogs.stream().map(UserLikesBlog::getBlog).toList().contains(blog));
@@ -157,27 +125,19 @@ public class BlogService {
 
         blogRepository.save(blog); //레포지토리에 저장
 
-        if(blogRequestDTO.getImageUrl() == null || blogRequestDTO.getImageUrl().isEmpty())
-            blogImagesList.add(
-                    BlogImages.builder()
+        for(String imageUrl : blogRequestDTO.getImageUrl()){
+            BlogImages blogImage = BlogImages.builder()
                     .blog(blog)
-                    .imageUrl("https://running-crew.s3.ap-northeast-2.amazonaws.com/default_image/blog_default.jpg")
-                    .build()
-            );
-        else {
-            for(String imageUrl : blogRequestDTO.getImageUrl()){
-                BlogImages blogImage = BlogImages.builder()
-                        .blog(blog)
-                        .imageUrl(imageUrl)
-                        .build();
-                blogImagesList.add(blogImage);
-            }
+                    .imageUrl(imageUrl)
+                    .build();
+            blogImagesList.add(blogImage);
         }
-
         blogImagesRepository.saveAll(blogImagesList);
 
         return BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
     }
+
+
     @ExeTimer
     @Transactional
     @Async
@@ -214,6 +174,10 @@ public class BlogService {
     @Scheduled(fixedDelay = 30000) //비동기 타이머 30초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("blog_*"); //레디스에서 blog_ 패턴에 해당 하는 키 모두 가져오기 (중복 없이)
+
+
+        https://velog.io/@sejinkim/Redis-KEYS-vs-SCAN
+//        여기 한번 보고 수정
 
         for (String key : keys) { //반복문 돌며
             log.info(key);
@@ -264,7 +228,6 @@ public class BlogService {
         blog.setRecord(blogRequestDTO.getRecord());
         blog.setDistance(blogRequestDTO.getDistance());
 
-        blogRepository.save(blog);
 
         for(String imageUrl : blogRequestDTO.getImageUrl()){
             blogImagesRepository.save(BlogImages.builder()
@@ -292,5 +255,6 @@ public class BlogService {
 
         return "성공적으로 삭제하였습니다.";
     }
+
 
 }

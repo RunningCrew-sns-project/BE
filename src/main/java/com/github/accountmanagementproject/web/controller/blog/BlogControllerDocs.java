@@ -21,13 +21,21 @@ public interface BlogControllerDocs {
 
     //블로그 조회
     //TODO : 내가 쓴 글만 보여지게 할지? 필터링 구현 필요할듯
-    @Operation(summary = "블로그 조회", description = "모든 블로그 조회, 무한스크롤링 페이지네이션")
-    @Parameter(name = "size", description = "한번에 보여질 갯수")
-    @Parameter(name = "cursor", description = "시작할 블로그 번호")
+    @Operation(summary = "블로그 조회", description = "isMyBlog에 따라 내가 작성한/모든 블로그 조회, 무한스크롤링 페이지네이션")
+    @Parameters({
+            @Parameter(name = "size", description = "한번에 보여질 갯수"),
+            @Parameter(name = "cursor", description = "시작할 블로그 번호"),
+            @Parameter(name = "isMyBlog", description = "내가 작성한 블로그인지?", examples ={
+                    @ExampleObject(name = "내가 작성한 블로그", value = "true"),
+                    @ExampleObject(name = "모든 블로그", value = "false")
+            })
+    })
+
     @GetMapping
     CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size,
-                                             @RequestParam(required = false) Integer cursor,
-                                             @AuthenticationPrincipal String principal);
+                                      @RequestParam(required = false) Integer cursor,
+                                      @RequestParam Boolean isMyBlog,
+                                      @AuthenticationPrincipal String principal);
 
     @Operation(summary = "블로그 아이디로 조회", description = "블로그 아이디를 받아 블로그 내용 조회")
     @GetMapping("/{blogId}")

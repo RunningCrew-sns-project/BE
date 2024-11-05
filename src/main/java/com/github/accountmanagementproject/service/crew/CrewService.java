@@ -181,6 +181,9 @@ public class CrewService {
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
         }
+        else if(crewsUser.getStatus() == CrewsUsersStatus.COMPLETED){
+            return "이미 가입된 유저입니다";
+        }
         else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.REJECTED);

@@ -29,8 +29,9 @@ public class ChatRoom {
     @Column(name = "user_count")
     private Integer userCount = 0;
 
+    @Builder.Default
     @Column(name = "chat_room_image")
-    private String chatRoomImage;
+    private String chatRoomImage = "https://running-crew.s3.ap-northeast-2.amazonaws.com/default_image/chat_room_default.jpg";
 
     @Override
     public String toString() {

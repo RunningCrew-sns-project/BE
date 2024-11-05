@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
@@ -16,6 +17,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -23,6 +25,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import java.util.Objects;
 
 @RestController
+@RequestMapping("/chat")
 @RequiredArgsConstructor
 @Slf4j
 //https://khdscor.tistory.com/122 참고
@@ -36,7 +39,7 @@ public class ChatController {
 
 
     //클라이언트에서 /pub/chat/enterUser로 입장할때 입장 메세지 담아서 요청 보내면 여기서 처리
-    @MessageMapping("/chat/enterUser")
+    @MessageMapping("/enterUser")
     public void enterUser(
             @Payload ChatDto chat,
             StompHeaderAccessor headerAccessor){
@@ -52,12 +55,12 @@ public class ChatController {
         if(!chatService.addUser(chat.getRoomId(), user)){
             chat.setMessage(user.getEmail() + "님이 입장하셨습니다. ");
             template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
-            chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat));
+            chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
         }
     }
 
     //클라이언트에서 /pub/chat/sendMessage로 ChatDto의 형태로 담아서 보내면 여기서 처리
-    @MessageMapping("/chat/sendMessage")
+    @MessageMapping("/sendMessage")
     public void sendMessage(
             @Payload ChatDto chat,
             @AuthenticationPrincipal String principal,
@@ -66,28 +69,28 @@ public class ChatController {
         log.info("chat : {}", chat);
         log.info("principal : {}", principal);
         log.info("header : {}", headerAccessor.getUser().getName());
+        MyUser user = accountConfig.findMyUser(principal);
 
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
-        chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat));
+        chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
     }
 
     //클라이언트에서 /pub/chat/leaveUser 로 요청보내면 여기서 처리
-    @MessageMapping("/chat/leaveUser")
+    @MessageMapping("/leaveUser")
     public void leaveUser(
             @Payload ChatDto chat,
             @AuthenticationPrincipal String principal,
             StompHeaderAccessor headerAccessor){
 
         log.info("chat : {}", chat);
-        String userEmail = headerAccessor.getUser().getName();
 
-        MyUser user = accountConfig.findMyUser(userEmail);
+        MyUser user = accountConfig.findMyUser(principal);
         chatService.deleteUser(chat.getRoomId(), user);
 
         chat.setMessage(user.getEmail() + "님이 퇴장하셨습니다. ");
 
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
-        chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat));
+        chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
     }
 
     @EventListener
@@ -106,15 +109,18 @@ public class ChatController {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         log.info("이벤트 :!!!! " + event.getMessage().toString());
         log.info(headerAccessor.toString());
-
-        Integer userId = (Integer) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userID");
-        Integer roomId = (Integer) headerAccessor.getSessionAttributes().get("roomID");
-
-        MyUser user = myUsersJpa.findById(userId).orElseThrow(null);
-
-        log.info("headerAccessor : {}", headerAccessor);
-        if(user != null){
-            log.info("User disconnected : {}", user.getNickname());
-        }
+//
+//        Integer userId = (Integer) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("userID");
+//        Integer roomId = (Integer) headerAccessor.getSessionAttributes().get("roomID");
+//
+//        log.warn(userId + "유저아이디!!!!!!!!!!!!!1");
+//
+//        MyUser user = myUsersJpa.findById(userId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+//                .customMessage("유저를 찾을 수 없습니다").build());
+//
+//        log.info("headerAccessor : {}", headerAccessor);
+//        if(user != null){
+//            log.info("User disconnected : {}", user.getNickname());
+//        }
     }
 }
