@@ -63,8 +63,9 @@ public class CrewService {
         else if (crewsUsers.duplicateRequest()) {
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("이미 가입했거나 가입 요청 중인 크루입니다.").request(crew.getCrewName()).build();
-        }
-
+        }else if(LocalDateTime.now().isAfter(crewsUsers.getReleaseDay()))
+            throw new DuplicateKeyException.ExceptionBuilder()
+                    .systemMessage("유효성 검사 실패").customMessage("강퇴 또는 탈퇴한 크루입니다.").request("남은 날짜 : "+crewsUsers.getReleaseDay()).build();
 
         CrewsUsers joinCrewsUsers = new CrewsUsers(crewsUsersPk);
         return crewsUsersRepository.save(joinCrewsUsers.requestToJoin());
