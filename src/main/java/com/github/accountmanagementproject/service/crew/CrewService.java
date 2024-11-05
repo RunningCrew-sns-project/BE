@@ -96,7 +96,6 @@ public class CrewService {
     //크루원 퇴장시키기
     @Transactional
     public String sendOutCrew(String crewMasterEmail, Long crewId, Long outUserId) {
-
 //        //내보낼 유저
 //        MyUser outCrewUser = myUsersRepository.findById(outCrewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
 //                .customMessage("해당 유저를 찾을 수 없습니다.").request(outCrewId).build());
@@ -142,9 +141,10 @@ public class CrewService {
     }
 
     //가입요청을 확인하여 승인, 거절 로직
-    public String approveOrReject(String crewMasterEmail, Long crewId, Integer requestCrewUserId, Boolean approveOrReject) {
+    @Transactional
+    public String approveOrReject(String email, Long crewId, Integer requestCrewUserId, Boolean approveOrReject) {
         //크루 마스터인지 화인
-        if(!crewsRepository.isCrewMaster(crewMasterEmail, crewId)){
+        if(!crewsRepository.isCrewMaster(email, crewId)){
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .customMessage("크루의 마스터가 아닙니다.")
                     .build();
@@ -164,13 +164,10 @@ public class CrewService {
         if(crewsUsers.getStatus() == CrewsUsersStatus.WAITING && approveOrReject){
             //'가입 완료' 상태로 바꾸고
             crewsUsers.setStatus(CrewsUsersStatus.COMPLETED);
-            //crewsUsers db에 저장
-            crewsUsersRepository.save(crewsUsers);
         }
         else {
-            //TODO : 가입 거절 시 로직 구현
+            //가입 거절 시 '가입 거절' 로 상태 바꾸고
             crewsUsers.setStatus(CrewsUsersStatus.REJECTED);
-            crewsUsersRepository.save(crewsUsers);
         }
 
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
