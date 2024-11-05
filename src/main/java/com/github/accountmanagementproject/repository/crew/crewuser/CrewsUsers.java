@@ -38,4 +38,11 @@ public class CrewsUsers {
         this.caveat = 0;
         return this;
     }
+    public boolean duplicateRequest(){
+        return this.status==CrewsUsersStatus.WAITING||this.status==CrewsUsersStatus.COMPLETED;
+    }
+    public boolean forcedExitOrWithdraw(){
+
+        return this.status==CrewsUsersStatus.FORCED_EXIT||this.status==CrewsUsersStatus.WITHDRAWAL;
+    }
 }

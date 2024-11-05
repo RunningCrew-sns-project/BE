@@ -55,9 +55,17 @@ public class CrewService {
         if(crew.getCrewMaster().equals(user))
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("자기가 만든 크루에 가입할 수 없습니다.").request(crew.getCrewName()).build();
-        if(crewsUsersRepository.existsById(crewsUsersPk))
+
+        CrewsUsers crewsUsers = crewsUsersRepository.findById(crewsUsersPk).orElseGet(()->new CrewsUsers(crewsUsersPk));
+
+        if(crewsUsers.getApplicationDate()==null)
+            return crewsUsersRepository.save(crewsUsers.requestToJoin());
+        else if (crewsUsers.duplicateRequest()) {
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("이미 가입했거나 가입 요청 중인 크루입니다.").request(crew.getCrewName()).build();
+        }
+
+
         CrewsUsers joinCrewsUsers = new CrewsUsers(crewsUsersPk);
         return crewsUsersRepository.save(joinCrewsUsers.requestToJoin());
     }

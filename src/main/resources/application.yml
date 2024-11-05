@@ -56,6 +56,31 @@ spring:
       uri: ENC(ZXsw7oaZXEdF+xz0JNOb1KW8DrKs5DOJlAQpOI/DCBvWUyJYl8FbhN5BWeVxsK2eXoD1TeEaqxseSqNoLZB818YvxmRDaR+W4ktr5VpEx7UjiNIcwifbLVlURfS8KlOEt8UE+sbuJNgAFdws+HbxgnhnxGvEJ+MK)
       database: RunningCrewChat
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: alarm-group # 컨슈머 그룹 ID
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+      acks: all
+      batch-size: 16384
+      linger-ms: 1
+      buffer-memory: 33554432
+    admin:
+
+      properties:
+        retry.backoff.ms: 5000   # 재시도 대기 시간
+        request.timeout.ms: 30000  # 요청 타임아웃 시간 (30초)
+        timeout: 60s # 전체 타임아웃 시간 설정
+    topic:
+      new-entity-topic: alarm-topic # 실제 토픽 이름 설정
+
   mail:  #메일설정
     host: smtp.gmail.com
     port: 587

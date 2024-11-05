@@ -30,7 +30,7 @@ public class CrewController implements CrewControllerDocs{
     public CustomSuccessResponse joinCrew(@AuthenticationPrincipal String email,
                                             @PathVariable Long crewId){
         return new CustomSuccessResponse.SuccessDetail()
-                .message("크루 가입 성공")
+                .message("크루 가입 신청 성공")
                 .responseData(crewService.joinTheCrew(email, crewId))
                 .build();
     }
