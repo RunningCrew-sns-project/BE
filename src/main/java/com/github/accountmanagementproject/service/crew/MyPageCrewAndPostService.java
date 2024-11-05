@@ -23,13 +23,13 @@ public class MyPageCrewAndPostService {
 
     @Transactional(readOnly = true)
     public List<MyCrewResponse> getMyCrew(String email, Boolean isAll){
-        List<Crew> theCrewIMade = crewsRepository.findIMadeCrewsByEmail(email);
         List<CrewsUsers> entityList = new ArrayList<>();
 
-        if(isAll==null||isAll)//요청중인 크루만 조회시 내가만든 크루는 제외
+        if(isAll==null||isAll) {//요청중인 크루만 조회시 내가만든 크루는 제외
+            List<Crew> theCrewIMade = crewsRepository.findIMadeCrewsByEmail(email);
             entityList.addAll(theCrewIMade.stream()
                     .map(crew -> new CrewsUsers(new CrewsUsersPk(crew, crew.getCrewMaster()))).toList());
-
+        }
         entityList.addAll(crewsUsersRepository.findMyCrewsByEmail(email, isAll));
 
         return entityList.stream().
