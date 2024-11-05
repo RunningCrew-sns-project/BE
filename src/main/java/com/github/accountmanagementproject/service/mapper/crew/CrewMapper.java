@@ -31,7 +31,7 @@ public interface CrewMapper {
     @Mapping(target = "crewImageUrl", expression = "java(crew.getCrewsUsersPk().getCrew().getCrewImages().isEmpty() ? null : crew.getCrewsUsersPk().getCrew().getCrewImages().get(0).getImageUrl())")
     @Mapping(target = "requestOrCompletionDate",
             expression = "java(crew.getStatus() == " +
-                    "com.github.runningcrewsnsproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ?" +
+                    "com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ?" +
                     " crew.getJoinDate() " +
                     ": (crew.getStatus() == null ? crew.getCrewsUsersPk().getCrew().getCreatedAt() : crew.getApplicationDate()))")
     @Mapping(target = "status", source = "crew.status")
@@ -70,7 +70,7 @@ public interface CrewMapper {
     }
     @Mapping(target = "crewName", source = "joinCrew.crewsUsersPk.crew.crewName")
     @Mapping(target = "applicationDate", dateFormat = "yyyy-MM-dd")
-    @Mapping(target = "joinCompleted", expression = "java(joinCrew.getStatus() == com.github.runningcrewsnsproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED)")
+    @Mapping(target = "joinCompleted", expression = "java(joinCrew.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED)")
     CrewJoinResponse crewsUsersToCrewJoinResponse(CrewsUsers joinCrew);
 
     @Mapping(target = "email", source = "crewsUsersPk.user.email")
@@ -80,7 +80,7 @@ public interface CrewMapper {
     @Mapping(target = "gender", source = "crewsUsersPk.user.gender")
     @Mapping(target = "lastLoginDate", source = "crewsUsersPk.user.lastLogin")
     @Mapping(target = "joinRequestOrJoinDate", expression =
-            "java(crewsUsers.getStatus() == com.github.runningcrewsnsproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ? " +
+            "java(crewsUsers.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ? " +
                     "crewsUsers.getJoinDate() : crewsUsers.getApplicationDate())")
     CrewUserResponse crewsUsersToCrewUserResponse(CrewsUsers crewsUsers);
 }
