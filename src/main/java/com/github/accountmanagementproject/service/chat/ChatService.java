@@ -37,6 +37,7 @@ public class ChatService{
     // 전체 채팅방 조회
     public List<ChatRoomResponse> findAllRoom(){
         //채팅방 생성 순서를 최근순으로 반환
+
         return chatRoomRepository.findAll().stream()
                 .map(chatRoom -> {
                     List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
@@ -45,6 +46,8 @@ public class ChatService{
                     ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
                     chatRoomResponse.setUserCount(userList.size());
                     chatRoomResponse.setUserList(userResponses);
+                    chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
+                    chatRoomResponse.setLastMessageTime(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getTime());
                     return chatRoomResponse;
                 })
                 .toList();
