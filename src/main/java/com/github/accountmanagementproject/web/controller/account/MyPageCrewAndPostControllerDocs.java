@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "MyPage Crew Post", description = "마이페이지 크루 및 게시글 관련 API")
+@Tag(name = "MyPageCrewPost", description = "마이페이지 크루 및 게시글 관련 API")
 public interface MyPageCrewAndPostControllerDocs {
 
     @Operation(summary = "내 크루 조회", description = "내가 만든 크루와 가입한 크루를 조회합니다.")
@@ -174,5 +174,5 @@ public interface MyPageCrewAndPostControllerDocs {
                                     }""")
             )
     )
-    CustomSuccessResponse getMyCrew(String email, @Parameter(name = "조회 조건", description = "null = 내가 만든 크루와 가입완료 크루, true = 전체, false = 요청중인 크루") Boolean all);
+    CustomSuccessResponse getMyCrew(String email, @Parameter(name = "all", description = "null = 내가 만든 크루와 가입완료 크루, true = 전체, false = 요청중인 크루") Boolean all);
 }

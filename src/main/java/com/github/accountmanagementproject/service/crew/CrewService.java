@@ -15,6 +15,7 @@ import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
 import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
 import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -69,8 +70,25 @@ public class CrewService {
     public CrewDetailResponse getCrewDetail(Long crewId) {
         return crewsRepository.findCrewDetailByCrewId(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CrewUserResponse> getCrewUsers(String masterEmail, Long crewId, Boolean all) {
+        isCrewMaster(masterEmail, crewId);
+
+        List<CrewsUsers> crewsUsers = crewsUsersRepository.findCrewUsersByCrewId(crewId, all);
+
+        return crewsUsers.stream().map(CrewMapper.INSTANCE::crewsUsersToCrewUserResponse).toList();
 
     }
+    private void isCrewMaster(String masterEmail, Long crewId) {
+        boolean isCrewMaster = crewsRepository.isCrewMaster(masterEmail, crewId);
+        if(!isCrewMaster)
+            throw new CustomBadCredentialsException.ExceptionBuilder()
+                    .request(masterEmail)
+                    .customMessage("크루 마스터가 아닙니다").build();
+    }
+
 
     //크루원 퇴장시키기
     @Transactional
@@ -100,4 +118,5 @@ public class CrewService {
 
         return "crewUser : " + crewsUser +" 을/를 성공적으로 퇴장시켰습니다.";
     }
+
 }

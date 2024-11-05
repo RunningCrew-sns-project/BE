@@ -10,6 +10,8 @@ public interface CrewsRepositoryCustom {
 
     List<Crew> findIMadeCrewsByEmail(String email);
 
+    boolean isCrewMaster(String masterEmail, Long crewId);
+
 
 //    List<MyCrewResponse> findMyCrewsByEmail(String email, Boolean isRequesting);
 }

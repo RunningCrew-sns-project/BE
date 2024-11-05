@@ -7,6 +7,7 @@ import com.github.accountmanagementproject.repository.crew.crewimage.CrewImage;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
 import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
 import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.CrewUserResponse;
 import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
@@ -72,4 +73,14 @@ public interface CrewMapper {
     @Mapping(target = "joinCompleted", expression = "java(joinCrew.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED)")
     CrewJoinResponse crewsUsersToCrewJoinResponse(CrewsUsers joinCrew);
 
+    @Mapping(target = "email", source = "crewsUsersPk.user.email")
+    @Mapping(target = "nickname", source = "crewsUsersPk.user.nickname")
+    @Mapping(target = "userImageUrl", source = "crewsUsersPk.user.profileImg")
+    @Mapping(target = "profileMessage", source = "crewsUsersPk.user.profileMessage")
+    @Mapping(target = "gender", source = "crewsUsersPk.user.gender")
+    @Mapping(target = "lastLoginDate", source = "crewsUsersPk.user.lastLogin")
+    @Mapping(target = "joinRequestOrJoinDate", expression =
+            "java(crewsUsers.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ? " +
+                    "crewsUsers.getJoinDate() : crewsUsers.getApplicationDate())")
+    CrewUserResponse crewsUsersToCrewUserResponse(CrewsUsers crewsUsers);
 }

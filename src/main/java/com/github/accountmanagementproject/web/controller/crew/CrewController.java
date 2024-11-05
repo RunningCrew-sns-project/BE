@@ -43,6 +43,8 @@ public class CrewController implements CrewControllerDocs{
                 .build();
     }
 
+
+
     @GetMapping("/{crewId}")
     public CustomSuccessResponse getCrewDetail(@PathVariable Long crewId){
         return new CustomSuccessResponse.SuccessDetail()
@@ -50,6 +52,15 @@ public class CrewController implements CrewControllerDocs{
                 .responseData(crewService.getCrewDetail(crewId))
                 .build();
     }
+    @GetMapping("/{crewId}/users")
+    public CustomSuccessResponse getCrewUsers(@PathVariable Long crewId, @RequestParam(required = false) Boolean all, @AuthenticationPrincipal String masterEmail){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 멤버 조회 성공")
+                .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
+                .build();
+    }
+
+
     @DeleteMapping("/sendOutCrew")
     public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,

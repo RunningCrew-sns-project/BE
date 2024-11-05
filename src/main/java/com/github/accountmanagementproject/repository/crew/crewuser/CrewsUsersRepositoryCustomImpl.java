@@ -31,11 +31,7 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
 
     @Override
     public List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll) {
-        BooleanExpression expression = myCrewSearchConditions(email, isAll);
-
-
-
-
+        BooleanExpression expression = mySearchConditions(email, isAll);
         return queryFactory
                 .selectFrom(QCREWSUSERS)
                 .join(QCREWSUSERS.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
@@ -46,9 +42,27 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                 .fetch();
     }
 
+    @Override
+    public List<CrewsUsers> findCrewUsersByCrewId(Long crewId, Boolean all) {
+        BooleanExpression expression = mySearchConditions(crewId, all);
+        return queryFactory
+                .selectFrom(QCREWSUSERS)
+                .join(QCREWSUSERS.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
+                .where(expression)
+                .orderBy(all==null ? QCREWSUSERS.joinDate.desc():QCREWSUSERS.applicationDate.desc())
+                .fetch();
+    }
 
-    private BooleanExpression myCrewSearchConditions(String email, Boolean isAll){
-        BooleanExpression expression = QMyUser.myUser.email.eq(email);
+
+    private <T> BooleanExpression mySearchConditions(T emailOrCrewId, Boolean isAll){
+        BooleanExpression expression;
+        if(emailOrCrewId instanceof String){
+            expression = QMyUser.myUser.email.eq((String) emailOrCrewId);
+        } else if (emailOrCrewId instanceof Long) {
+            expression = QCREWSUSERS.crewsUsersPk.crew.crewId.eq((Long) emailOrCrewId);
+        } else {
+            throw new IllegalArgumentException("emailOrCrewId must be either String or Long");
+        }
         if(isAll == null){//완료된것만
             expression = expression.and(QCrewsUsers.crewsUsers.status.eq(CrewsUsersStatus.COMPLETED));
         } else if (!isAll) {//요청중인것만

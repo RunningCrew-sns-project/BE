@@ -5,7 +5,6 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
-import com.github.accountmanagementproject.web.dto.chat.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

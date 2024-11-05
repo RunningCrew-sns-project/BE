@@ -53,4 +53,13 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .orderBy(QCREW.createdAt.desc())
                 .fetch();
     }
+
+    @Override
+    public boolean isCrewMaster(String masterEmail, Long crewId) {
+        Long fetchOne = queryFactory.select(QCREW.crewId)
+                .from(QCREW)
+                .where(QCREW.crewMaster.email.eq(masterEmail), QCREW.crewId.eq(crewId))
+                .fetchOne();
+        return fetchOne != null;
+    }
 }
