@@ -38,13 +38,14 @@ public class BlogController implements BlogControllerDocs{
                 .build();
     }
 
-    @GetMapping("/{id}")
-    public CustomSuccessResponse getBlogById(@PathVariable Integer id, @AuthenticationPrincipal String principal) {
+    @Override
+    @GetMapping("/{blogId}")
+    public CustomSuccessResponse getBlogById(@PathVariable Integer blogId, @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
                 .message("해당 블로그를 조회했습니다.")
-                .responseData(blogService.getBlogById(id, user))
+                .responseData(blogService.getBlogById(blogId, user))
                 .build();
     }
 

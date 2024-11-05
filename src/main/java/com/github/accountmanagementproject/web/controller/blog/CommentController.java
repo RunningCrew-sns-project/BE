@@ -14,24 +14,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/comment")
 @RequiredArgsConstructor
-public class CommentController {
+public class CommentController implements CommentControllerDocs{
     private final BlogCommentService blogCommentService;
     private final AccountConfig accountConfig;
 
+    @Override
     @GetMapping
     public List<CommentResponseDTO> getCommentsByBlogId(@RequestParam(name = "blogId") Integer blogId, @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
         return blogCommentService.getCommentByBlogId(blogId, user);
     }
 
+    @Override
     @PostMapping
-    public String createComment(@RequestParam(name = "blogId") Integer blogId,@RequestBody CommentRequestDTO comment,
+    public String createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
                                 @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
         blogCommentService.createComment(blogId, comment, user);
         return "댓글 작성 완료";
     }
 
+    @Override
     @PutMapping
     public String updateComment(@RequestParam(name = "commentId") Integer commentId, @RequestBody CommentRequestDTO comment,
                                 @AuthenticationPrincipal String principal){
@@ -40,6 +43,7 @@ public class CommentController {
         return "댓글 수정 완료";
     }
 
+    @Override
     @DeleteMapping
     public String deleteComment(@RequestParam Integer commentId,
                                 @AuthenticationPrincipal String principal) {

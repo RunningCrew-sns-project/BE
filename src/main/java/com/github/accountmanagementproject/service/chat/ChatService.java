@@ -134,7 +134,9 @@ public class ChatService{
     @ExeTimer
     public List<ChatMongoDto> getMessageByRoomId(Integer roomId, MyUser user, Integer limit, Optional<LocalDateTime> lastTime) {
         LocalDateTime lastTimeStamp = lastTime.orElse(LocalDateTime.now());
+
         log.info(lastTimeStamp.toString());
+
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
         if(!userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList().contains(user)){
             throw  new CustomBadCredentialsException.ExceptionBuilder()
