@@ -158,16 +158,20 @@ public class CrewService {
 
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, requestCrewUser);
 
-        CrewsUsers crewsUsers = crewsUsersRepository.findByCrewsUsersPk(crewsUsersPk);
+        CrewsUsers crewsUser = crewsUsersRepository.findById(crewsUsersPk)
+                .orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                        .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(crewsUsersPk).build());
 
         //유저의 상태가 '가입 대기' 상태이고, 승인 요청이라면
-        if(crewsUsers.getStatus() == CrewsUsersStatus.WAITING && approveOrReject){
+        if(crewsUser.getStatus() == CrewsUsersStatus.WAITING && approveOrReject){
             //'가입 완료' 상태로 바꾸고
-            crewsUsers.setStatus(CrewsUsersStatus.COMPLETED);
+            crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
+            crewsUser.setJoinDate(LocalDateTime.now());
         }
         else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
-            crewsUsers.setStatus(CrewsUsersStatus.REJECTED);
+            crewsUser.setStatus(CrewsUsersStatus.REJECTED);
+            crewsUser.setWithdrawalDate(LocalDateTime.now());
         }
 
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
