@@ -60,14 +60,26 @@ public class CrewController implements CrewControllerDocs{
                 .build();
     }
 
-
+    //퇴장 시키기
     @DeleteMapping("/sendOutCrew")
     public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,
-                                             @RequestParam Integer outCrewId){
+                                             @RequestParam Integer outCrewsUsersId){
         return new CustomSuccessResponse.SuccessDetail()
                 .message("퇴장시키기 성공")
-                .responseData(crewService.sendOutCrew(email, crewId, outCrewId))
+                .responseData(crewService.sendOutCrew(email, crewId, outCrewsUsersId))
+                .build();
+    }
+
+    //승인, 거절
+    @PostMapping("/approveOrReject")
+    public CustomSuccessResponse approveOrReject(@AuthenticationPrincipal String email,
+                                                 @RequestParam Long crewId,
+                                                 @RequestParam Integer requestCrewUserId,
+                                                 @RequestParam Boolean approveOrReject){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("처리가 완료되었습니다.")
+                .responseData(crewService.approveOrReject(email, crewId, requestCrewUserId, approveOrReject))
                 .build();
     }
 }

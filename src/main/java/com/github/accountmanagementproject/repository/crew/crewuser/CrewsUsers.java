@@ -4,12 +4,14 @@ import com.github.accountmanagementproject.service.mapper.converter.CrewsUsersSt
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "crews_users")
 @Getter
+@Setter
 @NoArgsConstructor
 public class CrewsUsers {
     @EmbeddedId
@@ -20,7 +22,10 @@ public class CrewsUsers {
     private LocalDateTime joinDate;
     @Column(name = "application_date")
     private LocalDateTime applicationDate;
+    @Column(name = "withdrawal_date")
+    private LocalDateTime withdrawalDate;
 
+    //경고 횟수
     @Column(name = "caveat")
     private Integer caveat;
 
