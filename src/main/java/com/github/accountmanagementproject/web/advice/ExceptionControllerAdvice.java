@@ -2,12 +2,15 @@ package com.github.accountmanagementproject.web.advice;
 
 import com.github.accountmanagementproject.exception.*;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomErrorResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
+@Slf4j
 @Hidden
 @RestControllerAdvice
 public class ExceptionControllerAdvice {
@@ -98,10 +102,17 @@ public class ExceptionControllerAdvice {
         return makeResponse(HttpStatus.NOT_FOUND, messageAndRequest);
     }
 
-    @ExceptionHandler(StorageDeleteFailedException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public CustomErrorResponse handleStorageDeleteFailedException(StorageDeleteFailedException messageAndRequest) {
-        return makeResponse(HttpStatus.INTERNAL_SERVER_ERROR, messageAndRequest);
+    @ExceptionHandler(SimpleRunAppException.class)
+    public ResponseEntity<?> errorHandler(SimpleRunAppException e) {
+//        log.error("Error occurs - Code: {}, Message: {}, Detail: {}",
+//                e.getErrorCode(), e.getErrorCode().getMessage(), e.getDetailMessage());
+
+        return ResponseEntity.status(e.getErrorCode().getStatus())
+                .body(Response.error(
+                        e.getErrorCode().getStatus(),
+                        e.getErrorCode().getMessage(),
+                        e.getDetailMessage()
+                ));
     }
 
 
