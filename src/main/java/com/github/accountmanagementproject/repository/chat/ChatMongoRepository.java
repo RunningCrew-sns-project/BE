@@ -8,5 +8,7 @@ import java.util.List;
 
 public interface ChatMongoRepository extends MongoRepository<ChatMongoDto, String> {
     List<ChatMongoDto> findAllByRoomId(Integer roomId);
+//    ChatMongoDto findByRoomId(Integer roomId);
+    ChatMongoDto findFirstByRoomIdOrderByTimeDesc(Integer roomId);
 
 }

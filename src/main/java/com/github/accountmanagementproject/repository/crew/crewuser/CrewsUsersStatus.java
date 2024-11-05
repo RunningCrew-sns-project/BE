@@ -8,8 +8,9 @@ import lombok.AllArgsConstructor;
 public enum CrewsUsersStatus implements MyEnumInterface {
     COMPLETED("가입 완료"),
     WAITING("가입 대기"),
-    FORCED_EXIT("강제 퇴장"),
-    WITHDRAWAL("탈퇴");
+    WITHDRAWAL("탈퇴"),
+    REJECTED("가입 거절"),
+    FORCED_EXIT("강제 퇴장");
 
 
     private final String value;

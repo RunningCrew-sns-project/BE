@@ -26,14 +26,15 @@ public interface BlogControllerDocs {
                     examples = {
                             @ExampleObject(name = "블로그 조회 성공 예",
                                     description = "블로그 조회에 성공하여 DB에 있는 블로그의 내용이 응답값으로 반환됩니다.",
-                                    value = "{\n" +
-                                            "  \"code\": 200,\n" +
-                                            "  \"httpStatus\": \"OK\",\n" +
-                                            "  \"message\": \"블로그 조회 성공\",\n" +
-                                            "  \"responseData\": \"블로그 데이터\"\n" +
-                                            "}")
+                                    value = """
+                                            "  "code": 200," +
+                                            "  "httpStatus": "OK"," +
+                                            "  "message": "블로그 조회 성공"," +
+                                            "  "responseData": "블로그 데이터" +
+                                            """)
                     })
     )
+
     @Parameter(name = "size", description = "한번에 보여질 갯수")
     @Parameter(name = "cursor", description = "시작할 블로그 번호")
     @GetMapping

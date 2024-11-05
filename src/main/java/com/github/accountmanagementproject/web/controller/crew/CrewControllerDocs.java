@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
@@ -261,4 +263,23 @@ public interface CrewControllerDocs {
     )
     CustomSuccessResponse getCrewUsers(Long crewId, @Parameter(description = "null = 가입완료 크루원, true = 전체, false = 요청상태 크루원") Boolean all,String masterEmail);
 
+
+    @Parameter(name = "crewId", description = "크루 아이디")
+    @Parameter(name = "outCrewsUsersId", description = "내보낼 유저의 아이디")
+    @Operation(summary = "크루원 강퇴 시키기", description = "crewId와 내보낼 크루원의 userid를 받아 강퇴 기능 구현")
+    CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
+                                             @RequestParam Long crewId,
+                                             @RequestParam Integer outCrewsUsersId);
+
+    @Parameter(name = "crewId", description = "크루 아이디")
+    @Parameter(name = "requestCrewUserId", description = "가입신청한 유저 아이디")
+    @Parameter(name = "approveOrReject", description = "승인/거절 값", examples = {@ExampleObject(name = "승인", value = "true"),
+            @ExampleObject(name = "거절", value = "false")}
+            )
+
+    @Operation(summary = "크루 가입 신청, 거절", description = "crewId와 요청 유저 아이디, 승인/거절 요청 값을 받아 승인/거절 로직 구현")
+    CustomSuccessResponse approveOrReject(@AuthenticationPrincipal String email,
+                                          @RequestParam Long crewId,
+                                          @RequestParam Integer requestCrewUserId,
+                                          @RequestParam Boolean approveOrReject);
 }

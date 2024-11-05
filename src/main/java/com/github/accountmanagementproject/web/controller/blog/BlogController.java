@@ -34,7 +34,7 @@ public class BlogController implements BlogControllerDocs{
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
                 .message("모든 블로그를 조회했습니다.")
-                .responseData(blogService.getAllBlogs(size,cursor ,user))
+                .responseData(blogService.getAllBlogs(size, cursor ,user))
                 .build();
     }
 
