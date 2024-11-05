@@ -142,7 +142,7 @@ public class CrewService {
 
     //가입요청을 확인하여 승인, 거절 로직
     @Transactional
-    public String approveOrReject(String email, Long crewId, Integer requestCrewUserId, Boolean approveOrReject) {
+    public String approveOrReject(String email, Long crewId, Long requestCrewUserId, Boolean approveOrReject) {
         //크루 마스터인지 화인
         if(!crewsRepository.isCrewMaster(email, crewId)){
             throw new CustomBadCredentialsException.ExceptionBuilder()
@@ -150,13 +150,13 @@ public class CrewService {
                     .build();
         }
 
-        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("해당 크루를 찾을 수 없습니다.").build());
+        Crew myCrew = new Crew();
+        myCrew.setCrewId(crewId);
 
-        MyUser requestCrewUser = myUsersRepository.findById(requestCrewUserId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("해당 유저를 찾을 수 없습니다.").build());
+        MyUser requestCrewUser = new MyUser();
+        requestCrewUser.setUserId(requestCrewUserId);
 
-        CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, requestCrewUser);
+        CrewsUsersPk crewsUsersPk = new CrewsUsersPk(myCrew, requestCrewUser);
 
         CrewsUsers crewsUser = crewsUsersRepository.findById(crewsUsersPk)
                 .orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()

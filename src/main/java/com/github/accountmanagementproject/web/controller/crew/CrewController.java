@@ -61,6 +61,7 @@ public class CrewController implements CrewControllerDocs{
     }
 
     //퇴장 시키기
+    @Override
     @DeleteMapping("/sendOutCrew")
     public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,
@@ -72,10 +73,11 @@ public class CrewController implements CrewControllerDocs{
     }
 
     //승인, 거절
+    @Override
     @PostMapping("/approveOrReject")
     public CustomSuccessResponse approveOrReject(@AuthenticationPrincipal String email,
                                                  @RequestParam Long crewId,
-                                                 @RequestParam Integer requestCrewUserId,
+                                                 @RequestParam Long requestCrewUserId,
                                                  @RequestParam Boolean approveOrReject){
         return new CustomSuccessResponse.SuccessDetail()
                 .message("처리가 완료되었습니다.")
