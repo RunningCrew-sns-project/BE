@@ -11,4 +11,6 @@ public interface CrewsUsersRepositoryCustom {
     List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll);
 
     List<CrewsUsers> findCrewUsersByCrewId(Long crewId, Boolean all);
+
+    long countCrewUsersByCrewId(Long crewId);
 }

@@ -5,16 +5,10 @@ import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crewattachment.CrewAttachment;
 import com.github.accountmanagementproject.repository.crew.crewimage.CrewImage;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
-import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
-import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
-import com.github.accountmanagementproject.web.dto.crew.CrewUserResponse;
-import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
+import com.github.accountmanagementproject.web.dto.crew.*;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -83,4 +77,17 @@ public interface CrewMapper {
             "java(crewsUsers.getStatus() == com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus.COMPLETED ? " +
                     "crewsUsers.getJoinDate() : crewsUsers.getApplicationDate())")
     CrewUserResponse crewsUsersToCrewUserResponse(CrewsUsers crewsUsers);
+
+    @Mapping(target = "crewMaster", source = "crewMaster.nickname")
+    @Mapping(target = "crewImageUrls", source = "crewImages")
+    CrewDetailResponse crewToCrewDetailResponse(Crew crew);
+
+    @Named("crewImageToImageUrl")
+    default String crewImageToImageUrl(CrewImage crewImage){
+        return crewImage.getImageUrl();
+    };
+
+
+    @IterableMapping(qualifiedByName = "crewImageToImageUrl")
+    List<String> mapCrewImagesToUrls(List<CrewImage> crewImages);
 }

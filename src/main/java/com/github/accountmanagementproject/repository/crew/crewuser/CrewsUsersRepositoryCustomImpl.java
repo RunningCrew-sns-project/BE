@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCustom {
@@ -51,6 +52,18 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                 .where(expression)
                 .orderBy(all==null ? QCREWSUSERS.joinDate.desc():QCREWSUSERS.applicationDate.desc())
                 .fetch();
+    }
+
+    @Override
+    public long countCrewUsersByCrewId(Long crewId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .select(QCREWSUSERS.count())
+                        .from(QCREWSUSERS)
+                        .where(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId)
+                                .and(QCREWSUSERS.status.eq(CrewsUsersStatus.COMPLETED)))
+                        .fetchOne()
+        ).orElse(0L);
     }
 
 
