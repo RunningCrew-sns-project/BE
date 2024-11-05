@@ -1,9 +1,7 @@
 package com.github.accountmanagementproject.service.chat;
 
-import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;

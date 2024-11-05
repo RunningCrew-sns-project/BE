@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.messaging.service;
 
-import com.github.accountmanagementproject.messaging.repository.Notification;
 import com.github.accountmanagementproject.messaging.producer.KafkaNotificationProducer;
+import com.github.accountmanagementproject.messaging.repository.Notification;
 import com.github.accountmanagementproject.messaging.sse.SseEmitters;
 import org.springframework.stereotype.Service;
 

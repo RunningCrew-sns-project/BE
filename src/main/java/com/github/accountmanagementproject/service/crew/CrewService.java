@@ -83,6 +83,7 @@ public class CrewService {
         return crewsUsers.stream().map(CrewMapper.INSTANCE::crewsUsersToCrewUserResponse).toList();
 
     }
+
     private void isCrewMaster(String masterEmail, Long crewId) {
         boolean isCrewMaster = crewsRepository.isCrewMaster(masterEmail, crewId);
         if(!isCrewMaster)
@@ -94,40 +95,48 @@ public class CrewService {
 
     //크루원 퇴장시키기
     @Transactional
-    public String sendOutCrew(String crewMasterEmail, Long crewId, Integer outCrewId) {
-        //내보낼 유저
-        MyUser outCrewUser = myUsersRepository.findById(outCrewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("해당 유저를 찾을 수 없습니다.").request(outCrewId).build());
-        //가입한 크루
-        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+    public String sendOutCrew(String crewMasterEmail, Long crewId, Long outUserId) {
 
+//        //내보낼 유저
+//        MyUser outCrewUser = myUsersRepository.findById(outCrewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+//                .customMessage("해당 유저를 찾을 수 없습니다.").request(outCrewId).build());
+//        //가입한 크루
+//        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+//                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+//
         //크루마스터인지 확인
         if(!crewsRepository.isCrewMaster(crewMasterEmail, crewId)){
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .customMessage("크루의 마스터가 아닙니다.")
                     .build();
         }
-        //내보낼 멤버가 크루의 멤버인지 확인
-        if(!crew.getCrewUsers().contains(outCrewUser)){
-            throw new CustomNotFoundException.ExceptionBuilder()
-                    .customMessage("크루의 멤버가 아닙니다.")
-                    .build();
-        }
+//        //내보낼 멤버가 크루의 멤버인지 확인
+//        if(!crew.getCrewUsers().contains(outCrewUser)){
+//            throw new CustomNotFoundException.ExceptionBuilder()
+//                    .customMessage("크루의 멤버가 아닙니다.")
+//                    .build();
+//        }
+        //db콜 없이 pk로 객체생성
+        Crew myCrew = new Crew();
+        myCrew.setCrewId(crewId);
+        MyUser outCrewUser = new MyUser();
+        outCrewUser.setUserId(outUserId);
 
         //Crew와 MyUser 객체로 CrewsUsers를 찾기 위한 PK 생성
-        CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, outCrewUser);
+        CrewsUsersPk crewsUsersPk = new CrewsUsersPk(myCrew, outCrewUser);
 
-        //PK로 CrewsUsers 검색
-        CrewsUsers crewsUser = crewsUsersRepository.findByCrewsUsersPk(crewsUsersPk);
+        //PK로 CrewsUsers 검색 pk로 검색할수있는 기본 메서드가있어서 그거 사용했습니다!
+        CrewsUsers crewsUser = crewsUsersRepository.findById(crewsUsersPk)
+                .orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                        .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(crewsUsersPk).build());
 
         //CrewsUsers의 상태 변경
         crewsUser.setStatus(CrewsUsersStatus.FORCED_EXIT); //강제 퇴장 상태로 변경
         //강퇴 날짜 지정
         crewsUser.setWithdrawalDate(LocalDateTime.now());
 
-        //객체 저장
-        crewsUsersRepository.save(crewsUser);
+        //객체 저장 - 트랜잭셔널 적용되어있구 원래있던 객체 불러와서 수정한거라 save 안쓰셔도 괜찮습니다
+//        crewsUsersRepository.save(crewsUser);
 
         return "crewUser : " + crewsUser +" 을/를 성공적으로 퇴장시켰습니다.";
     }

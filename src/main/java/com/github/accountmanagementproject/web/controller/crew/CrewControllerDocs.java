@@ -4,7 +4,6 @@ import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -270,7 +269,7 @@ public interface CrewControllerDocs {
     @Operation(summary = "크루원 강퇴 시키기", description = "crewId와 내보낼 크루원의 userid를 받아 강퇴 기능 구현")
     CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,
-                                             @RequestParam Integer outCrewsUsersId);
+                                             @RequestParam Long outUserId);
 
     @Parameter(name = "crewId", description = "크루 아이디")
     @Parameter(name = "requestCrewUserId", description = "가입신청한 유저 아이디")

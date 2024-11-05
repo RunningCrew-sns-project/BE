@@ -1,9 +1,7 @@
 package com.github.accountmanagementproject.messaging.controller;
 
-import com.github.accountmanagementproject.messaging.repository.Notification;
 import com.github.accountmanagementproject.messaging.service.NotificationService;
 import com.github.accountmanagementproject.messaging.sse.SseEmitters;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

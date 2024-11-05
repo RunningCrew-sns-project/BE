@@ -64,10 +64,10 @@ public class CrewController implements CrewControllerDocs{
     @DeleteMapping("/sendOutCrew")
     public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,
-                                             @RequestParam Integer outCrewsUsersId){
+                                             @RequestParam Long outUserId){
         return new CustomSuccessResponse.SuccessDetail()
-                .message("퇴장시키기 성공")
-                .responseData(crewService.sendOutCrew(email, crewId, outCrewsUsersId))
+                .message("퇴장시키기 성공")// 엔티티에 유저아이디가 Long타입이라 long타입으로 수정햇습니당
+                .responseData(crewService.sendOutCrew(email, crewId, outUserId))
                 .build();
     }
 
