@@ -23,19 +23,20 @@
 
 <script>
 	let isLoading = false;
-	let nextCursor = {}; // nextCursor를 빈 객체로 초기화
+	let cursor = {};  // 초기 cursor를 빈 객체로 설정
 	const size = 10;
 
-	async function loadBlogs() {
-		if (isLoading || (nextCursor === null && nextCursor !== undefined)) return;
+	async function loadBlogs(prepend = false) {
+		// 로딩 중이거나 이전 블로그가 더 없을 경우 로드하지 않음
+		if (isLoading || (cursor === null && prepend)) return;
 
-		isLoading = true; // 로딩 상태 표시
+		isLoading = true;
 		document.getElementById("loading").style.display = "block";
 
-		console.log("loadBlogs 호출");
-
 		try {
-			const url = `http://localhost:8080/api/blog?size=${size}` + (nextCursor.blogId ? `&cursor=${nextCursor.blogId}` : "");
+			// cursor가 있는 경우 추가해서 이전 또는 최신 블로그를 로드
+			const url = `http://localhost:8080/api/blog?size=${size}` +
+				(cursor.blogId ? `&cursor=${cursor.blogId}` : "");
 			const response = await fetch(url, {
 				headers: {
 					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA3MTg4NzUsImV4cCI6MTczMDcyMjQ3NSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.VWVXRYzxut84RMCHAKjOsrnhdjA2O_a2VyLlaIUTZ7U'
@@ -50,26 +51,29 @@
 
 			if (data.success && data.success.responseData) {
 				const responseData = data.success.responseData;
-				renderBlogs(responseData.currentScrollItems);
+				renderBlogs(responseData.currentScrollItems, prepend);
 
-				// 다음 스크롤을 위해 nextCursor를 갱신하거나, lastScroll일 경우 null로 설정
-				nextCursor = responseData.lastScroll ? null : responseData.nextCursor;
+				// cursor 업데이트: 최신 데이터 로드 시 nextCursor, 이전 데이터 로드 시 prevCursor 설정
+				cursor = prepend ?
+					(responseData.currentScrollItems[0] ? null : responseData.prevCursor) :
+					(responseData.lastScroll ? null : responseData.nextCursor);
 
-				// 마지막 페이지 도달 시 스크롤 이벤트 제거
-				if (responseData.lastScroll) {
+				// 마지막 스크롤일 경우 이벤트 제거
+				if (prepend && responseData.firstScroll) {
 					window.removeEventListener('scroll', handleScroll);
 				}
 			}
 		} catch (error) {
 			console.error("Error loading blogs:", error);
 		} finally {
-			isLoading = false; // 로딩 상태 해제
-			document.getElementById("loading").style.display = "none"; // 로딩 메시지 숨김
+			isLoading = false;
+			document.getElementById("loading").style.display = "none";
 		}
 	}
 
-	function renderBlogs(blogs) {
+	function renderBlogs(blogs, prepend = false) {
 		const container = document.getElementById("blog-container");
+
 		blogs.forEach(blog => {
 			const blogDiv = document.createElement("div");
 			blogDiv.innerHTML = `
@@ -79,36 +83,36 @@
                 <p>작성자 : ${blog.userName}</p>
                 <img src="${blog.userImg}" alt="User Image" width="50"/>
                 <p>기록 : ${blog.record} | 달린거리 : ${blog.distance}</p>
-                 <span class="heart ${blog.liked ? 'liked' : 'unliked'}">❤</span>
+                <span class="heart ${blog.liked ? 'liked' : 'unliked'}">❤</span>
                 <p>Likes: ${blog.likeCount}</p>
                 <p>Created at: ${new Date(blog.createdAt).toLocaleString()}</p>
                 ${blog.imageUrl.map(url => `<img src="${url}" alt="Blog Image" width="100" />`).join("")}
             `;
 
-			container.appendChild(blogDiv);  // 블로그 내용 추가
+			// if (prepend) {
+			// 	container.prepend(blogDiv); // 이전 블로그는 위에 추가
+			// } else {
+			// 	container.appendChild(blogDiv); // 최신 블로그는 아래에 추가
+			// }
+            container.prepend(blogDiv)
 		});
 	}
 
 	function handleScroll() {
 		const scrollY = window.scrollY;
-		const windowHeight = window.innerHeight;
-		const documentHeight = document.body.offsetHeight;
 
-		console.log(`스크롤 위치: ${scrollY}, 창 높이: ${windowHeight}, 문서 높이: ${documentHeight}`);  // 디버깅 로그
-
-		// 스크롤이 바닥에 가까운지 확인
-		if (scrollY + windowHeight >= documentHeight - 100 && !isLoading) {
-			console.log("스크롤 바닥에 도달");  // 스크롤 이벤트 확인 로그
-			loadBlogs();  // 스크롤이 바닥에 도달하면 블로그 로드
+		// 스크롤 상단에 도달하면 이전 데이터 로드
+		if (scrollY < 100 && !isLoading) {
+			loadBlogs(true);
 		}
 	}
 
 	window.addEventListener('scroll', handleScroll);
 
-	// 페이지가 완전히 로드된 후 첫 데이터 로드
-	window.onload = function() {
-		console.log("페이지 로드 완료, 블로그 로드 시작");
-		loadBlogs();
+	// 초기 페이지 로드 시 최신 블로그 불러오기
+	window.onload = async function() {
+		await loadBlogs();
+		window.scrollTo(0, document.body.scrollHeight)
 	}
 </script>
 </body>
