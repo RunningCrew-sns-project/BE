@@ -16,7 +16,7 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
     private final JPAQueryFactory queryFactory;
     private final QCrewsUsers QCREWSUSERS = QCrewsUsers.crewsUsers;
 
-    @Override//프론트 테스트를 위한 임시 메서드
+    @Override//프론트 테스트를 위한 임시
     public List<CrewJoinResponse> findSimpleCrewsUsersByUserEmail(String userEmail) {
 
         return queryFactory.select(Projections.constructor(CrewJoinResponse.class,

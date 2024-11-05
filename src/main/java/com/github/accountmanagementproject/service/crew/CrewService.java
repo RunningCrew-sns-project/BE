@@ -81,6 +81,7 @@ public class CrewService {
         return crewsUsers.stream().map(CrewMapper.INSTANCE::crewsUsersToCrewUserResponse).toList();
 
     }
+
     private void isCrewMaster(String masterEmail, Long crewId) {
         boolean isCrewMaster = crewsRepository.isCrewMaster(masterEmail, crewId);
         if(!isCrewMaster)
