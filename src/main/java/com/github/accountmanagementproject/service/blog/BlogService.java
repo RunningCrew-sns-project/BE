@@ -22,12 +22,16 @@ import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogWithComment;
 import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -47,14 +51,21 @@ public class BlogService {
     private final BlogRepository blogRepository;
     private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
-    private final AccountConfig accountConfig;
-    private final S3Service s3Service;
     private final MyUsersRepository myUsersJpa;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final RedisRepository redisRepository;
     private final BlogImagesRepository blogImagesRepository;
 
+    private HashOperations<String, Object, Object> hashOperations;
+
+    @PostConstruct
+    private void init(){
+        hashOperations = redisTemplate.opsForHash();
+    }
+
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
+    //https://velog.io/@dbsxogh96/Redis%EB%A1%9C-%EC%A1%B0%ED%9A%8C%EC%88%98-%EC%A2%8B%EC%95%84%EC%9A%94-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0
+    //TODO : 좋아요 갯수 redis에 저장 하는 로직 구현
     public ScrollPaginationCollection<BlogResponseDTO> getAllBlogs(Integer size, Integer cursor, MyUser user, Boolean isMyBlog) {
         List<UserLikesBlog> userLikesBlogs = userLikesBlogRepository.findByUser(user);
 
@@ -74,6 +85,7 @@ public class BlogService {
         List<BlogResponseDTO> responseItems = blogs.stream()
                 .filter(blog -> !isMyBlog || blog.getUser().equals(user))
                 .map(blog -> {
+                    //TODO: blog의 likeCount 가져와서 redis에 저장 후 좋아요 누르면 증감 구현
                     BlogResponseDTO blogResponseDTO = BlogMapper.INSTANCE.blogToBlogResponseDTO(blog);
                     blogResponseDTO.setLiked(userLikesBlogs.stream().map(UserLikesBlog::getBlog).toList().contains(blog));
                     blogResponseDTO.setImageUrl(blogImagesRepository.findAllByBlog(blog).stream().map(BlogImages::getImageUrl).toList());
@@ -164,7 +176,7 @@ public class BlogService {
             return CompletableFuture.completedFuture("좋아요를 취소했습니다.");
         } else {
             // 좋아요 누르기
-            redisRepository.save(redisKey, String.valueOf(blog.getLikeCount()), Duration.ofMinutes(10));
+            redisRepository.save(redisKey, String.valueOf(blog.getLikeCount()), Duration.ofMinutes(1));
             return CompletableFuture.completedFuture("좋아요를 눌렀습니다.");
         }
     }
@@ -174,6 +186,8 @@ public class BlogService {
     @Scheduled(fixedDelay = 30000) //비동기 타이머 30초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("blog_*"); //레디스에서 blog_ 패턴에 해당 하는 키 모두 가져오기 (중복 없이)
+        ScanOptions scanOptions = ScanOptions.scanOptions().match("blog_*").count(100).build();
+        Cursor<byte[]> keys_scan = redisTemplate.getConnectionFactory().getConnection().scan(scanOptions);
 
 
         https://velog.io/@sejinkim/Redis-KEYS-vs-SCAN
@@ -185,25 +199,24 @@ public class BlogService {
             Integer blogId = Integer.parseInt(parts[0].split("_")[1]); //blog_00 에서 00만 가져오기
             Integer userId = Integer.parseInt(parts[1]); // blog_00:11 에서 11만 가져오기
 
-            Blog blog = blogRepository.findById(blogId).orElse(null); //해당하는 블로그 가져오기
-            MyUser user = myUsersJpa.findById(userId).orElse(null); //해당하는 유저 가져오기
+            Blog blog = blogRepository.findById(blogId).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
+            MyUser user = myUsersJpa.findById(userId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("해당 유저를 찾을 수 없습니다.").build()); //해당하는 유저 가져오기
 
-            if (blog != null && user != null) {
-                UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
-                if(userLikesBlog == null) { //db에 없을때 새로 저장 (좋아요 누르기)
-                    UserLikesBlog newUserLikesBlog = UserLikesBlog.builder()
-                            .blog(blog)
-                            .user(user)
-                            .build();
-                    userLikesBlogRepository.save(newUserLikesBlog);
-                }
-                else {
-                    userLikesBlogRepository.delete(userLikesBlog); //db에 있으면 삭제 (좋아요 취소)
-                }
-                Integer likeCount = userLikesBlogRepository.countAllByBlog(blog); //db에서 blog에 해당하는 좋아요 갯수 가져오기
-                blog.setLikeCount(likeCount); //좋아요 갯수 저장
-                blogRepository.save(blog); //좋아요 갯수 저장
+            UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
+            if(userLikesBlog == null) { //db에 없을때 새로 저장 (좋아요 누르기)
+
+                //UserLikeBlog에 isLiked 변수에 기본값으로 true 저장
+                UserLikesBlog newUserLikesBlog = UserLikesBlog.builder()
+                        .blog(blog)
+                        .user(user)
+                        .build();
+                userLikesBlogRepository.save(newUserLikesBlog);
             }
+            else {
+                userLikesBlog.setIsLiked(false);
+            }
+            Integer likeCount = userLikesBlogRepository.countAllByBlog(blog); //db에서 blog에 해당하는 좋아요 갯수 가져오기
+            blog.setLikeCount(likeCount); //좋아요 갯수 저장
 
             redisRepository.getAndDeleteValue(key); //레디스 데이터 삭제
         }

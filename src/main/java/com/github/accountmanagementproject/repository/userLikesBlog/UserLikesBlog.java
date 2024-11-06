@@ -25,4 +25,8 @@ public class UserLikesBlog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private MyUser user;
+
+    @Builder.Default
+    @Column(name = "is_liked")
+    private Boolean isLiked = true;
 }
