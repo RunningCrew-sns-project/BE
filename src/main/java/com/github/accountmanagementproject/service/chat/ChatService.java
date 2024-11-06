@@ -32,35 +32,25 @@ public class ChatService{
     private final ChatMongoRepository chatMongoRepository;
     private final MongoTemplate mongoTemplate;
 
-    // 전체 채팅방 조회
-    public List<ChatRoomResponse> findAllRoom(){
-        //채팅방 생성 순서를 최근순으로 반환
-
-        return chatRoomRepository.findAll().stream()
-                .map(chatRoom -> {
-                    List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
-                    List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
-                    List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
-                    ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
-                    chatRoomResponse.setUserCount(userList.size());
-                    chatRoomResponse.setUserList(userResponses);
-                    chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
-                    chatRoomResponse.setLastMessageTime(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getTime());
-                    return chatRoomResponse;
-                })
-                .toList();
-    }
-
-    // roomId 기준으로 채팅방 찾기
-    public ChatRoom findByRoomId(Integer roomId){
-        return chatRoomRepository.findById(roomId).orElse(null);
-    }
-
     public List<ChatRoomResponse> findMyRoomList(MyUser user) {
-        return userChatMappingRepository.findAllByUser(user).stream()
+        return userChatMappingRepository.findAllByUser(user)
+                .stream()
                 .map(UserChatMapping::getChatRoom)
-                .map(ChatRoomMapper.INSTANCE::chatRoomToChatRoomResponse)
+                .map(this::mappingChatRoom)
                 .toList();
+    }
+
+    private ChatRoomResponse mappingChatRoom(ChatRoom chatRoom){
+        List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
+        List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
+        List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
+        ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
+        chatRoomResponse.setUserCount(userList.size());
+        chatRoomResponse.setUserList(userResponses);
+        chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
+        chatRoomResponse.setLastMessageTime(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getTime());
+
+        return chatRoomResponse;
     }
 
     @Transactional

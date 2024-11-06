@@ -4,6 +4,7 @@ import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,22 +16,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatRoomControllerDocs {
-    @Operation(summary = "채팅방 목록 불러오기", description = "현재 생성된 모든 채팅방 조회")
-    @GetMapping("/chat/rooms")
-    List<ChatRoomResponse> chatRoomList();
 
     @Operation(summary = "참여중인 채팅방 불러오기", description = "유저가 현재 참여하고 있는 채팅방 조회")
-    @GetMapping("/chat/rooms/myRomms")
+    @GetMapping("/myRooms")
     List<ChatRoomResponse> myChatRoomList(@AuthenticationPrincipal String principal);
 
     @Operation(summary = "채팅방 생성하기", description = "채팅방 이름으로 채팅방 생성하기")
     @Parameter(name = "roomName", description = "채팅방 이름")
-    @PostMapping("/chat/createRoom")
+    @PostMapping("/createRoom")
     String createRoom(@RequestBody String roomName, @AuthenticationPrincipal String principal);
 
     @Operation(summary = "채팅방에 참여중인 유저 목록 불러오기", description = "roomId를 받아 채팅방에 참여중인 유저 목록 조회")
     @Parameter(name = "roomId", description = "채팅방 아이디")
-    @GetMapping("/chat/userlist/{roomId}")
+    @GetMapping("/userlist/{roomId}")
     @ResponseBody
     List<String> userList(@PathVariable Integer roomId);
 
@@ -40,10 +38,10 @@ public interface ChatRoomControllerDocs {
             @Parameter(name = "limit", description = "한번에 불러올 메세지 개수"),
             @Parameter(name = "lastTime", description = "기준이 되는 시간, 이 시간을 기준으로 이전 채팅 메세지 불러오기", example = "2024-11-05T18:36:31.195451")
     })
-    @GetMapping("/chat/message")
+    @GetMapping("/message")
     ResponseEntity<?> getMessageByRoomId(
             @AuthenticationPrincipal String principal,
             @RequestParam Integer roomId,
-            @RequestParam Integer limit,
+            @RequestParam(defaultValue = "10") Integer limit,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> lastTime);
 }

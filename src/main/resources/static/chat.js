@@ -5,8 +5,7 @@ let accessToken;
 let refreshToken
 let userEmail;
 let userList = [];
-const headers = {
-	'Content-Type': 'application/json',
+const headerList = {
 	'Authorization' : getAccessToken(),
 	'RefreshToken' : getRefreshToken()
 }
@@ -25,7 +24,9 @@ function connect() {
 	// const socket = new WebSocket("ws://localhost:8080/ws");
 	stompClient = Stomp.over(socket);
 
-	stompClient.connect(headers, function (frame) {
+	console.log("headerList : " + headerList.Authorization)
+
+	stompClient.connect(headerList, function (frame) {
 		console.log(`connected to room : ${roomId}`)
 		isConnected = true;
 
@@ -116,13 +117,13 @@ async function loadPreviousMessages(roomId){
 		return;
 	}
 	try {
-		console.log(lastMessageTime)
+		console.log("lastMessageTime : " + lastMessageTime)
 		const url = lastMessageTime
-			? `http://localhost:8080/chat/message?roomId=${roomId}&limit=30&lastTime=${lastMessageTime}`
-			: `http://localhost:8080/chat/message?roomId=${roomId}&limit=30`;
+			? `http://localhost:8080/api/chat/message?roomId=${roomId}&limit=30&lastTime=${lastMessageTime}`
+			: `http://localhost:8080/api/chat/message?roomId=${roomId}&limit=30`;
 
-		const response = await fetch(url,{
-			headers : headers
+		const response = await fetch("http://localhost:8080/api/chat/message?roomId=20&limit=20",{
+			headers : headerList
 		});
 
 		const data = await response.json();
@@ -208,10 +209,11 @@ async function login() {
 
 		if (response.ok) {
 			const res = await response.json();
-			console.log(res)
+			console.log("응답이요~ " + res)
 			accessToken = "Bearer " + res.success.responseData.accessToken
 			refreshToken = res.success.responseData.refreshToken;
 			userEmail = emailOrPhoneNumber
+
 			localStorage.setItem('accessToken', accessToken);
 			localStorage.setItem('refreshToken', refreshToken);
 			localStorage.setItem('userEmail', emailOrPhoneNumber);
@@ -242,8 +244,10 @@ function getUserEmail() {
 // 서버로부터 채팅방 목록을 불러옴
 async function loadChatRooms() {
 	try {
-		const response = await fetch('http://localhost:8080/chat/rooms',{
-			headers: headers
+		const response = await fetch('http://localhost:8080/api/chat/myRooms',{
+			headers: {
+				"Authorization":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA4MTk5NzAsImV4cCI6MTczMDgyMzU3MCwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.-Ux2ktu-bTGPMGHirFqNBa7sgSPqUUWIgM9341mRLdU"
+			}
 		});  // ChatRoomResponse 데이터를 반환하는 API 호출
 		if(!response.ok) {
 			localStorage.removeItem('accessToken');
@@ -252,6 +256,7 @@ async function loadChatRooms() {
 			login()
 		}
 		const rooms = await response.json();
+
 		displayChatRooms(rooms);
 	} catch (error) {
 		console.error('Error loading chat rooms:', error);
@@ -315,8 +320,8 @@ async function joinRoom(id, title) {
 
 async function getUserList(){
 
-	return await fetch(`http://localhost:8080/chat/userlist/${roomId}`,{
-		headers: headers
+	return await fetch(`http://localhost:8080/api/chat/userlist/${roomId}`,{
+		headers: headerList
 	});
 }
 
@@ -405,7 +410,7 @@ async function createChatRoom() {
 	try {
 		const response = await fetch('http://localhost:8080/chat/createRoom', {
 			method: 'POST',
-			headers: headers,
+			headers: headerList,
 			body: roomName,  // roomName을 JSON 형태로 전달
 		});
 
