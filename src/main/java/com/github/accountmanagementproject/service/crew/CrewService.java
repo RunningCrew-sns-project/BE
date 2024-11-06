@@ -5,7 +5,6 @@ import com.github.accountmanagementproject.exception.CustomBadCredentialsExcepti
 import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.exception.DuplicateKeyException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
@@ -31,7 +30,6 @@ public class CrewService {
     private final AccountConfig accountConfig;
     private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
-    private final MyUsersRepository myUsersRepository;
 
     @Transactional
     public void crewCreation(@Valid CrewCreationRequest request, String email) {
@@ -40,36 +38,54 @@ public class CrewService {
         crewsRepository.save(newCrew);
     }
 
+    private Crew findsCrewById(Long crewId) {
+        return crewsRepository.findById(crewId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+    }
+
     @Transactional
     public CrewJoinResponse joinTheCrew(String email, Long crewId) {
         MyUser user = accountConfig.findMyUser(email);
-        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+        Crew crew = findsCrewById(crewId);
+
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, user);
 
-        CrewsUsers joinCrewsUsers = crewJoinValidationCheckAndSave(crew, user, crewsUsersPk);
+        CrewsUsers joinCrewsUsers = validateAndJoinCrew(crewsUsersPk);
         return CrewMapper.INSTANCE.crewsUsersToCrewJoinResponse(joinCrewsUsers);
     }
 
-    private CrewsUsers crewJoinValidationCheckAndSave(Crew crew, MyUser user, CrewsUsersPk crewsUsersPk) {
-        if(crew.getCrewMaster().equals(user))
-            throw new DuplicateKeyException.ExceptionBuilder()
-                    .systemMessage("유효성 검사 실패").customMessage("자기가 만든 크루에 가입할 수 없습니다.").request(crew.getCrewName()).build();
 
-        CrewsUsers crewsUsers = crewsUsersRepository.findById(crewsUsersPk).orElseGet(()->new CrewsUsers(crewsUsersPk));
 
-        if(crewsUsers.getApplicationDate()==null)
-            return crewsUsersRepository.save(crewsUsers.requestToJoin());
-        else if (crewsUsers.duplicateRequest()) {
+    private CrewsUsers validateAndJoinCrew(CrewsUsersPk crewsUsersPk) {
+        if ( crewsUsersPk.getCrew().getCrewMaster().equals( crewsUsersPk.getUser() ) )
             throw new DuplicateKeyException.ExceptionBuilder()
-                    .systemMessage("유효성 검사 실패").customMessage("이미 가입했거나 가입 요청 중인 크루입니다.").request(crew.getCrewName()).build();
-        }else if(LocalDateTime.now().isAfter(crewsUsers.getReleaseDay()))
-            throw new DuplicateKeyException.ExceptionBuilder()
-                    .systemMessage("유효성 검사 실패").customMessage("강퇴 또는 탈퇴한 크루입니다.").request("남은 날짜 : "+crewsUsers.getReleaseDay()).build();
+                    .systemMessage("유효성 검사 실패").customMessage("자기가 만든 크루에 가입할 수 없습니다.").request(crewsUsersPk.getCrew().getCrewName()).build();
 
-        CrewsUsers joinCrewsUsers = new CrewsUsers(crewsUsersPk);
-        return crewsUsersRepository.save(joinCrewsUsers.requestToJoin());
+        CrewsUsers crewsUsers = crewsUsersRepository.findById(crewsUsersPk)
+                .orElseGet(() -> new CrewsUsers(crewsUsersPk));
+        checkJoinRequestStatus(crewsUsers);
+
+        return crewsUsersRepository.save(crewsUsers.requestToJoin());
     }
+
+    private void checkJoinRequestStatus(CrewsUsers crewsUsers) {
+        boolean isNewRequest = crewsUsers.getStatus() == null;
+
+        if (!isNewRequest && crewsUsers.duplicateRequest()) {
+            throw new DuplicateKeyException.ExceptionBuilder()
+                    .systemMessage("유효성 검사 실패")
+                    .customMessage("이미 가입했거나 가입 요청 중인 크루입니다.")
+                    .request(crewsUsers.getStatus())
+                    .build();
+        } else if (!isNewRequest && LocalDateTime.now().isAfter(crewsUsers.getReleaseDay())) {
+            throw new DuplicateKeyException.ExceptionBuilder()
+                    .systemMessage("유효성 검사 실패")
+                    .customMessage("탈퇴한 또는, 강제 퇴장이나 가입 거절 당하고 재가입 조건을 충족 못한 크루 입니다.")
+                    .request("남은 날짜 : " + crewsUsers.getReleaseDay())
+                    .build();
+        }
+    }
+
 
     //프론트 테스트를 위한 가입요청내역 반환
     @Transactional(readOnly = true)
@@ -79,8 +95,7 @@ public class CrewService {
 
     @Transactional(readOnly = true)
     public CrewDetailResponse getCrewDetail(Long crewId) {
-        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+        Crew crew = findsCrewById(crewId);
         long crewMemberCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
         CrewDetailResponse response = CrewMapper.INSTANCE.crewToCrewDetailResponse(crew);
         response.setMemberCount(crewMemberCount);
@@ -99,7 +114,7 @@ public class CrewService {
 
     private void isCrewMaster(String masterEmail, Long crewId) {
         boolean isCrewMaster = crewsRepository.isCrewMaster(masterEmail, crewId);
-        if(!isCrewMaster)
+        if (!isCrewMaster)
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .request(masterEmail)
                     .customMessage("크루 마스터가 아닙니다").build();
@@ -117,7 +132,7 @@ public class CrewService {
 //                .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
 //
         //크루마스터인지 확인
-        if(!crewsRepository.isCrewMaster(crewMasterEmail, crewId)){
+        if (!crewsRepository.isCrewMaster(crewMasterEmail, crewId)) {
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .customMessage("크루의 마스터가 아닙니다.")
                     .build();
@@ -139,7 +154,7 @@ public class CrewService {
 
         //PK로 CrewsUsers 검색 pk로 검색할수있는 기본 메서드가있어서 그거 사용했습니다!
         CrewsUsers crewsUser = crewsUsersRepository.findById(crewsUsersPk)
-                .orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                         .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(crewsUsersPk).build());
 
         //CrewsUsers의 상태 변경
@@ -150,14 +165,14 @@ public class CrewService {
         //객체 저장 - 트랜잭셔널 적용되어있구 원래있던 객체 불러와서 수정한거라 save 안쓰셔도 괜찮습니다
 //        crewsUsersRepository.save(crewsUser);
 
-        return "crewUser : " + crewsUser +" 을/를 성공적으로 퇴장시켰습니다.";
+        return "crewUser : " + crewsUser + " 을/를 성공적으로 퇴장시켰습니다.";
     }
 
     //가입요청을 확인하여 승인, 거절 로직
     @Transactional
     public String approveOrReject(String email, Long crewId, Long requestCrewUserId, Boolean approveOrReject) {
         //크루 마스터인지 화인
-        if(!crewsRepository.isCrewMaster(email, crewId)){
+        if (!crewsRepository.isCrewMaster(email, crewId)) {
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .customMessage("크루의 마스터가 아닙니다.")
                     .build();
@@ -172,19 +187,17 @@ public class CrewService {
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(myCrew, requestCrewUser);
 
         CrewsUsers crewsUser = crewsUsersRepository.findById(crewsUsersPk)
-                .orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                         .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(crewsUsersPk).build());
 
         //유저의 상태가 '가입 대기' 상태이고, 승인 요청이라면
-        if(crewsUser.getStatus() == CrewsUsersStatus.WAITING && approveOrReject){
+        if (crewsUser.getStatus() == CrewsUsersStatus.WAITING && approveOrReject) {
             //'가입 완료' 상태로 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
-        }
-        else if(crewsUser.getStatus() == CrewsUsersStatus.COMPLETED){
+        } else if (crewsUser.getStatus() == CrewsUsersStatus.COMPLETED) {
             return "이미 가입된 유저입니다";
-        }
-        else {
+        } else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.REJECTED);
             crewsUser.setWithdrawalDate(LocalDateTime.now());
