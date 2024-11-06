@@ -79,8 +79,12 @@ public class CrewService {
 
     @Transactional(readOnly = true)
     public CrewDetailResponse getCrewDetail(Long crewId) {
-        return crewsRepository.findCrewDetailByCrewId(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+        Crew crew = crewsRepository.findById(crewId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("해당 크루를 찾을 수 없습니다.").request(crewId).build());
+        long crewMemberCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
+        CrewDetailResponse response = CrewMapper.INSTANCE.crewToCrewDetailResponse(crew);
+        response.setMemberCount(crewMemberCount);
+        return response;
     }
 
     @Transactional(readOnly = true)

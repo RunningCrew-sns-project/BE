@@ -126,7 +126,8 @@ public interface CrewControllerDocs {
     @Operation(summary = "나의 크루 가입 요청내역보기", description = "테스트를 위한 가입요청내역 반환")
     CustomSuccessResponse requestTest(String email);
 
-    @Operation(summary = "크루 상세 조회", description = "크루 상세 정보를 조회합니다.")
+    @Operation(summary = "크루 상세 조회", description = "크루 상세 정보를 조회합니다.<br>" +
+            "crewMaster = 크루마스터닉네임, activityRegion = 크루 활동지역, createdAt = 크루 생성일, memberCount = 크루원 수, maxCapacity = 크루 최대인원수")
     @ApiResponse(responseCode = "200", description = "크루 상세 조회 성공",
             content = @Content(mediaType = "application/json",
                     examples =

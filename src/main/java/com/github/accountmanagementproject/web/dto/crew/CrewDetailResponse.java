@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 public class CrewDetailResponse {
     private String crewName;
     private String crewIntroduction;
-    private String crewImageUrl;
+    private List<String> crewImageUrls;
     private String crewMaster;
     private String activityRegion;
     private LocalDateTime createdAt;
