@@ -12,6 +12,7 @@ public enum ErrorCode {
     UNAUTHORIZED_POST_VIEW(HttpStatus.FORBIDDEN, "해당 게시물을 조회할 권한이 없습니다."),
     UNAUTHORIZED_POST_EDIT(HttpStatus.FORBIDDEN, "게시글을 수정할 권한이 없습니다."),
     UNAUTHORIZED_POST_EDIT_AUTHOR_ONLY(HttpStatus.FORBIDDEN, "게시글 작성자만 수정할 수 있습니다."),
+    UNAUTHORIZED_POST_EDIT_OR_DELETE_AUTHOR_ONLY(HttpStatus.FORBIDDEN, "게시글 작성자만 수정 또는 삭제할 수 있습니다."),
     UNAUTHORIZED_POST_DELETE(HttpStatus.FORBIDDEN, "게시글을 삭제할 권한이 없습니다."),
     UNAUTHORIZED_POST_DELETE_AUTHOR_ONLY(HttpStatus.FORBIDDEN, "게시글 작성자만 삭제할 수 있습니다."),
     STORAGE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "게시글 수정 중 오류가 발생했습니다."), // 이미지 수정 관련

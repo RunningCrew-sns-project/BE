@@ -1,17 +1,17 @@
-package com.github.accountmanagementproject.repository.runningPost;
-
+package com.github.accountmanagementproject.repository.runningPost.crewPost;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
+import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
-import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @Builder(toBuilder = true) // 기존 빌더를 복사하여 업데이트 가능하도록 설정
@@ -20,18 +20,13 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "run_join_post")
-public class RunJoinPost {
+@Table(name = "crew_join_post")
+public class CrewJoinPost {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
-    private Long postId;
-
-    @Column(name = "crew_post_sequence")
-    private Integer crewPostSequence = 0;   // 크루 게시물 순번
-
-    @Column(name = "general_post_sequence")
-    private Integer generalPostSequence = 0; // 일반 게시물 순번
+    private Long runId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crew_id", nullable = true)
@@ -49,31 +44,43 @@ public class RunJoinPost {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "location", nullable = false)
+    private String location;   // 지역
+
     @Column(name = "max_participants")
-    private Integer maxParticipants;  // 크루 모집 최대 인원
+    private Integer maximumPeople ;  // 크루 모집 최대 인원
+
+    @Column(name = "current_people", nullable = false)
+    private Integer currentPeople; // 현재 참여 인원 수
+
+    @Column(name = "date")
+    private LocalDate date;  // 모임 날짜, 날짜만 저장
+
+    @Column(name = "start_time", nullable = true)
+    private LocalTime startTime;  // 모임 시작 시간, 시간만 저장
 
     @Enumerated(EnumType.STRING)
     @Column(name = "post_status", nullable = false)
-    private RunJoinPostStatus status;  // 게시글 상태
+    private CrewRunJoinPostStatus status;  // 게시글 상태
 
     @Enumerated(EnumType.STRING)
     @Column(name = "post_type", nullable = false)
     private PostType postType;   // 게시자 분류
 
-    @OneToMany(mappedBy = "runJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RunJoinPostImage> joinPostImages;
+    @OneToMany(mappedBy = "crewJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RunJoinPostImage> crewJoinPostImages;
 
 
     public void addJoinPostImage(RunJoinPostImage image) {
-        joinPostImages.add(image);
-        image.setRunJoinPost(this);  // 연관관계 설정
+        crewJoinPostImages.add(image);
+        image.setCrewJoinPost(this);  // 연관관계 설정
     }
 
     public void clearJoinPostImages() {
-        for (RunJoinPostImage image : joinPostImages) {
-            image.setRunJoinPost(null);  // 참조 해제
+        for (RunJoinPostImage image : crewJoinPostImages) {
+            image.setCrewJoinPost(null);  // 참조 해제
         }
-        joinPostImages.clear();  // 고아 상태로 만들기
+        crewJoinPostImages.clear();  // 고아 상태로 만들기
     }
 
     /** ****************************************************************/
@@ -90,15 +97,14 @@ public class RunJoinPost {
 
     // 경로 정보
     @Column(name = "distance")
-    private double distance;    // 총 거리
+    private double distance;    // 총 거리  TODO
 
     /** ****************************************************************/
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();  // 게시글 생성 시간
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
+    private LocalDateTime updatedAt = LocalDateTime.now();  // 게시글 수정 시간
 
 }

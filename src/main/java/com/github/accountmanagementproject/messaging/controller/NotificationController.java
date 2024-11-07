@@ -27,6 +27,7 @@ public class NotificationController {
         return sseEmitters.addEmitter(userId);
     }
 
+    // TODO : 추가 구현 필요 , 현재 기본만 설정함
     @PostMapping("/send")
     public ResponseEntity<String> sendNotification(@RequestParam Long userId, @RequestBody String message) {
         notificationService.notifyUser(userId, message);
