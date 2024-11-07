@@ -3,13 +3,16 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -19,8 +22,6 @@ import java.util.List;
 @NoArgsConstructor
 public class CrewRunPostUpdateRequest {
 
-//    private Integer authorId; // 작성자 ID
-
 //    @NotBlank(message = "게시물 제목을 입력해주세요.")
     private String title; // 게시물 제목
 
@@ -28,7 +29,13 @@ public class CrewRunPostUpdateRequest {
     private String content; // 게시물 내용
 
 //    @NotNull(message = "최대 참여 인원.")
-    private Integer maxParticipants; // 최대 참여 인원
+    private Integer maximumPeople; // 최대 참여 인원
+
+    private String location;
+
+    private LocalDate date;
+
+    private LocalTime startTime;
 
     // 위치 정보
     private String inputLocation; // 시작 위치
@@ -42,19 +49,23 @@ public class CrewRunPostUpdateRequest {
     private List<FileDto> fileDtos;  // 파일 이미지
 
 
-    public RunJoinPost updateEntity(RunJoinPost post, MyUser user) {
-        return post.toBuilder()
-                .author(user)
-                .title(this.title != null ? this.title : post.getTitle())
-                .content(this.content != null ? this.content : post.getContent())
-                .maxParticipants(this.maxParticipants != null ? this.maxParticipants : post.getMaxParticipants())
-                .inputLocation(this.inputLocation != null ? this.inputLocation : post.getInputLocation())
-                .inputLatitude(this.inputLatitude != 0 ? this.inputLatitude : post.getInputLatitude())
-                .inputLongitude(this.inputLongitude != 0 ? this.inputLongitude : post.getInputLongitude())
-                .targetLocation(this.targetLocation != null ? this.targetLocation : post.getTargetLocation())
-                .targetLatitude(this.targetLatitude != 0 ? this.targetLatitude : post.getTargetLatitude())
-                .targetLongitude(this.targetLongitude != 0 ? this.targetLongitude : post.getTargetLongitude())
-                .updatedAt(LocalDateTime.now())
-                .build();
+    public CrewJoinPost updateEntity(CrewJoinPost post, MyUser user) {
+        post.setAuthor(user);
+        post.setTitle(this.title != null ? this.title : post.getTitle());
+        post.setContent(this.content != null ? this.content : post.getContent());
+        post.setMaximumPeople(this.maximumPeople != null ? this.maximumPeople : post.getMaximumPeople());
+        post.setLocation(this.location != null ? this.location : post.getLocation());
+        post.setDate(this.date != null ? this.date : post.getDate());
+        post.setStartTime(this.startTime != null ? this.startTime : post.getStartTime());
+        post.setInputLocation(this.inputLocation != null ? this.inputLocation : post.getInputLocation());
+        post.setInputLatitude(this.inputLatitude != 0 ? this.inputLatitude : post.getInputLatitude());
+        post.setInputLongitude(this.inputLongitude != 0 ? this.inputLongitude : post.getInputLongitude());
+        post.setTargetLocation(this.targetLocation != null ? this.targetLocation : post.getTargetLocation());
+        post.setTargetLatitude(this.targetLatitude != 0 ? this.targetLatitude : post.getTargetLatitude());
+        post.setTargetLongitude(this.targetLongitude != 0 ? this.targetLongitude : post.getTargetLongitude());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        return post;
     }
+
 }
