@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -50,11 +51,11 @@ public class GeneralJoinRunPostService {
 
     @Async
     @Transactional
-    public CompletableFuture<Void> processGeneralPostDetails(Long runId, GeneralRunPostCreateRequest request) {
+    public CompletableFuture<Void> processGeneralPostDetails(Long generalPostId, GeneralRunPostCreateRequest request) {
         return CompletableFuture.runAsync(() -> {
             try {
-                GeneralJoinPost post = generalJoinPostRepository.findById(runId)
-                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + runId));
+                GeneralJoinPost post = generalJoinPostRepository.findById(generalPostId)
+                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + generalPostId));
 
                 // 이미지 처리
                 if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
@@ -103,21 +104,22 @@ public class GeneralJoinRunPostService {
 
     // 게시글 상세보기
     @Transactional(readOnly = true)
-    @Cacheable(key = "'post_' + #runId")
-    public GeneralJoinPost getPostById(Long runId) {
-        return getCrewPost(runId);
+    @Cacheable(key = "'post_' + #generalPostId")
+    public GeneralJoinPost getPostById(Long generalPostId) {
+        return getCrewPost(generalPostId);
     }
 
-    private GeneralJoinPost getCrewPost(Long runId) {
-        return generalJoinPostRepository.findByIdWithImages(runId)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with runId: " + runId));
+    private GeneralJoinPost getCrewPost(Long generalPostId) {
+        return generalJoinPostRepository.findByIdWithImages(generalPostId)
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with runId: " + generalPostId));
     }
 
 
     // 글 수정
     @Transactional
-    public GeneralJoinPost updateGeneralPost(Long runId, MyUser user, GeneralRunPostUpdateRequest request) {
-        GeneralJoinPost generalPost = getCrewPost(runId);
+    @CachePut(key = "'post_' + #generalPostId")  // 또는 @CacheEvict(key = "'post_' + #generalPostId")
+    public GeneralJoinPost updateGeneralPost(Long generalPostId, MyUser user, GeneralRunPostUpdateRequest request) {
+        GeneralJoinPost generalPost = getCrewPost(generalPostId);
         validateGeneralPostAuthor(generalPost, user);
 
         try {
@@ -185,8 +187,8 @@ public class GeneralJoinRunPostService {
     // 게시글 삭제
     @Transactional
     @CacheEvict(allEntries = true)
-    public void deleteGeneralPost(Long runId, MyUser user) {
-        GeneralJoinPost generalPost = getCrewPost(runId);
+    public void deleteGeneralPost(Long generalPostId, MyUser user) {
+        GeneralJoinPost generalPost = getCrewPost(generalPostId);
         validateGeneralPostAuthor(generalPost, user);
 
         try {
