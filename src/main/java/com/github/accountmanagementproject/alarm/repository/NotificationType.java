@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.messaging.repository;
+package com.github.accountmanagementproject.alarm.repository;
 
 
 import com.github.accountmanagementproject.repository.runningPost.enums.BaseEnum;

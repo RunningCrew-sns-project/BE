@@ -5,13 +5,16 @@ import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Builder(toBuilder = true) // 기존 빌더를 복사하여 업데이트 가능하도록 설정
@@ -25,8 +28,8 @@ public class CrewJoinPost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
-    private Long runId;
+    @Column(name = "crew_post_id")
+    private Long crewPostId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crew_id", nullable = true)
@@ -35,6 +38,9 @@ public class CrewJoinPost {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private MyUser author;    // 작성자
+
+    @OneToMany(mappedBy = "crewJoinPost", fetch = FetchType.EAGER)
+    private Set<UserRunGroup> participants = new HashSet<>();
 
     /** ****************************************************************/
 

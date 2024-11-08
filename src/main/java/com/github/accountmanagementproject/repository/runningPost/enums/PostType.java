@@ -16,7 +16,7 @@ public enum PostType implements BaseEnum {
     }
 
     // 문자열을 enum으로 변환하는 정적 메서드
-    public static RunJoinPostStatus fromValue(String value) {
-        return BaseEnum.fromValue(RunJoinPostStatus.class, value);
+    public static PostType fromValue(String value) {
+        return BaseEnum.fromValue(PostType.class, value);
     }
 }

@@ -7,6 +7,7 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.service.runJoinPost.crewJoinPost.CrewJoinRunPostService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
@@ -22,6 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 public class CrewRunJoinPostController {
     // implements CrewRunJoinPostControllerDocs
 
+    private final CrewJoinPostRepository crewJoinPostRepository;
     private final CrewJoinRunPostService crewJoinRunPostService;
     private final MyUsersRepository usersRepository;
     private final AccountConfig accountConfig;
@@ -118,6 +125,22 @@ public class CrewRunJoinPostController {
         PageResponseDto<CrewRunPostResponse> response = crewJoinRunPostService.getAll(pageRequestDto, user);
 
         return Response.success(HttpStatus.OK, "모든 게시물이 조회되었습니다.", response);
+    }
+
+
+    // CrewJoinPost 목록과 참여 인원 수를 반환하는 API
+    // Test
+    @GetMapping("/crew-count")
+    public List<Map<String, Object>> getCrewPostsWithParticipantCount() {
+        return crewJoinPostRepository.findCrewPostsWithParticipantCount().stream().map(result -> {
+            CrewJoinPost post = (CrewJoinPost) result[0];
+            Long participantCount = (Long) result[1];
+            Map<String, Object> postInfo = new HashMap<>();
+            postInfo.put("postId", post.getCrewPostId());
+            postInfo.put("title", post.getTitle());
+            postInfo.put("participantCount", participantCount);
+            return postInfo;
+        }).collect(Collectors.toList());
     }
 
 

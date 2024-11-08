@@ -2,7 +2,6 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.general;
 
 import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
-import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Builder;
@@ -62,13 +61,16 @@ public class GeneralRunPostResponse {
                         .toList()
                 : new ArrayList<>();
 
+        // 참여 인원 수 계산
+        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
+
         return GeneralRunPostResponse.builder()
-                .runId(runJoinPost.getRunId())
+                .runId(runJoinPost.getGeneralPostId())
                 .authorId(Math.toIntExact(runJoinPost.getAuthor().getUserId()))
                 .title(runJoinPost.getTitle())
                 .content(runJoinPost.getContent())
                 .maximumPeople(runJoinPost.getMaximumPeople())
-                .people(runJoinPost.getCurrentPeople()) // 현재 참여 인원 추가
+                .people(participantCount) // 현재 참여 인원 추가
                 .location(runJoinPost.getLocation())
                 .date(runJoinPost.getDate())
                 .startTime(runJoinPost.getStartTime())

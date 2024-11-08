@@ -6,8 +6,6 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
-import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
-import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
@@ -15,9 +13,6 @@ import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
@@ -91,7 +86,7 @@ public class GeneralJoinRunPostService {
         generalPost.setDistance(calculatedDistance);
         // 엔티티 저장 후 ID를 기반으로 비동기 작업 호출
         GeneralJoinPost savedPost = generalJoinPostRepository.save(generalPost);
-        processGeneralPostDetails(savedPost.getRunId(), request);
+        processGeneralPostDetails(savedPost.getGeneralPostId(), request);
         return savedPost;
     }
 

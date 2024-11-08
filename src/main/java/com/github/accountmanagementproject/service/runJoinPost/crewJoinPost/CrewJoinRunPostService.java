@@ -8,7 +8,6 @@ import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
-import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
@@ -103,7 +102,7 @@ public class CrewJoinRunPostService {
         CrewJoinPost savedPost = crewJoinPostRepository.save(runJoinPost);
 
         // 비동기로 이미지 처리
-        processPostDetails(savedPost.getRunId(), request);
+        processPostDetails(savedPost.getCrewPostId(), request);
 
         return savedPost;
     }

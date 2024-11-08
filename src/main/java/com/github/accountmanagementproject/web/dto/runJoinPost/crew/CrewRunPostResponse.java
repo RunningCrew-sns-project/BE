@@ -1,10 +1,8 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
-import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
-import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.Builder;
 import lombok.Data;
@@ -65,14 +63,17 @@ public class CrewRunPostResponse {
                         .toList()
                 : new ArrayList<>();
 
+        // 참여 인원 수 계산
+        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
+
         return CrewRunPostResponse.builder()
-                .runId(runJoinPost.getRunId())
+                .runId(runJoinPost.getCrewPostId())
                 .crewId(runJoinPost.getCrew() != null ? runJoinPost.getCrew().getCrewId() : null)
                 .authorId(runJoinPost.getAuthor() != null ? runJoinPost.getAuthor().getUserId() : null)
                 .title(runJoinPost.getTitle())
                 .content(runJoinPost.getContent())
                 .maximumPeople(runJoinPost.getMaximumPeople())
-                .people(runJoinPost.getCurrentPeople())  // 현재인원 추가
+                .people(participantCount)  // 현재인원 추가
                 .location(runJoinPost.getLocation())
                 .status(runJoinPost.getStatus())
                 .postType(runJoinPost.getPostType())

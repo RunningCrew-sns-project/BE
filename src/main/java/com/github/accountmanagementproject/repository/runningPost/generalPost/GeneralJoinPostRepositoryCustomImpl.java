@@ -23,17 +23,17 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
     @Override
     public Slice<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Pageable pageable) {
         QGeneralJoinPost generalJoinPost = QGeneralJoinPost.generalJoinPost;
-        QRunJoinPostImage runJoinPostImage = QRunJoinPostImage.runJoinPostImage;
+        QRunJoinPostImage qrunJoinPostImage = QRunJoinPostImage.runJoinPostImage;
 
         BooleanExpression dateCondition = date != null ? generalJoinPost.createdAt.goe(date.atStartOfDay()) : null;
-        BooleanExpression locationCondition = null;
+        BooleanExpression zlocationCondition = null;
         if (location != null && !location.trim().isEmpty() && !location.equals("전체")) {
-            locationCondition = generalJoinPost.location.eq(location);
+            zlocationCondition = generalJoinPost.location.eq(location);
         }
 
         List<GeneralJoinPost> posts = queryFactory.selectFrom(generalJoinPost)
-                .where(dateCondition, locationCondition)
-                .leftJoin(generalJoinPost.generalJoinPostImages, runJoinPostImage).fetchJoin()  // fetch join 추가
+                .where(dateCondition, zlocationCondition)
+                .leftJoin(generalJoinPost.generalJoinPostImages, qrunJoinPostImage).fetchJoin()  // fetch join 추가
                 .orderBy(generalJoinPost.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)  // 다음 페이지 존재 여부 확인을 위해 limit을 한 개 더 가져옴

@@ -15,7 +15,7 @@ public enum CrewRunJoinPostStatus implements BaseEnum {
         return this.value;
     }
 
-    public static RunJoinPostStatus fromValue(String value) {
-        return BaseEnum.fromValue(RunJoinPostStatus.class, value);
+    public static GeneralRunJoinPostStatus fromValue(String value) {
+        return BaseEnum.fromValue(GeneralRunJoinPostStatus.class, value);
     }
 }
