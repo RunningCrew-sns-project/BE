@@ -5,10 +5,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Repository
 public interface GeneralJoinPostRepositoryCustom {
 
-    Slice<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Pageable pageable);
+    List<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size);
 }

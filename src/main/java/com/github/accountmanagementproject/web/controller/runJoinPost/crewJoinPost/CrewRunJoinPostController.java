@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.exception.SimpleRunAppException;
 import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
+import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
@@ -15,6 +16,7 @@ import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
 
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,7 @@ public class CrewRunJoinPostController {
     private final CrewJoinPostRepository crewJoinPostRepository;
     private final CrewJoinRunPostService crewJoinRunPostService;
     private final MyUsersRepository usersRepository;
+    private final CrewsRepository crewsRepository;
     private final AccountConfig accountConfig;
 
 
@@ -58,10 +61,8 @@ public class CrewRunJoinPostController {
 //        MyUser user = accountConfig.findMyUser(email);
         MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
-        CrewJoinPost createdPost = crewJoinRunPostService.createCrewPost(request, user, crewId);
-        CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(createdPost);
-
-        return Response.success("크루 게시물이 생성되었습니다.", crewRunPostResponse);
+        CrewRunPostResponse createdPost = crewJoinRunPostService.createCrewPost(request, user, crewId);
+        return Response.success("크루 게시물이 생성되었습니다.", createdPost);
     }
 
 
@@ -75,9 +76,7 @@ public class CrewRunJoinPostController {
         MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
-        CrewJoinPost findPost = crewJoinRunPostService.getPostById(runId, user);
-        CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(findPost);
-
+        CrewRunPostResponse crewRunPostResponse = crewJoinRunPostService.getPostById(runId, user);
         return Response.success(HttpStatus.OK, "크루 게시물이 정상 조회되었습니다.", crewRunPostResponse);
     }
 
@@ -91,10 +90,8 @@ public class CrewRunJoinPostController {
         MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
-        CrewJoinPost updatedPost = crewJoinRunPostService.updateCrewPostByRunId(runId, crewId, user, request);
-        CrewRunPostResponse crewRunPostResponse = CrewRunPostResponse.toDto(updatedPost);
-
-        return Response.success(HttpStatus.OK, "크루 게시물이 정상 수정되었습니다.", crewRunPostResponse);
+        CrewRunPostResponse updatedPost = crewJoinRunPostService.updateCrewPostByRunId(runId, crewId, user, request);
+        return Response.success(HttpStatus.OK, "크루 게시물이 정상 수정되었습니다.", updatedPost);
     }
 
 
@@ -108,7 +105,6 @@ public class CrewRunJoinPostController {
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
         crewJoinRunPostService.deleteCrewPostByRunId(runId, user, crewId);
-
         return Response.success(HttpStatus.OK, "게시물이 정상 삭제되었습니다.", null);
     }
 
@@ -129,7 +125,7 @@ public class CrewRunJoinPostController {
 
 
     // CrewJoinPost 목록과 참여 인원 수를 반환하는 API
-    // Test
+    // Test 목적
     @GetMapping("/crew-count")
     public List<Map<String, Object>> getCrewPostsWithParticipantCount() {
         return crewJoinPostRepository.findCrewPostsWithParticipantCount().stream().map(result -> {

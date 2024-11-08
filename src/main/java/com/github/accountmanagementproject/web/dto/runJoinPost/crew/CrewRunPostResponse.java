@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
+import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
@@ -21,6 +22,11 @@ public class CrewRunPostResponse {
     private Long runId;
     private Long crewId;             // 크루 ID
     private Long authorId;           // 작성자 ID
+    // 크루 info
+    private String crewName;
+    private String crewDescription;
+    private String crewImageUrl;
+
     private String title;
     private String content;
     private Integer maximumPeople;      // 최대인원
@@ -49,46 +55,4 @@ public class CrewRunPostResponse {
 
     private List<FileDto> banners;  // 파일 이미지
 
-
-
-    public static CrewRunPostResponse toDto(CrewJoinPost runJoinPost) {
-
-        // 이미지 정보를 FileDto로 변환
-        List<FileDto> fileDtos = runJoinPost.getCrewJoinPostImages() != null ?
-                runJoinPost.getCrewJoinPostImages().stream()
-                        .map(image -> new FileDto(
-                                image.getFileName(),
-                                image.getImageUrl()
-                        ))
-                        .toList()
-                : new ArrayList<>();
-
-        // 참여 인원 수 계산
-        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
-
-        return CrewRunPostResponse.builder()
-                .runId(runJoinPost.getCrewPostId())
-                .crewId(runJoinPost.getCrew() != null ? runJoinPost.getCrew().getCrewId() : null)
-                .authorId(runJoinPost.getAuthor() != null ? runJoinPost.getAuthor().getUserId() : null)
-                .title(runJoinPost.getTitle())
-                .content(runJoinPost.getContent())
-                .maximumPeople(runJoinPost.getMaximumPeople())
-                .people(participantCount)  // 현재인원 추가
-                .location(runJoinPost.getLocation())
-                .status(runJoinPost.getStatus())
-                .postType(runJoinPost.getPostType())
-                .date(runJoinPost.getDate())  // 날짜 추가
-                .startTime(runJoinPost.getStartTime() != null ? runJoinPost.getStartTime() : null)
-                .inputLocation(runJoinPost.getInputLocation())
-                .inputLatitude(runJoinPost.getInputLatitude())
-                .inputLongitude(runJoinPost.getInputLongitude())
-                .targetLocation(runJoinPost.getTargetLocation())
-                .targetLatitude(runJoinPost.getTargetLatitude())
-                .targetLongitude(runJoinPost.getTargetLongitude())
-                .distance(runJoinPost.getDistance())
-                .createdAt(runJoinPost.getCreatedAt())
-                .updatedAt(runJoinPost.getUpdatedAt())
-                .banners(fileDtos)
-                .build();
-    }
 }

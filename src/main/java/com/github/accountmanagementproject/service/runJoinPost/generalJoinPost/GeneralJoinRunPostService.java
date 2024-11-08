@@ -224,19 +224,32 @@ public class GeneralJoinRunPostService {
      * @Param : location (장소)
      * @Return 최신순 desc
      */
-    @Cacheable(key = "'general_' + '_page_' + #pageRequestDto.page")
+    @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor")
     public PageResponseDto<GeneralRunPostResponse> getAll(PageRequestDto pageRequestDto) {
-        Pageable pageable = pageRequestDto.getPageable();
+        // findFilteredPosts 메서드에 cursor와 size 전달
+        List<GeneralJoinPost> joinPosts = generalJoinPostRepository.findFilteredPosts(
+                pageRequestDto.getDate(),
+                pageRequestDto.getLocation(),
+                pageRequestDto.getCursor(),
+                pageRequestDto.getSize()
+        );
 
-        Slice<GeneralJoinPost> JoinPosts = generalJoinPostRepository  // 게시물 조회
-                .findFilteredPosts(pageRequestDto.getDate(), pageRequestDto.getLocation(), pageable);
+        // 다음 페이지 여부 판단
+        boolean hasNext = joinPosts.size() > pageRequestDto.getSize();
+        if (hasNext) {
+            joinPosts.remove(joinPosts.size() - 1); // 다음 페이지 확인용으로 가져온 항목 제거
+        }
 
-        List<GeneralRunPostResponse> lists = JoinPosts.stream()
-                .map(GeneralRunPostResponse::toDto).toList();
+        // 각 게시물을 DTO로 변환
+        List<GeneralRunPostResponse> lists = joinPosts.stream()
+                .map(GeneralRunPostResponse::toDto)
+                .toList();
 
-        Slice<GeneralRunPostResponse> responseSlice = new SliceImpl<>(lists, pageable, JoinPosts.hasNext());
+        // 다음 커서 설정 (마지막 요소의 ID를 커서로 설정)
+        Integer nextCursor = hasNext ? lists.get(lists.size() - 1).getRunId().intValue() : null;
 
-        return new PageResponseDto<>(responseSlice);
+        // PageResponseDto 객체로 반환
+        return new PageResponseDto<>(lists, pageRequestDto.getSize(), !hasNext, nextCursor);
     }
 
 
