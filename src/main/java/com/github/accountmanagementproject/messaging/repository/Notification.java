@@ -23,7 +23,7 @@ public class Notification {
     private Long recipientUserId;
 
     @Column(name = "join_request_id", nullable = false)
-    private Long joinRequestId;  // 참여 그룹 X 의 ID
+    private Long joinRequestId;  // 참여 그룹의 ID
 
     @Column(name = "master_user_id", nullable = false)
     private Long masterUserId;

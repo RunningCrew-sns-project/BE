@@ -3,15 +3,21 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.general;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.enums.RunJoinPostStatus;
+import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -21,16 +27,20 @@ import java.util.List;
 @NoArgsConstructor
 public class GeneralRunPostCreateRequest {
 
-//    private Integer authorId; // 작성자 ID
-
-//    @NotBlank(message = "게시물 제목을 입력해주세요.")
+    @NotBlank(message = "게시물 제목을 입력해주세요.")
     private String title; // 게시물 제목
 
-//    @NotBlank(message = "게시물 내용을 입력해주세요.")
+    @NotBlank(message = "게시물 내용을 입력해주세요.")
     private String content; // 게시물 내용
 
-//    @NotNull(message = "최대 참여 인원.")
-    private Integer maxParticipants; // 최대 참여 인원
+    @NotNull(message = "최대 참여 인원.")
+    private Integer maximumPeople; // 최대 참여 인원
+
+    private String location;
+
+    private LocalDate date;
+
+    private LocalTime startTime;
 
     // 위치 정보
     private String inputLocation; // 시작 위치
@@ -44,20 +54,22 @@ public class GeneralRunPostCreateRequest {
     private List<FileDto> fileDtos;  // 파일 이미지
 
 
-    public static RunJoinPost toEntity(GeneralRunPostCreateRequest request, MyUser user, Crew crew) {
-        RunJoinPost post = RunJoinPost.builder()
+    public static GeneralJoinPost toEntity(GeneralRunPostCreateRequest request, MyUser user) {
+        GeneralJoinPost post = GeneralJoinPost.builder()
                 .author(user)
-                .crew(crew != null ? crew : null)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .maxParticipants(request.getMaxParticipants())
+                .location(request.getLocation()) // 추가된 location 속성
+                .maximumPeople(request.getMaximumPeople())
+                .date(request.getDate()) // 추가된 date 속성
+                .startTime(request.getStartTime() != null ? request.getStartTime() : null) // 추가된 startTime 속성
                 .inputLocation(request.getInputLocation())
                 .inputLatitude(request.getInputLatitude())
                 .inputLongitude(request.getInputLongitude())
                 .targetLocation(request.getTargetLocation())
                 .targetLatitude(request.getTargetLatitude())
                 .targetLongitude(request.getTargetLongitude())
-                .status(RunJoinPostStatus.OPEN)
+                .status(GeneralRunJoinPostStatus.OPEN)
                 .postType(PostType.GENERAL)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)

@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.web.dto.pagination;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,18 +16,17 @@ import java.time.LocalDate;
 @Data
 public class PageRequestDto {
 
-//    private int page;
-    private int page = 0;  // 페이지 번호를 0으로 초기화
-    private final int size = 9;  // 한 번에 9개씩 불러오기
+    private int page = 0;  // 페이지 번호를 0으로 초기화 (무한 스크롤 첫 요청)
+    private int size = 9;  // 한 번에 9개씩 불러오기
     private String location = "전체";  // 필터 필드 (예: 전체, 역삼, 삼성 등)
-    private Long crewId;  // // 크루 아이디 필터 (null 가능)
-    private LocalDate date = LocalDate.now();  // 기본 날짜: 오늘
-    private boolean latestOrder = true;  // 최신순 정렬 여부
+    private LocalDate date = null;  // 기본 날짜: 오늘
 
     public PageRequestDto() {
-        this.page = 1;  // 첫 페이지를 1로 설정
+        this.page = 0;
+        this.size = 9;
     }
 
+    @JsonIgnore  // 스웨거에 노출되지 않도록 설정
     public Pageable getPageable() {
         return PageRequest.of(page, size, Sort.by("createdAt").descending());
     }

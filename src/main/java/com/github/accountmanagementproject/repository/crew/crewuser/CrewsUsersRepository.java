@@ -20,4 +20,7 @@ public interface CrewsUsersRepository extends JpaRepository<CrewsUsers, CrewsUse
     boolean existsByCrewIdAndUserIdAndStatus(@Param("crewId") Long crewId,
                                              @Param("userId") Long userId,
                                              @Param("status") CrewsUsersStatus status);
+
+    boolean existsByCrewsUsersPkUserUserIdAndStatus(Long userId, CrewsUsersStatus crewsUsersStatus);
+
 }
