@@ -2,12 +2,15 @@ package com.github.accountmanagementproject.repository.crew.crew;
 
 import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
-import com.github.accountmanagementproject.repository.crew.crewuser.QCrewsUsers;
-import com.github.accountmanagementproject.web.dto.pagination.SearchCriteria;
+import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
+import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
+import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
+import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,40 +53,71 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
     }
 
     @Override
-    public List<Crew> findAvailableCrews(String email, Pageable pageable, SearchCriteria criteria) {
+    public List<CrewListResponse> findAvailableCrews(String email, SearchRequest request) {
+        BooleanExpression expression = //기본 조건 이미 가입한 크루와 가입 제한인원을 넘은 크루는 제외
+                QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email))
+                        .and(QCREW.maxCapacity.gt(QCREW.crewUsers.size()));
 
-        QCrewsUsers qCrewsUsers = QCrewsUsers.crewsUsers;
-        BooleanExpression expression = qCrewsUsers.crewsUsersPk.user.email.ne(email);
-        pageable.getSort();
-        pageable.getPageNumber();
-        pageable.getPageSize();
-//        OrderSpecifier<?> orderBy = setSortingCriteria(criteria, pageable.getSort());
+        OrderSpecifier<?> specifier = setSortingCriteria(request.getSearchCriteria(), request.isReverse());
+        if (request.getCursor()!=null) expression = expression.and( cursorExpression(request) );
 
-        queryFactory.select(qCrewsUsers.crewsUsersPk.crew)
-                .from(qCrewsUsers)
-                .where()
-                .orderBy()
+        return queryFactory.select(
+                        Projections.constructor(CrewListResponse.class,
+                                QCREW.crewId,
+                                QCREW.crewName,
+                                QCrewImage.crewImage.imageUrl,
+                                QCREW.crewIntroduction,
+                                QCREW.activityRegion,
+                                QCREW.createdAt,
+                                QCREW.crewUsers.size().longValue(),
+                                QCREW.maxCapacity))
+                .from(QCREW)
+                .leftJoin(QCREW.crewUsers, QMyUser.myUser)
+                .leftJoin(QCREW.crewImages, QCrewImage.crewImage)
+                .where(expression)
+                .groupBy(QCREW)
+                .orderBy(specifier)
+                .limit(request.getSize()+1)
                 .fetch();
-
-
-        return List.of();
     }
 
-//    private OrderSpecifier<?> setSortingCriteria(SearchCriteria criteria, Sort sort){
-//        switch (criteria){
-//            case NAME ->
-//            {
-//                return sort.get()== ?QCREW.crewName.asc();
-//            }
-//            case MEMBER ->{
-//                return
-//            }
-//            default -> {
-//                return;
-//            }
-//        }
+    private BooleanExpression cursorExpression(SearchRequest request) {
+        CursorHolder cursorHolder = request.getCursorHolder();
+        boolean reverse = request.isReverse();
 
-//    }
+        switch (request.getSearchCriteria()){
+            case NAME -> {
+                return reverse ? QCREW.crewName.gt(cursorHolder.getNameCursor())
+                        : QCREW.crewName.lt(cursorHolder.getNameCursor());
+            }
+            case MEMBER -> {
+                return reverse ? QCREW.crewUsers.size().gt(cursorHolder.getMemberCursor()) :
+                        QCREW.crewUsers.size().lt(cursorHolder.getMemberCursor());
+            }
+            case LATEST -> {
+                return reverse ? QCREW.createdAt.gt(cursorHolder.getCreatedAtCursor())
+                            : QCREW.createdAt.lt(cursorHolder.getCreatedAtCursor());
+            }
+        }
+        throw new IllegalArgumentException("Invalid criteria");
+
+    }
+
+    private OrderSpecifier<?> setSortingCriteria(SearchCriteria criteria, boolean reverse){
+        switch (criteria){
+            case NAME ->
+            {
+                return reverse ? QCREW.crewName.asc() : QCREW.crewName.desc();
+            }
+            case MEMBER ->{
+                return reverse ? QCREW.crewUsers.size().asc() : QCREW.crewUsers.size().desc();
+            }
+            case LATEST -> {
+                return reverse ? QCREW.createdAt.asc() : QCREW.createdAt.desc();
+            }
+        }
+        throw new IllegalArgumentException("Invalid criteria");
+    }
 
 
 }

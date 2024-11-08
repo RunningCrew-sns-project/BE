@@ -14,4 +14,5 @@ public class MyCrewResponse extends CrewResponseParent {
     private LocalDateTime requestOrCompletionDate;
     private CrewsUsersStatus status;
     private boolean isCrewMaster;
+
 }

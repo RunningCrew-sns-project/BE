@@ -13,10 +13,10 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRe
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crew.*;
-import com.github.accountmanagementproject.web.dto.pagination.SearchCriteria;
+import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
+import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +31,14 @@ public class CrewService {
     private final CrewsUsersRepository crewsUsersRepository;
 
     @Transactional(readOnly = true)
-    public List<CrewListResponse> getAvailableCrewLists(String email, Pageable pageable, SearchCriteria criteria) {
-        List<Crew> crews = crewsRepository.findAvailableCrews(email, pageable, criteria);
+    public InfiniteScrollingCollection<CrewListResponse> getAvailableCrewLists(String email, SearchRequest request) {
+        if (request.getCursor()!=null) request.makeCursorHolder();
 
+        List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
+
+        return InfiniteScrollingCollection.of(crewList, request.getSize());
     }
+
 
 
     @Transactional
