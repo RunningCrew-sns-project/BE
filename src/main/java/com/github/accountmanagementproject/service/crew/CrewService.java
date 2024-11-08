@@ -12,12 +12,11 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersPk
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
-import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
-import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
-import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
-import com.github.accountmanagementproject.web.dto.crew.CrewUserResponse;
+import com.github.accountmanagementproject.web.dto.crew.*;
+import com.github.accountmanagementproject.web.dto.pagination.SearchCriteria;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +29,13 @@ public class CrewService {
     private final AccountConfig accountConfig;
     private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
+
+    @Transactional(readOnly = true)
+    public List<CrewListResponse> getAvailableCrewLists(String email, Pageable pageable, SearchCriteria criteria) {
+        List<Crew> crews = crewsRepository.findAvailableCrews(email, pageable, criteria);
+
+    }
+
 
     @Transactional
     public void crewCreation(@Valid CrewCreationRequest request, String email) {
@@ -98,7 +104,7 @@ public class CrewService {
         Crew crew = findsCrewById(crewId);
         long crewMemberCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
         CrewDetailResponse response = CrewMapper.INSTANCE.crewToCrewDetailResponse(crew);
-        response.setMemberCount(crewMemberCount);
+        response.setMemberCount(crewMemberCount+1);
         return response;
     }
 
@@ -109,7 +115,6 @@ public class CrewService {
         List<CrewsUsers> crewsUsers = crewsUsersRepository.findCrewUsersByCrewId(crewId, all);
 
         return crewsUsers.stream().map(CrewMapper.INSTANCE::crewsUsersToCrewUserResponse).toList();
-
     }
 
     private void isCrewMaster(String masterEmail, Long crewId) {
@@ -205,4 +210,6 @@ public class CrewService {
 
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
     }
+
+
 }

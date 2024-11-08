@@ -2,13 +2,16 @@ package com.github.accountmanagementproject.web.controller.crew;
 
 import com.github.accountmanagementproject.service.crew.CrewService;
 import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.pagination.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -16,6 +19,16 @@ import org.springframework.web.bind.annotation.*;
 public class CrewController implements CrewControllerDocs{
     private final CrewService crewService;
 
+
+    @GetMapping
+    public CustomSuccessResponse getAvailableCrewLists(Pageable pageable,
+                                                       SearchCriteria criteria,
+                                                       @AuthenticationPrincipal String email){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 목록 조회 성공")
+                .responseData(crewService.getAvailableCrewLists(email, pageable, criteria))
+                .build();
+    }
     @Override
     @PostMapping
     public ResponseEntity<CustomSuccessResponse> createCrew(@RequestBody @Valid CrewCreationRequest request,
@@ -52,6 +65,7 @@ public class CrewController implements CrewControllerDocs{
                 .responseData(crewService.getCrewDetail(crewId))
                 .build();
     }
+
     @GetMapping("/{crewId}/users")
     public CustomSuccessResponse getCrewUsers(@PathVariable Long crewId, @RequestParam(required = false) Boolean all, @AuthenticationPrincipal String masterEmail){
         return new CustomSuccessResponse.SuccessDetail()
