@@ -10,7 +10,7 @@ public interface CrewsRepositoryCustom {
 
     boolean isCrewMaster(String masterEmail, Long crewId);
 
-
+    List<Crew> findFilteredCrews(String location, Integer cursor, int size);
 
 //    List<MyCrewResponse> findMyCrewsByEmail(String email, Boolean isRequesting);
 }

@@ -2,6 +2,7 @@ package com.github.accountmanagementproject.repository.crew.crew;
 
 import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +44,29 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .where(QCREW.crewMaster.email.eq(masterEmail), QCREW.crewId.eq(crewId))
                 .fetchOne();
         return fetchOne != null;
+    }
+
+    @Override
+    public List<Crew> findFilteredCrews(String location, Integer cursor, int size) {
+        QCrew crew = QCrew.crew;
+        QCrewImage crewImage = QCrewImage.crewImage;
+
+        // 커서 조건: cursor가 null이 아니면 해당 ID보다 작은 ID만 가져오기
+        BooleanExpression cursorCondition = (cursor != null) ? crew.crewId.lt(cursor) : null;
+
+        // 지역 필터링 조건 설정
+        BooleanExpression locationCondition = (location != null && !location.trim().isEmpty() && !location.equals("전체"))
+                ? crew.activityRegion.eq(location)
+                : null;
+
+        List<Crew> crews = queryFactory.selectFrom(crew)
+                .where(cursorCondition, locationCondition)
+                .leftJoin(crew.crewImages, crewImage).fetchJoin()
+                .orderBy(crew.createdAt.desc())
+                .limit(size + 1)  // 요청한 size보다 1개 더 가져와서 다음 페이지 확인
+                .fetch();
+
+        return crews;
     }
 
 
