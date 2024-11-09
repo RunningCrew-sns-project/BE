@@ -54,11 +54,12 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
 
     @Override
     public List<CrewListResponse> findAvailableCrews(String email, SearchRequest request) {
-        BooleanExpression expression = //기본 조건 이미 가입한 크루와 가입 제한인원을 넘은 크루는 제외
-                QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email))
-                        .and(QCREW.maxCapacity.gt(QCREW.crewUsers.size()));
+        //기본 조건 이미 가입한 크루와 가입 제한인원을 넘은 크루는 제외
+        BooleanExpression expression = email.equals("annonymous") ? QCREW.maxCapacity.gt(QCREW.crewUsers.size())
+                : QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email));
 
         OrderSpecifier<?> specifier = setSortingCriteria(request.getSearchCriteria(), request.isReverse());
+
         if (request.getCursor()!=null) expression = expression.and( cursorExpression(request) );
 
         return queryFactory.select(
@@ -95,8 +96,8 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                         QCREW.crewUsers.size().lt(cursorHolder.getMemberCursor());
             }
             case LATEST -> {
-                return reverse ? QCREW.createdAt.gt(cursorHolder.getCreatedAtCursor())
-                            : QCREW.createdAt.lt(cursorHolder.getCreatedAtCursor());
+                return reverse ? QCREW.createdAt.goe(cursorHolder.getCreatedAtCursor())
+                            : QCREW.createdAt.loe(cursorHolder.getCreatedAtCursor());
             }
         }
         throw new IllegalArgumentException("Invalid criteria");

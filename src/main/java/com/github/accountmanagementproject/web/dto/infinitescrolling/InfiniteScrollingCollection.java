@@ -6,12 +6,13 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class InfiniteScrollingCollection<T extends ScrollingResponseInterface>  {
+public class InfiniteScrollingCollection<T extends ScrollingResponseInterface<U>, U>  {
     private final List<T> itemsWithNextCursor;
     private final int countPerScroll;
+    private final U criteria;
 
-    public static <T extends ScrollingResponseInterface> InfiniteScrollingCollection<T> of(List<T> itemsWithNextCursor, int size) {
-        return new InfiniteScrollingCollection<>(itemsWithNextCursor, size);
+    public static <T extends ScrollingResponseInterface<U>, U> InfiniteScrollingCollection<T, U> of(List<T> itemsWithNextCursor, int size, U criteria) {
+        return new InfiniteScrollingCollection<>(itemsWithNextCursor, size, criteria);
     }
 
     public boolean isLastScroll() {
@@ -25,11 +26,7 @@ public class InfiniteScrollingCollection<T extends ScrollingResponseInterface>  
         return this.itemsWithNextCursor.subList(0, countPerScroll);
     }
 
-    public T getNextCursor() {
-        return isLastScroll() ? null:
-                itemsWithNextCursor.get(countPerScroll);
-    }
-    public Long getNextCursorId() {
-        return isLastScroll() ? null : itemsWithNextCursor.get(countPerScroll).getId();
+    public String getNextCursor() {
+        return isLastScroll() ? null : itemsWithNextCursor.get(countPerScroll).nextCursor(criteria);
     }
 }

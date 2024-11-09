@@ -14,6 +14,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersSt
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crew.*;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
+import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,12 @@ public class CrewService {
     private final CrewsUsersRepository crewsUsersRepository;
 
     @Transactional(readOnly = true)
-    public InfiniteScrollingCollection<CrewListResponse> getAvailableCrewLists(String email, SearchRequest request) {
+    public InfiniteScrollingCollection<CrewListResponse, SearchCriteria> getAvailableCrewLists(String email, SearchRequest request) {
         if (request.getCursor()!=null) request.makeCursorHolder();
 
         List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
 
-        return InfiniteScrollingCollection.of(crewList, request.getSize());
+        return InfiniteScrollingCollection.of(crewList, request.getSize(), request.getSearchCriteria());
     }
 
 

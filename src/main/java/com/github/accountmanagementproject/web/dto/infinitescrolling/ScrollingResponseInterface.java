@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.web.dto.infinitescrolling;
 
-public interface ScrollingResponseInterface {
-    Long getId();
+public interface ScrollingResponseInterface<U> {
+    String nextCursor(U criteria);
+
 }
