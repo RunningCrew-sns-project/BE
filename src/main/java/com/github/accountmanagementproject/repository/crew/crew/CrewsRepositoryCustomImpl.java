@@ -54,13 +54,9 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
 
     @Override
     public List<CrewListResponse> findAvailableCrews(String email, SearchRequest request) {
-        //기본 조건 이미 가입한 크루와 가입 제한인원을 넘은 크루는 제외
-        BooleanExpression expression = email.equals("annonymous") ? QCREW.maxCapacity.gt(QCREW.crewUsers.size())
-                : QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email));
 
-        OrderSpecifier<?> specifier = setSortingCriteria(request.getSearchCriteria(), request.isReverse());
-
-        if (request.getCursor()!=null) expression = expression.and( cursorExpression(request) );
+        OrderSpecifier<?>[] specifier = setSortingCriteria( request.getSearchCriteria(), request.isReverse() );
+        BooleanExpression expression = setExpression( email, request );
 
         return queryFactory.select(
                         Projections.constructor(CrewListResponse.class,
@@ -82,39 +78,89 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .fetch();
     }
 
-    private BooleanExpression cursorExpression(SearchRequest request) {
+    private BooleanExpression setExpression(String email, SearchRequest request) {
+        BooleanExpression expression = email.equals("anonymousUser") ? QCREW.maxCapacity.gt(QCREW.crewUsers.size())
+                : QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email)).and(QCREW.maxCapacity.gt(QCREW.crewUsers.size()));
+
+        if (request.getCursor()!=null) expression = expression.and( cursorExpressionDetails(request) );
+        return expression;
+    }
+
+    private BooleanExpression cursorExpressionDetails(SearchRequest request) {
         CursorHolder cursorHolder = request.getCursorHolder();
         boolean reverse = request.isReverse();
 
         switch (request.getSearchCriteria()){
             case NAME -> {
-                return reverse ? QCREW.crewName.gt(cursorHolder.getNameCursor())
-                        : QCREW.crewName.lt(cursorHolder.getNameCursor());
+                return getNameCursorCondition( cursorHolder, reverse );
             }
             case MEMBER -> {
-                return reverse ? QCREW.crewUsers.size().gt(cursorHolder.getMemberCursor()) :
-                        QCREW.crewUsers.size().lt(cursorHolder.getMemberCursor());
+                return getMemberCursorCondition( cursorHolder, reverse );
             }
             case LATEST -> {
-                return reverse ? QCREW.createdAt.goe(cursorHolder.getCreatedAtCursor())
-                            : QCREW.createdAt.loe(cursorHolder.getCreatedAtCursor());
+                return getLatestCursorCondition( cursorHolder, reverse );
             }
         }
         throw new IllegalArgumentException("Invalid criteria");
 
     }
+    private BooleanExpression getIdCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+        return reverse
+                ? QCREW.crewId.goe(cursorHolder.getIdCursor())
+                : QCREW.crewId.loe(cursorHolder.getIdCursor());
+    }
 
-    private OrderSpecifier<?> setSortingCriteria(SearchCriteria criteria, boolean reverse){
+    private BooleanExpression getNameCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder, reverse);
+        BooleanExpression nameCondition = reverse
+                ? QCREW.crewName.lt(cursorHolder.getNameCursor())
+                : QCREW.crewName.gt(cursorHolder.getNameCursor());
+
+        return nameCondition
+                .or( QCREW.crewName.eq(cursorHolder.getNameCursor()).and(idCondition) );
+    }
+
+    private BooleanExpression getMemberCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder, reverse);
+        BooleanExpression memberCondition = reverse
+                ? QCREW.crewUsers.size().gt(cursorHolder.getMemberCursor())
+                : QCREW.crewUsers.size().lt(cursorHolder.getMemberCursor());
+
+        return memberCondition.
+        or( QCREW.crewUsers.size().eq(cursorHolder.getMemberCursor()).and(idCondition) );
+    }
+
+    private BooleanExpression getLatestCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder, reverse);
+        BooleanExpression createdAtCondition = reverse
+                ? QCREW.createdAt.gt(cursorHolder.getCreatedAtCursor())
+                : QCREW.createdAt.lt(cursorHolder.getCreatedAtCursor());
+
+        return createdAtCondition
+                .or( QCREW.createdAt.eq(cursorHolder.getCreatedAtCursor()).and(idCondition) );
+    }
+
+
+    private OrderSpecifier<?>[] setSortingCriteria(SearchCriteria criteria, boolean reverse){
         switch (criteria){
             case NAME ->
             {
-                return reverse ? QCREW.crewName.asc() : QCREW.crewName.desc();
+                return new OrderSpecifier<?>[]{
+                        reverse ? QCREW.crewName.desc() : QCREW.crewName.asc(),
+                        reverse ? QCREW.crewId.asc() : QCREW.crewId.desc()
+                };
             }
             case MEMBER ->{
-                return reverse ? QCREW.crewUsers.size().asc() : QCREW.crewUsers.size().desc();
+                return new OrderSpecifier<?>[]{
+                        reverse ? QCREW.crewUsers.size().asc() : QCREW.crewUsers.size().desc(),
+                        reverse ? QCREW.crewId.asc() : QCREW.crewId.desc()
+                };
             }
             case LATEST -> {
-                return reverse ? QCREW.createdAt.asc() : QCREW.createdAt.desc();
+                return new OrderSpecifier<?>[]{
+                        reverse ? QCREW.createdAt.asc() : QCREW.createdAt.desc(),
+                        reverse ? QCREW.crewId.asc() : QCREW.crewId.desc()
+                };
             }
         }
         throw new IllegalArgumentException("Invalid criteria");

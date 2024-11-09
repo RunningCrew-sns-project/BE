@@ -23,11 +23,11 @@ public class CrewController implements CrewControllerDocs {
     @GetMapping
     public CustomSuccessResponse getAvailableCrewLists(
             @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String cursor,
-            @RequestParam(required = false) boolean reverse, @RequestParam(required = false) String criteria,
-            @AuthenticationPrincipal String email) {
+            @RequestParam(required = false) Long cursorId ,@RequestParam(required = false) boolean reverse,
+            @RequestParam(required = false) String criteria, @AuthenticationPrincipal String email) {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("크루 목록 조회 성공")
-                .responseData(crewService.getAvailableCrewLists(email, new SearchRequest(size, reverse, criteria, cursor)))
+                .responseData(crewService.getAvailableCrewLists(email, new SearchRequest(size, reverse, criteria, cursor, cursorId)))
                 .build();
     }
 

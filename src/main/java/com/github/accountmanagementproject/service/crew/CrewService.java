@@ -2,6 +2,7 @@ package com.github.accountmanagementproject.service.crew;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.exception.CustomBindException;
 import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.exception.DuplicateKeyException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
@@ -36,11 +37,20 @@ public class CrewService {
         if (request.getCursor()!=null) request.makeCursorHolder();
 
         List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
+        crewListValidation(crewList.get(0), request);
 
         return InfiniteScrollingCollection.of(crewList, request.getSize(), request.getSearchCriteria());
     }
 
-
+    private void crewListValidation(CrewListResponse firstCrew, SearchRequest request) {
+        if (request.getCursor() == null) return;
+        if (!firstCrew.valueValidity(request.getCursorId(), request))
+            throw new CustomBindException.ExceptionBuilder()
+                    .systemMessage("유효성 검사 실패")
+                    .customMessage("커서의 값과, 커서 아이디가 이 전 응답과 일치하지 않습니다.")
+                    .request(request)
+                    .build();
+    }
 
     @Transactional
     public void crewCreation(@Valid CrewCreationRequest request, String email) {

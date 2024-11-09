@@ -11,26 +11,24 @@ public class CursorHolder {
     private LocalDateTime createdAtCursor;
 
     public static CursorHolder fromId(Long cursor) {
+        if (cursor == null) throw new NullPointerException("cursorId is null");
         CursorHolder holder = new CursorHolder();
         holder.idCursor = cursor;
         return holder;
     }
 
-    public static CursorHolder fromName(String cursor) {
-        CursorHolder holder = new CursorHolder();
-        holder.nameCursor = cursor;
-        return holder;
+    public CursorHolder withName(String cursor) {
+        this.nameCursor = cursor;
+        return this;
     }
 
-    public static CursorHolder fromMember(Integer cursor) {
-        CursorHolder holder = new CursorHolder();
-        holder.memberCursor = cursor;
-        return holder;
+    public CursorHolder withMember(Integer cursor) {
+        this.memberCursor = cursor;
+        return this;
     }
 
-    public static CursorHolder fromCreatedAt(LocalDateTime cursor) {
-        CursorHolder holder = new CursorHolder();
-        holder.createdAtCursor = cursor;
-        return holder;
+    public CursorHolder withCreatedAt(LocalDateTime cursor) {
+        this.createdAtCursor = cursor;
+        return this;
     }
 }

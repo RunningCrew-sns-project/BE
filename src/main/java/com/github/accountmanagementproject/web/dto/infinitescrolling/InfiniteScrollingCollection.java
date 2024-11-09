@@ -29,4 +29,7 @@ public class InfiniteScrollingCollection<T extends ScrollingResponseInterface<U>
     public String getNextCursor() {
         return isLastScroll() ? null : itemsWithNextCursor.get(countPerScroll).nextCursor(criteria);
     }
+    public Long getNextCursorId(){
+        return isLastScroll() ? null : itemsWithNextCursor.get(countPerScroll).nextCursorId();
+    }
 }
