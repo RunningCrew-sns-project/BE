@@ -24,32 +24,27 @@ public class CrewJoinPostRepositoryCustomImpl implements CrewJoinPostRepositoryC
 
 
     @Override
-    public Slice<CrewJoinPost> findFilteredPosts(LocalDate date, String location, Pageable pageable) {
+    public List<CrewJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size) {
 
         QCrewJoinPost crewJoinPost = QCrewJoinPost.crewJoinPost;
         QRunJoinPostImage runJoinPostImage = QRunJoinPostImage.runJoinPostImage;
 
+        // 조건에 따른 BooleanExpression 설정
         BooleanExpression dateCondition = date != null ? crewJoinPost.createdAt.goe(date.atStartOfDay()) : null;
         BooleanExpression locationCondition = null;
         if (location != null && !location.trim().isEmpty() && !location.equals("전체")) {
             locationCondition = crewJoinPost.location.eq(location);
         }
+        BooleanExpression cursorCondition = cursor != null ? crewJoinPost.crewPostId.lt(cursor) : null;
 
+        // 쿼리 실행
         List<CrewJoinPost> posts = queryFactory.selectFrom(crewJoinPost)
-                .where(dateCondition, locationCondition)
-                .leftJoin(crewJoinPost.crewJoinPostImages, runJoinPostImage).fetchJoin()  // fetch join 추가
+                .where(dateCondition, locationCondition, cursorCondition) // cursorCondition 추가
+                .leftJoin(crewJoinPost.crewJoinPostImages, runJoinPostImage).fetchJoin()
                 .orderBy(crewJoinPost.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)  // 다음 페이지 존재 여부 확인을 위해 limit을 한 개 더 가져옴
+                .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
 
-        System.out.println("posts : " + posts);
-
-        boolean hasNext = posts.size() > pageable.getPageSize();
-        if (hasNext) {
-            posts.remove(posts.size() - 1); // 실제 응답에는 다음 페이지 확인 용도로 가져온 한 건 제거
-        }
-
-        return new SliceImpl<>(posts, pageable, hasNext);
+        return posts;
     }
 }

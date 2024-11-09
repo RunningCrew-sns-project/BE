@@ -1,7 +1,5 @@
 package com.github.accountmanagementproject.repository.runningPost.image;
 
-
-import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import jakarta.persistence.*;
@@ -28,19 +26,11 @@ public class RunJoinPostImage {
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
-    private RunJoinPost runJoinPost;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crew_post_id", nullable = false)
     private CrewJoinPost crewJoinPost;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "general_post_id", nullable = false)
     private GeneralJoinPost generalJoinPost;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "post_id", nullable = false)
-//    private GeneralJoinPost generalJoinPost;
 
 }

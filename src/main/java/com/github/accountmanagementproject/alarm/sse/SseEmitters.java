@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.messaging.sse;
+package com.github.accountmanagementproject.alarm.sse;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

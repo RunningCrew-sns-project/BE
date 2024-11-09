@@ -6,13 +6,16 @@ import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJ
 import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -25,12 +28,15 @@ public class GeneralJoinPost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
-    private Long runId;
+    @Column(name = "general_post_id")
+    private Long generalPostId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private MyUser author;    // 작성자
+
+    @OneToMany(mappedBy = "generalJoinPost", fetch = FetchType.EAGER)
+    private Set<UserRunGroup> participants = new HashSet<>();
 
     /** ****************************************************************/
 
