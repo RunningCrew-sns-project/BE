@@ -37,6 +37,7 @@ public class Crew {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+
     @OneToMany(mappedBy = "crew", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CrewImage> crewImages;
     @OneToMany(mappedBy = "crew", cascade = CascadeType.ALL, orphanRemoval = true)

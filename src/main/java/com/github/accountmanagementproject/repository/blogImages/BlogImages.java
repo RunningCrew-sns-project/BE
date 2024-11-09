@@ -21,5 +21,6 @@ public class BlogImages {
     private Blog blog;
 
     @Column(name = "image_url")
-    private String imageUrl;
+    @Builder.Default
+    private String imageUrl = "https://running-crew.s3.ap-northeast-2.amazonaws.com/default_image/blog_default.jpg";
 }

@@ -1,20 +1,14 @@
 package com.github.accountmanagementproject.service.chat;
 
-import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
-import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
+import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
 import com.github.accountmanagementproject.service.ExeTimer;
-import com.github.accountmanagementproject.web.dto.chat.*;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
 import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
-import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
-import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
-import com.github.accountmanagementproject.web.dto.chat.UserChatMapping;
-import com.github.accountmanagementproject.web.dto.chat.UserResponse;
+import com.github.accountmanagementproject.web.dto.chat.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,38 +28,29 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatService{
     private final ChatRoomRepository chatRoomRepository;
-    private final MyUsersRepository myUsersJpa;
-    private final AccountConfig accountConfig;
     private final UserChatMappingRepository userChatMappingRepository;
     private final ChatMongoRepository chatMongoRepository;
     private final MongoTemplate mongoTemplate;
 
-    // 전체 채팅방 조회
-    public List<ChatRoomResponse> findAllRoom(){
-        //채팅방 생성 순서를 최근순으로 반환
-        return chatRoomRepository.findAll().stream()
-                .map(chatRoom -> {
-                    List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
-                    List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
-                    List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
-                    ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
-                    chatRoomResponse.setUserCount(userList.size());
-                    chatRoomResponse.setUserList(userResponses);
-                    return chatRoomResponse;
-                })
-                .toList();
-    }
-
-    // roomId 기준으로 채팅방 찾기
-    public ChatRoom findByRoomId(Integer roomId){
-        return chatRoomRepository.findById(roomId).orElse(null);
-    }
-
     public List<ChatRoomResponse> findMyRoomList(MyUser user) {
-        return userChatMappingRepository.findAllByUser(user).stream()
+        return userChatMappingRepository.findAllByUser(user)
+                .stream()
                 .map(UserChatMapping::getChatRoom)
-                .map(ChatRoomMapper.INSTANCE::chatRoomToChatRoomResponse)
+                .map(this::mappingChatRoom)
                 .toList();
+    }
+
+    private ChatRoomResponse mappingChatRoom(ChatRoom chatRoom){
+        List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
+        List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
+        List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
+        ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
+        chatRoomResponse.setUserCount(userList.size());
+        chatRoomResponse.setUserList(userResponses);
+        chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
+        chatRoomResponse.setLastMessageTime(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getTime());
+
+        return chatRoomResponse;
     }
 
     @Transactional
@@ -139,7 +124,9 @@ public class ChatService{
     @ExeTimer
     public List<ChatMongoDto> getMessageByRoomId(Integer roomId, MyUser user, Integer limit, Optional<LocalDateTime> lastTime) {
         LocalDateTime lastTimeStamp = lastTime.orElse(LocalDateTime.now());
+
         log.info(lastTimeStamp.toString());
+
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
         if(!userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList().contains(user)){
             throw  new CustomBadCredentialsException.ExceptionBuilder()

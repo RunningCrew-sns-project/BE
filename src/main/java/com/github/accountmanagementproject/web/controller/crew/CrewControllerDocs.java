@@ -9,6 +9,10 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
@@ -122,7 +126,8 @@ public interface CrewControllerDocs {
     @Operation(summary = "나의 크루 가입 요청내역보기", description = "테스트를 위한 가입요청내역 반환")
     CustomSuccessResponse requestTest(String email);
 
-    @Operation(summary = "크루 상세 조회", description = "크루 상세 정보를 조회합니다.")
+    @Operation(summary = "크루 상세 조회", description = "크루 상세 정보를 조회합니다.<br>" +
+            "crewMaster = 크루마스터닉네임, activityRegion = 크루 활동지역, createdAt = 크루 생성일, memberCount = 크루원 수, maxCapacity = 크루 최대인원수")
     @ApiResponse(responseCode = "200", description = "크루 상세 조회 성공",
             content = @Content(mediaType = "application/json",
                     examples =
@@ -168,4 +173,120 @@ public interface CrewControllerDocs {
     )
     CustomSuccessResponse getCrewDetail(@Parameter(description = "크루 고유번호", example = "5") Long crewId);
 
+    @Operation(summary = "크루원 조회(크루 관리자페이지 기능)", description = "크루마스터가 크루에 가입한 유저들을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "크루 유저 조회 성공",
+            content = @Content(mediaType = "application/json",
+                    examples =
+                    @ExampleObject(name = "크루원 조회 응답",
+                            description = "⬆️⬆️ 상태코드 200, responseData에 유저정보들을 담아 응답합니다.",
+                            value = """
+                                    {
+                                        "success": {
+                                          "code": 200,
+                                          "httpStatus": "OK",
+                                          "message": "크루 멤버 조회 성공",
+                                          "responseData": [
+                                            {
+                                              "email": "abc11@abc.com",
+                                              "nickname": "이브라히모비치",
+                                              "userImageUrl": "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/anonymous-user-icon.png",
+                                              "profileMessage": "달리고 싶다..⭐",
+                                              "gender": "미정",
+                                              "lastLoginDate": null,
+                                              "status": "가입 완료",
+                                              "caveat": 0,
+                                              "joinRequestOrJoinDate": "2024-11-05T14:43:17"
+                                            },
+                                            {
+                                              "email": "sihu1205@gmail.com",
+                                              "nickname": "이시후",
+                                              "userImageUrl": "http://k.net/dn/lvFN7/btsIhygOK2H/ZrHKAPfi20EL3oN520F65K/img_640x640.jpg",
+                                              "profileMessage": null,
+                                              "gender": "미정",
+                                              "lastLoginDate": null,
+                                              "status": "가입 대기",
+                                              "caveat": 0,
+                                              "joinRequestOrJoinDate": "2024-11-05T05:42:42"
+                                            },
+                                            {
+                                              "email": "sihu93@gmail.com",
+                                              "nickname": "이시후",
+                                              "userImageUrl": "http://k.net/dn/4viK0/btsGJlJED2t/vgKsKRzmXGMQwHk75gvY70/img_640x640.jpg",
+                                              "profileMessage": null,
+                                              "gender": "남성",
+                                              "lastLoginDate": null,
+                                              "status": "가입 대기",
+                                              "caveat": 0,
+                                              "joinRequestOrJoinDate": "2024-11-05T05:42:32"
+                                            },
+                                            {
+                                              "email": "ahhyun2008@naver.com",
+                                              "nickname": "조현아",
+                                              "userImageUrl": "http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg",
+                                              "profileMessage": "상태메세지",
+                                              "gender": "여성",
+                                              "lastLoginDate": "2024-11-04T14:12:28",
+                                              "status": "가입 완료",
+                                              "caveat": 0,
+                                              "joinRequestOrJoinDate": "2024-11-05T14:43:19"
+                                            },
+                                            {
+                                              "email": "abc2@abc.com",
+                                              "nickname": "닉네임수정테스트",
+                                              "userImageUrl": "https://uxwing.com/wp-content/themes/uxwing/download/sihu-avatars/woman-user-color-icon.png",
+                                              "profileMessage": null,
+                                              "gender": "여성",
+                                              "lastLoginDate": "2024-11-05T14:28:10",
+                                              "status": "가입 대기",
+                                              "caveat": 0,
+                                              "joinRequestOrJoinDate": "2024-10-29T23:23:58"
+                                            }
+                                          ],
+                                          "timestamp": "2024-11-05T14:44:19.8903104"
+                                        }
+                                      }""")
+            )
+    )
+    @ApiResponse(responseCode = "401", description = "크루 마스터아님",
+            content = @Content(mediaType = "application/json",
+                    examples =
+                    @ExampleObject(name = "권한 에러",
+                            description = "⬆️⬆️ 상태코드 401 해당 crewId의 크루 마스터가 아닐때",
+                            value = """
+                                    {
+                                        "error": {
+                                          "code": 401,
+                                          "httpStatus": "UNAUTHORIZED",
+                                          "customMessage": "크루 마스터가 아닙니다",
+                                          "request": "abc2@abc.com",
+                                          "timestamp": "2024-11-05 14:46:39"
+                                        }
+                                      }""")
+            )
+    )
+    CustomSuccessResponse getCrewUsers(Long crewId, @Parameter(description = "null = 가입완료 크루원, true = 전체, false = 요청상태 크루원") Boolean all,String masterEmail);
+
+
+    //퇴장 시키기
+    @Parameter(name = "crewId", description = "크루 아이디")
+    @Parameter(name = "outCrewsUsersId", description = "내보낼 유저의 아이디")
+    @Operation(summary = "크루원 강퇴 시키기", description = "crewId와 내보낼 크루원의 userid를 받아 강퇴 기능 구현")
+    @DeleteMapping("/sendOutCrew")
+    CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
+                                      @RequestParam Long crewId,
+                                      @RequestParam Long outUserId);
+
+    //승인, 거절
+    @Parameter(name = "crewId", description = "크루 아이디")
+    @Parameter(name = "requestCrewUserId", description = "가입신청한 유저 아이디")
+    @Parameter(name = "approveOrReject", description = "승인/거절 값", examples = {@ExampleObject(name = "승인", value = "true"),
+            @ExampleObject(name = "거절", value = "false")}
+    )
+
+    @Operation(summary = "크루 가입 신청, 거절", description = "crewId와 요청 유저 아이디, 승인/거절 요청 값을 받아 승인/거절 로직 구현")
+    @PostMapping("/approveOrReject")
+    CustomSuccessResponse approveOrReject(@AuthenticationPrincipal String email,
+                                          @RequestParam Long crewId,
+                                          @RequestParam Long requestCrewUserId,
+                                          @RequestParam Boolean approveOrReject);
 }

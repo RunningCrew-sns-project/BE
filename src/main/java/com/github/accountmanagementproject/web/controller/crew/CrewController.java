@@ -30,7 +30,7 @@ public class CrewController implements CrewControllerDocs{
     public CustomSuccessResponse joinCrew(@AuthenticationPrincipal String email,
                                             @PathVariable Long crewId){
         return new CustomSuccessResponse.SuccessDetail()
-                .message("크루 가입 성공")
+                .message("크루 가입 신청 성공")
                 .responseData(crewService.joinTheCrew(email, crewId))
                 .build();
     }
@@ -43,6 +43,8 @@ public class CrewController implements CrewControllerDocs{
                 .build();
     }
 
+
+
     @GetMapping("/{crewId}")
     public CustomSuccessResponse getCrewDetail(@PathVariable Long crewId){
         return new CustomSuccessResponse.SuccessDetail()
@@ -50,13 +52,36 @@ public class CrewController implements CrewControllerDocs{
                 .responseData(crewService.getCrewDetail(crewId))
                 .build();
     }
+    @GetMapping("/{crewId}/users")
+    public CustomSuccessResponse getCrewUsers(@PathVariable Long crewId, @RequestParam(required = false) Boolean all, @AuthenticationPrincipal String masterEmail){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 멤버 조회 성공")
+                .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
+                .build();
+    }
+
+    //퇴장 시키기
+    @Override
     @DeleteMapping("/sendOutCrew")
     public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,
-                                             @RequestParam Integer outCrewId){
+                                             @RequestParam Long outUserId){
         return new CustomSuccessResponse.SuccessDetail()
-                .message("퇴장시키기 성공")
-                .responseData(crewService.sendOutCrew(email, crewId, outCrewId))
+                .message("퇴장시키기 성공")// 엔티티에 유저아이디가 Long타입이라 long타입으로 수정햇습니당
+                .responseData(crewService.sendOutCrew(email, crewId, outUserId))
+                .build();
+    }
+
+    //승인, 거절
+    @Override
+    @PostMapping("/approveOrReject")
+    public CustomSuccessResponse approveOrReject(@AuthenticationPrincipal String email,
+                                                 @RequestParam Long crewId,
+                                                 @RequestParam Long requestCrewUserId,
+                                                 @RequestParam Boolean approveOrReject){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("처리가 완료되었습니다.")
+                .responseData(crewService.approveOrReject(email, crewId, requestCrewUserId, approveOrReject))
                 .build();
     }
 }

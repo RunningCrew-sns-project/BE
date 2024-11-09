@@ -10,13 +10,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final QCrewsUsers QCREWSUSERS = QCrewsUsers.crewsUsers;
 
-    @Override//프론트 테스트를 위한 임시 메서드
+    @Override//프론트 테스트를 위한 임시
     public List<CrewJoinResponse> findSimpleCrewsUsersByUserEmail(String userEmail) {
 
         return queryFactory.select(Projections.constructor(CrewJoinResponse.class,
@@ -31,11 +32,7 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
 
     @Override
     public List<CrewsUsers> findMyCrewsByEmail(String email, Boolean isAll) {
-        BooleanExpression expression = myCrewSearchConditions(email, isAll);
-
-
-
-
+        BooleanExpression expression = mySearchConditions(email, isAll);
         return queryFactory
                 .selectFrom(QCREWSUSERS)
                 .join(QCREWSUSERS.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
@@ -46,9 +43,39 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                 .fetch();
     }
 
+    @Override
+    public List<CrewsUsers> findCrewUsersByCrewId(Long crewId, Boolean all) {
+        BooleanExpression expression = mySearchConditions(crewId, all);
+        return queryFactory
+                .selectFrom(QCREWSUSERS)
+                .join(QCREWSUSERS.crewsUsersPk.user, QMyUser.myUser).fetchJoin()
+                .where(expression)
+                .orderBy(all==null ? QCREWSUSERS.joinDate.desc():QCREWSUSERS.applicationDate.desc())
+                .fetch();
+    }
 
-    private BooleanExpression myCrewSearchConditions(String email, Boolean isAll){
-        BooleanExpression expression = QMyUser.myUser.email.eq(email);
+    @Override
+    public long countCrewUsersByCrewId(Long crewId) {
+        return Optional.ofNullable(
+                queryFactory
+                        .select(QCREWSUSERS.count())
+                        .from(QCREWSUSERS)
+                        .where(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId)
+                                .and(QCREWSUSERS.status.eq(CrewsUsersStatus.COMPLETED)))
+                        .fetchOne()
+        ).orElse(0L);
+    }
+
+
+    private <T> BooleanExpression mySearchConditions(T emailOrCrewId, Boolean isAll){
+        BooleanExpression expression;
+        if(emailOrCrewId instanceof String){
+            expression = QMyUser.myUser.email.eq((String) emailOrCrewId);
+        } else if (emailOrCrewId instanceof Long) {
+            expression = QCREWSUSERS.crewsUsersPk.crew.crewId.eq((Long) emailOrCrewId);
+        } else {
+            throw new IllegalArgumentException("emailOrCrewId must be either String or Long");
+        }
         if(isAll == null){//완료된것만
             expression = expression.and(QCrewsUsers.crewsUsers.status.eq(CrewsUsersStatus.COMPLETED));
         } else if (!isAll) {//요청중인것만

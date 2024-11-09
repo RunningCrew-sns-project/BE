@@ -14,7 +14,7 @@ import org.springframework.security.core.Authentication;
 public class LoginRequest {
     @NotBlank(message = "이메일 또는 핸드폰 번호를 입력해주세요.")
     @Pattern(regexp = "^(01\\d{9}|[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+)$", message = "이메일 또는 핸드폰 번호 형식이 아닙니다.")
-    @Schema(description = "이메일 또는 전화번호", example = "admin@amp.com")
+    @Schema(description = "이메일 또는 전화번호", example = "abc2@abc.com")
     private String emailOrPhoneNumber;
     @NotBlank(message = "비밀번호를 입력해주세요.")
     @Schema(description = "비밀번호", example = "12341234a!")

@@ -26,6 +26,7 @@ public class BlogController implements BlogControllerDocs{
     @GetMapping
     public CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size,
                                              @RequestParam(required = false) Integer cursor,
+                                             @RequestParam Boolean isMyBlog,
                                              @AuthenticationPrincipal String principal) {
 
         System.out.println("Size: " + size + ", Cursor: " + cursor);
@@ -34,17 +35,18 @@ public class BlogController implements BlogControllerDocs{
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
                 .message("모든 블로그를 조회했습니다.")
-                .responseData(blogService.getAllBlogs(size,cursor ,user))
+                .responseData(blogService.getAllBlogs(size, cursor ,user, isMyBlog))
                 .build();
     }
 
-    @GetMapping("/{id}")
-    public CustomSuccessResponse getBlogById(@PathVariable Integer id, @AuthenticationPrincipal String principal) {
+    @Override
+    @GetMapping("/{blogId}")
+    public CustomSuccessResponse getBlogById(@PathVariable Integer blogId, @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
                 .message("해당 블로그를 조회했습니다.")
-                .responseData(blogService.getBlogById(id, user))
+                .responseData(blogService.getBlogById(blogId, user))
                 .build();
     }
 

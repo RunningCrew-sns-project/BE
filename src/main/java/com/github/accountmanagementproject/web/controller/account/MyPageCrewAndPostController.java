@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/account")
-public class MyPageCrewAndPostController  implements MyPageCrewAndPostControllerDocs{
+public class MyPageCrewAndPostController implements MyPageCrewAndPostControllerDocs{
     private final MyPageCrewAndPostService myPageCrewAndPostService;
 
     @GetMapping("/my-crew")
