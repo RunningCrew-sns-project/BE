@@ -1,23 +1,17 @@
 package com.github.accountmanagementproject.web.controller.crew;
 
 import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
-import com.github.accountmanagementproject.web.dto.crew.CrewDetailWithPostsResponse;
-import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
-import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -31,13 +25,13 @@ public interface CrewControllerDocs {
             int size,
             @Parameter(description = "다음 페이지를 요청할 때 필요한 커서값 (이전 응답의 nextCursor 의 값 그대로 요청)", example = "1")
             String cursor,
-             @Parameter(description = "다음 페이지를 요청할 때 필요한 커서Id값 (이전 응답의 nextCursorId 의 값 그대로 요청)", example = "1")
-             Long cursorId,
+            @Parameter(description = "다음 페이지를 요청할 때 필요한 커서Id값 (이전 응답의 nextCursorId 의 값 그대로 요청)", example = "1")
+            Long cursorId,
             @Parameter(description = "값을 역순으로 받을지 여부", example = "false")
-             boolean reverse,
+            boolean reverse,
             @Parameter(description = "정렬 조건", schema = @Schema(allowableValues = {"latest", "popular", "name", "member", "activities"}))
             String criteria,
-             String email);
+            String email);
 
 
     @Operation(summary = "크루 생성", description = "크루를 생성합니다.")
@@ -89,7 +83,7 @@ public interface CrewControllerDocs {
                     })
     )
     ResponseEntity<CustomSuccessResponse> createCrew(CrewCreationRequest request,
-                                                      String email);
+                                                     String email);
 
     @Operation(summary = "크루 가입", description = "크루에 가입하는 API")
     @ApiResponse(responseCode = "201", description = "크루 생성 성공",
@@ -312,128 +306,4 @@ public interface CrewControllerDocs {
                                           @RequestParam Long crewId,
                                           @RequestParam Long requestCrewUserId,
                                           @RequestParam Boolean approveOrReject);
-
-
-    // "/api/crews" 로 생성된 크루 리스트
-    @Operation(
-            summary = "크루 리스트 조회",
-            description = "커서 기반의 페이징을 사용하여 필터링된 크루 리스트를 조회합니다."
-    )
-    @Parameters({
-            @Parameter(name = "cursor", description = "마지막 조회 항목의 ID. 첫 요청 시에는 null로 전달", example = "10"),
-            @Parameter(name = "size", description = "페이지 당 항목 수. 기본값은 10", example = "10"),
-            @Parameter(name = "location", description = "필터링할 지역. 기본값은 '전체'", example = "전체"),
-            @Parameter(name = "date", description = "조회 기준 날짜. yyyy-MM-dd 형식", example = "2023-11-10")
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "정상적으로 크루 리스트가 조회되었습니다.",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PageResponseDto.class),
-                            examples = @ExampleObject(value = """
-            {
-              "content": [
-                {
-                  "crewId": 1,
-                  "crewName": "Example Crew",
-                  "crewIntroduction": "This is an example crew.",
-                  "crewImageUrls": ["url1", "url2"],
-                  "crewMaster": "Master Nickname",
-                  "activityRegion": "서울",
-                  "createdAt": "2023-11-10T12:00:00",
-                  "memberCount": 15,
-                  "maxCapacity": 20
-                }
-              ],
-              "countPerScroll": 10,
-              "lastScroll": false,
-              "nextCursor": 11
-            }
-            """)
-                    )
-            ),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터가 포함되어 있습니다."),
-            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 요청을 처리할 수 없습니다.")
-    })
-    CustomSuccessResponse getAllCrews(PageRequestDto pageRequestDto);
-
-
-    @Operation(
-            summary = "크루 상세 정보와 게시물 목록 조회",
-            description = "특정 크루의 상세 정보와 크루에 연관된 달리기 참여 게시물 목록을 페이징하여 반환합니다."
-    )
-    @Parameters({
-            @Parameter(name = "crewId", description = "크루의 고유 ID", example = "42", required = true),
-            @Parameter(name = "cursor", description = "커서 기반 페이징을 위한 마지막 항목의 ID. 첫 요청 시에는 null로 전달", example = "10"),
-            @Parameter(name = "size", description = "페이지 당 항목 수. 기본값은 10", example = "10"),
-            @Parameter(name = "location", description = "필터링할 지역. 기본값은 '전체'", example = "전체"),
-            @Parameter(name = "date", description = "조회 기준 날짜. yyyy-MM-dd 형식", example = "2023-11-10")
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "크루 상세 정보 및 게시물 목록 조회 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PageResponseDto.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "content": {
-                    "crewInfo": {
-                      "crewId": 42,
-                      "crewName": "런닝크루",
-                      "crewIntroduction": "즐거운 달리기를 함께해요!",
-                      "crewImageUrls": ["url1", "url2"],
-                      "crewMaster": "Master Nickname",
-                      "activityRegion": "서울",
-                      "createdAt": "2023-11-10T12:00:00",
-                      "memberCount": 20,
-                      "maxCapacity": 100
-                    },
-                    "items": [
-                      {
-                        "runId": 101,
-                        "crewId": 42,
-                        "authorId": 1001,
-                        "crewName": "런닝크루",
-                        "crewDescription": "즐거운 달리기 크루입니다.",
-                        "crewImageUrl": "url1",
-                        "title": "한강 달리기",
-                        "content": "한강에서 달리기를 즐겨요!",
-                        "maximumPeople": 15,
-                        "people": 10,
-                        "location": "서울",
-                        "date": "2023-11-12",
-                        "startTime": "07:00:00",
-                        "status": "ACTIVE",
-                        "postType": "PUBLIC",
-                        "inputLocation": "한강공원",
-                        "inputLatitude": 37.5326,
-                        "inputLongitude": 127.0246,
-                        "targetLocation": "뚝섬",
-                        "targetLatitude": 37.541,
-                        "targetLongitude": 127.056,
-                        "distance": 5.0,
-                        "createdAt": "2023-11-10T12:00:00",
-                        "updatedAt": "2023-11-10T12:00:00",
-                        "banners": [
-                          {"fileName": "banner1.png", "imageUrl": "banner_url1"},
-                          {"fileName": "banner2.png", "imageUrl": "banner_url2"}
-                        ]
-                      }
-                    ]
-                  },
-                  "countPerScroll": 10,
-                  "lastScroll": false,
-                  "nextCursor": 102
-                }
-            """)
-                    )
-            ),
-            @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없습니다."),
-            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 요청을 처리할 수 없습니다.")
-    })
-    CustomSuccessResponse getCrewDetailsWithPosts(@PathVariable Long crewId, PageRequestDto pageRequestDto);
 }
