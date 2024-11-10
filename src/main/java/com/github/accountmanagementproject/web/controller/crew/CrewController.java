@@ -2,7 +2,10 @@ package com.github.accountmanagementproject.web.controller.crew;
 
 import com.github.accountmanagementproject.service.crew.CrewService;
 import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
+import com.github.accountmanagementproject.web.dto.crew.CrewDetailWithPostsResponse;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
+import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -99,6 +102,21 @@ public class CrewController implements CrewControllerDocs {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("처리가 완료되었습니다.")
                 .responseData(crewService.approveOrReject(email, crewId, requestCrewUserId, approveOrReject))
+                .build();
+    }
+
+    // 크루 Info + 크루 달리기 게시물 목록
+    @GetMapping("/{crewId}/list")
+    @Override
+    public CustomSuccessResponse getCrewDetailsWithPosts(
+            @PathVariable Long crewId, PageRequestDto pageRequestDto) {
+
+        PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(crewId, pageRequestDto);
+
+        return new CustomSuccessResponse.SuccessDetail()
+                .httpStatus(HttpStatus.OK)
+                .message("크루 정보와 리스트가 정상적으로 조회되었습니다.")
+                .responseData(response)
                 .build();
     }
 }
