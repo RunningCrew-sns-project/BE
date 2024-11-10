@@ -35,11 +35,10 @@
 
 		try {
 			// cursor가 있는 경우 추가해서 이전 또는 최신 블로그를 로드
-			const url = `http://localhost:8080/api/blog?size=${size}` +
-				(cursor.blogId ? `&cursor=${cursor.blogId}` : "");
+			const url = `http://localhost:8080/api/blog?size=${size}` + (cursor.blogId ? `&cursor=${cursor.blogId}` : "") + "&isMyBlog=false";
 			const response = await fetch(url, {
 				headers: {
-					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA3MTg4NzUsImV4cCI6MTczMDcyMjQ3NSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.VWVXRYzxut84RMCHAKjOsrnhdjA2O_a2VyLlaIUTZ7U'
+					'Authorization': "Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA5NzY5OTcsImV4cCI6MTczMDk4MDU5Nywic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.6c-QIJFcNB32zQ5kgaZ9Vx5hC2ZGUE8zl3jkTJVz0eQ"
 				}
 			});
 

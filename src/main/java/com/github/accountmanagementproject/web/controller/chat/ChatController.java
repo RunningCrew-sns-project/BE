@@ -25,7 +25,6 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/chat")
 @RequiredArgsConstructor
 @Slf4j
 //https://khdscor.tistory.com/122 참고
@@ -39,12 +38,12 @@ public class ChatController {
 
 
     //클라이언트에서 /pub/chat/enterUser로 입장할때 입장 메세지 담아서 요청 보내면 여기서 처리
-    @MessageMapping("/enterUser")
+    @MessageMapping("/chat/enterUser")
     public void enterUser(
             @Payload ChatDto chat,
             StompHeaderAccessor headerAccessor){
 
-        log.info("principal {}", headerAccessor.getUser().getName());
+        log.info("header : {}", headerAccessor.getUser().getName());
         MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
 
 //        log.info("enter User {}", principal);
@@ -53,14 +52,15 @@ public class ChatController {
         headerAccessor.getSessionAttributes().put("roomID", chat.getRoomId());
 
         if(!chatService.addUser(chat.getRoomId(), user)){
-            chat.setMessage(user.getEmail() + "님이 입장하셨습니다. ");
+            chat.setMessage(user.getNickname() + "님이 입장하셨습니다. ");
+            chat.setUserName(user.getNickname());
             template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
             chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
         }
     }
 
     //클라이언트에서 /pub/chat/sendMessage로 ChatDto의 형태로 담아서 보내면 여기서 처리
-    @MessageMapping("/sendMessage")
+    @MessageMapping("/chat/sendMessage")
     public void sendMessage(
             @Payload ChatDto chat,
             @AuthenticationPrincipal String principal,
@@ -69,26 +69,28 @@ public class ChatController {
         log.info("chat : {}", chat);
         log.info("principal : {}", principal);
         log.info("header : {}", headerAccessor.getUser().getName());
-        MyUser user = accountConfig.findMyUser(principal);
-
+        MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
+        chat.setUserName(user.getNickname());
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
         chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
     }
 
     //클라이언트에서 /pub/chat/leaveUser 로 요청보내면 여기서 처리
-    @MessageMapping("/leaveUser")
+    @MessageMapping("/chat/leaveUser")
     public void leaveUser(
             @Payload ChatDto chat,
             @AuthenticationPrincipal String principal,
             StompHeaderAccessor headerAccessor){
 
         log.info("chat : {}", chat);
+        log.info("principal : {}", principal);
+        log.info("header : {}", headerAccessor.getUser().getName());
 
-        MyUser user = accountConfig.findMyUser(principal);
+        MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
         chatService.deleteUser(chat.getRoomId(), user);
 
-        chat.setMessage(user.getEmail() + "님이 퇴장하셨습니다. ");
-
+        chat.setMessage(user.getNickname() + "님이 퇴장하셨습니다. ");
+        chat.setUserName(user.getNickname());
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
         chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
     }

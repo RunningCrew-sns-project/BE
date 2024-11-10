@@ -35,10 +35,10 @@
 		console.log("loadBlogs 호출");
 
 		try {
-			const url = `http://localhost:8080/api/blog?size=${size}` + (nextCursor.blogId ? `&cursor=${nextCursor.blogId}` : "");
+			const url = `http://localhost:8080/api/blog?size=${size}` + (nextCursor.blogId ? `&cursor=${nextCursor.blogId}` : "") + "&isMyBlog=false";
 			const response = await fetch(url, {
 				headers: {
-					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA3MTg4NzUsImV4cCI6MTczMDcyMjQ3NSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.VWVXRYzxut84RMCHAKjOsrnhdjA2O_a2VyLlaIUTZ7U'
+					'Authorization': "Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzEwMDA4NDksImV4cCI6MTczMTAwNDQ0OSwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.xC-fsFuOhawZCDJ5BlKGru368gztHmnqgVdfkLQDuLc"
 				}
 			});
 
@@ -47,9 +47,11 @@
 			}
 
 			const data = await response.json();
+			console.log("요청데이터 : " + data)
 
 			if (data.success && data.success.responseData) {
 				const responseData = data.success.responseData;
+
 				renderBlogs(responseData.currentScrollItems);
 
 				// 다음 스크롤을 위해 nextCursor를 갱신하거나, lastScroll일 경우 null로 설정
