@@ -1,9 +1,8 @@
 package com.github.accountmanagementproject.repository.account.user.myenum;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
-@Getter
 @AllArgsConstructor
 public enum UserStatus implements MyEnumInterface{
     NORMAL("정상 계정"),
@@ -11,6 +10,13 @@ public enum UserStatus implements MyEnumInterface{
     TEMP("임시 계정"),
     WITHDRAWAL("탈퇴 계정");
 
-    private final String value;
+    private final String description;
+
+
+    @Override
+    @JsonValue//outValue
+    public String getValue() {
+        return this.description;
+    }
 
 }
