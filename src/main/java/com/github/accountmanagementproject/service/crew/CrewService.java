@@ -22,9 +22,7 @@ import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
-import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
-import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
-import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -208,7 +206,6 @@ public class CrewService {
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
             // 승인 알림 전송 , requestCrewUserId: 수신자 ID (알림을 받을 사용자) , crewId: 참여 요청된 크루 ID, masterUserId: 크루 마스터 ID
-            notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다.");
         }
         else if(crewsUser.getStatus() == CrewsUsersStatus.COMPLETED){
         } else if (crewsUser.getStatus() == CrewsUsersStatus.COMPLETED) {
@@ -218,7 +215,6 @@ public class CrewService {
             crewsUser.setStatus(CrewsUsersStatus.REJECTED);
             crewsUser.setWithdrawalDate(LocalDateTime.now());
             // 거절 알림 전송 , requestCrewUserId: 수신자 ID (알림을 받을 사용자) , crewId: 참여 요청된 크루 ID, masterUserId: 크루 마스터 ID
-            notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");
         }
 
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
@@ -226,35 +222,7 @@ public class CrewService {
 
 
 
-    // 크루 Info + 크루 달리기 참여 게시글 목록
-    @Transactional(readOnly = true)
-    public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(Long crewId, PageRequestDto pageRequestDto) {
 
-        Crew crew = crewsRepository.findByIdWithImages(crewId)
-                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder().customMessage("크루를 찾을 수 없습니다.").build());
-        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew);
-
-        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
-                pageRequestDto.getDate(),
-                pageRequestDto.getLocation(),
-                pageRequestDto.getCursor(),
-                pageRequestDto.getSize()
-        );
-
-        List<CrewRunPostResponse> postResponses = crewJoinPosts.stream()
-                .map(post -> CrewRunPostResponseMapper.toDto(post, crew))
-                .toList();
-
-        boolean hasNext = postResponses.size() > pageRequestDto.getSize();
-        Integer nextCursor = hasNext ? postResponses.get(postResponses.size() - 1).getRunId().intValue() : null;
-        if (hasNext) {
-            postResponses = postResponses.subList(0, pageRequestDto.getSize());
-        }
-
-        // 5. CrewDetailWithPostsResponse 생성 및 PageResponseDto 반환
-        CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses);
-        return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
-    }
 
 
 }

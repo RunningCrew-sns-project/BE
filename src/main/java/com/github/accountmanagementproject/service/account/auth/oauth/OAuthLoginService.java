@@ -34,7 +34,7 @@ public class OAuthLoginService {
     private final MyUsersRepository myUsersRepository;
     private final SocialIdsRepository socialIdsRepository;
     private final AccountConfig accountConfig;
-    private final OAuthClientManager oAuthClientManager;
+    private final com.github.accountmanagementproject.service.account.auth.oauth.OAuthClientManager oAuthClientManager;
     private final JwtProvider jwtProvider;
 
     @Transactional
