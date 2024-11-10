@@ -10,12 +10,9 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Setter
-public class MyCrewResponse {
-    private long crewId;
-    private String crewName;
-    private String crewImageUrl;
-    private String crewIntroduction;
+public class MyCrewResponse extends CrewResponseParent {
     private LocalDateTime requestOrCompletionDate;
     private CrewsUsersStatus status;
     private boolean isCrewMaster;
+
 }
