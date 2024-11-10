@@ -92,7 +92,6 @@ public class BlogService {
                     //set에 블로그가 존재하면 이미 좋아요 누른거, 없으면 안누른거
                     blogResponseDTO.setLiked(userLikesBlogsIds.contains(blog.getId()));
                     blogResponseDTO.setImageUrl(blogImagesRepository.findAllByBlog(blog).stream().map(BlogImages::getImageUrl).toList());
-
                     //레디스에 blog_아이디 를 해시키, likeCount라는 필드에, likeCount를 value (hashkey, filed, value) 3가지 조합 패턴으로 구성
                     //exists) blog_01, likeCount, 10
                     redisHashService.save("blog_" + blog.getId(), "likeCount", blog.getLikeCount().toString());
@@ -105,9 +104,9 @@ public class BlogService {
     //레포지토리에서 레디스에
     // user_likes:user_id , blog_id, 1 (true 의미) -> 형태로 저장
     private Set<Integer> getUserLikesBlogsIds(MyUser user, List<Blog> blogs){
-        //좋아요 정보가 존재하지 않으면 레디스에 좋아요 정보 저장하고
+        //좋아요 정보가 존재하지 않으면 db에서 가져와서 레디스에 좋아요 정보 저장하고
         if(!redisHashService.exists("user_likes:" + user.getUserId())){
-            userLikesBlogRepository.findByUser(user).stream().map(UserLikesBlog::getBlog).forEach(blog ->{
+            userLikesBlogRepository.findAllByUser_UserId(user.getUserId()).stream().map(UserLikesBlog::getBlog).forEach(blog ->{
                 redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "true");
             });
         }
@@ -187,7 +186,7 @@ public class BlogService {
                     .build();
         }
         //TODO : 블로그 조회 시 좋아요 정보를 미리 가지고 와서 처리
-        if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("true")){
+        if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) != null && redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("true")) {
             //TODO : 좋아요 취소
             redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "false");
 
@@ -224,23 +223,22 @@ public class BlogService {
             log.info(resultMap.toString());
             resultMap.forEach((blogId, isLiked)->{
                 Blog blog = blogRepository.findById(Integer.valueOf(blogId)).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
-                if(isLiked.equals("true")){
-                    UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
-                    if(userLikesBlog == null) { //db에 없을때 새로 저장 (좋아요 누르기)
 
-                        //UserLikeBlog에 isLiked 변수에 기본값으로 true 저장
-                        UserLikesBlog newUserLikesBlog = UserLikesBlog.builder()
-                                .blog(blog)
-                                .user(user)
-                                .build();
-                        userLikesBlogRepository.save(newUserLikesBlog);
-                    }
-                    else {
-                        userLikesBlog.setIsLiked(false);
-                    }
+                UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
+                if(userLikesBlog == null) { //db에 없을때 새로 저장 (좋아요 누르기)
+                    //UserLikeBlog에 isLiked 변수에 기본값으로 true 저장
+                    userLikesBlog = UserLikesBlog.builder()
+                            .blog(blog)
+                            .user(user)
+                            .isLiked(true)
+                            .build();
+                    userLikesBlogRepository.save(userLikesBlog);
+                }
+                else {
+                    userLikesBlog.setIsLiked(!userLikesBlog.getIsLiked());
+//                    userLikesBlogRepository.save(userLikesBlog);
+                }
 
-                }else
-                    userLikesBlogRepository.delete(null);
                 Integer likeCount = userLikesBlogRepository.countAllByBlog(blog); //db에서 blog에 해당하는 좋아요 갯수 가져오기
                 blog.setLikeCount(likeCount); //좋아요 갯수 저장
             });

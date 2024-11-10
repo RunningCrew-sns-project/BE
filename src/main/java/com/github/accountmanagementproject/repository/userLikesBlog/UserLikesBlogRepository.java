@@ -29,6 +29,10 @@ public interface UserLikesBlogRepository extends JpaRepository<UserLikesBlog, In
             "WHERE u = :user ")
     List<UserLikesBlog> findByUser(@Param("user") MyUser user);
 
+    List<UserLikesBlog> findAllByUser_UserId(Long userId);
+
+    List<UserLikesBlog> findAllByUser(MyUser user);
+
     @Query("SELECT COUNT(ulb) FROM UserLikesBlog ulb WHERE ulb.blog = :blog ")
     Integer countAllByBlog(@Param("blog") Blog blog);
 }
