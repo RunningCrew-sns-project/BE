@@ -4,6 +4,7 @@ import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.crew.crewuser.QCrewsUsers;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.QCrewJoinPost;
 import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
@@ -67,10 +68,10 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
     }
 
     private JPQLQuery<Long> numberOfPostsWriteInAMonth() {
-        return JPAExpressions.select(QRunJoinPost.runJoinPost.count())
-                .from(QRunJoinPost.runJoinPost)
-                .where(QRunJoinPost.runJoinPost.crew.eq(QCREW)
-                        .and(QRunJoinPost.runJoinPost.createdAt.after(LocalDateTime.now().minusDays(7))));
+        return JPAExpressions.select(QCrewJoinPost.crewJoinPost.count())
+                .from(QCrewJoinPost.crewJoinPost)
+                .where(QCrewJoinPost.crewJoinPost.crew.eq(QCREW)
+                        .and(QCrewJoinPost.crewJoinPost.createdAt.after(LocalDateTime.now().minusDays(7))));
     }
 
     private JPQLQuery<Long> completedCrewUsersCount() {
@@ -92,8 +93,8 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .leftJoin(QCREW.crewUsers, QMyUser.myUser)
                 .leftJoin(QCREW.crewImages, QCrewImage.crewImage);
         if(request.getSearchCriteria()==SearchCriteria.ACTIVITIES){
-            query = query.leftJoin(QRunJoinPost.runJoinPost)
-                    .on(QRunJoinPost.runJoinPost.crew.eq(QCREW));
+            query = query.leftJoin(QCrewJoinPost.crewJoinPost)
+                    .on(QCrewJoinPost.crewJoinPost.crew.eq(QCREW));
         }
         return query
                 .where(expression)

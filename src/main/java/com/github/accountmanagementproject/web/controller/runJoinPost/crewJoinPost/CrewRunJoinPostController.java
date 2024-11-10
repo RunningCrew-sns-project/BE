@@ -1,6 +1,8 @@
 package com.github.accountmanagementproject.web.controller.runJoinPost.crewJoinPost;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
+import com.github.accountmanagementproject.exception.SimpleRunAppException;
+import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
