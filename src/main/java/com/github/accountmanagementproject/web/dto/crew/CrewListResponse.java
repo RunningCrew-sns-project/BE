@@ -1,43 +1,22 @@
 package com.github.accountmanagementproject.web.dto.crew;
 
-<<<<<<< HEAD
-import lombok.AllArgsConstructor;
-=======
 import com.github.accountmanagementproject.web.dto.infinitescrolling.ScrollingResponseInterface;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
->>>>>>> develop
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-<<<<<<< HEAD
-import java.util.List;
-
-@Getter
-@Setter
-@AllArgsConstructor
-public class CrewListResponse {
-    private Long crewId;
-    private String crewName;
-    private String crewIntroduction;
-    private List<String> crewImageUrls;
-    private String crewMaster;
-=======
 
 @Getter
 @Setter
 public class CrewListResponse extends CrewResponseParent implements ScrollingResponseInterface<SearchCriteria> {
->>>>>>> develop
     private String activityRegion;
     private LocalDateTime createdAt;
     private long memberCount;
     private int maxCapacity;
 
-<<<<<<< HEAD
-
-=======
     @Override
     public String nextCursor(SearchCriteria criteria) {
         return switch (criteria) {
@@ -70,5 +49,4 @@ public class CrewListResponse extends CrewResponseParent implements ScrollingRes
             default -> this.createdAt.equals(cursor.getCreatedAtCursor())&&super.getCrewId()==requestId;
         };
     }
->>>>>>> develop
 }

@@ -93,21 +93,6 @@ public interface CrewMapper {
     @IterableMapping(qualifiedByName = "crewImageToImageUrl")
     List<String> mapCrewImagesToUrls(List<CrewImage> crewImages);
 
-<<<<<<< HEAD
-    // Crew 리스트를 CrewListResponse 리스트로 매핑
-    List<CrewListResponse> crewListToCrewListResponse(List<Crew> crews);
-
-
-    @Mapping(target = "crewId", source = "crewId")
-    @Mapping(target = "crewName", source = "crewName")
-    @Mapping(target = "crewIntroduction", source = "crewIntroduction")
-    @Mapping(target = "crewImageUrls", source = "crewImages") // Crew의 이미지 URL 리스트 매핑
-    @Mapping(target = "crewMaster", source = "crewMaster.nickname")  // crewMaster 닉네임
-    @Mapping(target = "activityRegion", source = "activityRegion")
-    @Mapping(target = "createdAt", source = "createdAt")
-    @Mapping(target = "maxCapacity", source = "maxCapacity")
-    CrewListResponse crewForListResponse(Crew crew);
-=======
     List<CrewListResponse> crewsToCrewListResponses(List<Crew> crews);
     @Mapping(target = "crewImageUrl", expression = "java(getFirstCrewImageUrl(crew.getCrewImages()))")
     CrewListResponse crewToCrewListResponse(Crew crew);
@@ -116,5 +101,4 @@ public interface CrewMapper {
         return img.isEmpty() ? null : img.get(0).getImageUrl();
     }
 
->>>>>>> develop
 }
