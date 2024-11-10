@@ -20,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -157,7 +158,9 @@ public class ChatService{
 
         log.info(chatMongoRepository.findAllByRoomId(roomId).toString());
 //        log.info(String.valueOf(mongoTemplate.find(query, ChatMongoDto.class).get(0).toString()));
-        return mongoTemplate.find(query, ChatMongoDto.class).reversed();
+        List<ChatMongoDto> results = mongoTemplate.find(query, ChatMongoDto.class);
+        Collections.reverse(results); // 리스트를 역순으로 정렬
+        return results;
     }
 
 
