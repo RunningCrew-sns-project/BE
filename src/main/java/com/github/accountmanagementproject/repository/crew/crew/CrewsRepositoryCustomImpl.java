@@ -9,9 +9,13 @@ import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.Se
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,7 +131,7 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 : QCREW.crewUsers.size().lt(cursorHolder.getMemberCursor());
 
         return memberCondition.
-                or( QCREW.crewUsers.size().eq(cursorHolder.getMemberCursor()).and(idCondition) );
+        or( QCREW.crewUsers.size().eq(Math.toIntExact(cursorHolder.getMemberCursor())).and(idCondition) );
     }
 
     private BooleanExpression getLatestCursorCondition(CursorHolder cursorHolder, boolean reverse) {
