@@ -83,7 +83,7 @@ public class BlogService {
 
     private List<BlogResponseDTO> mappingBlogResponse(MyUser user, List<Blog> blogs){
         //좋아요 목록을 불러와서 저장
-        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user, blogs);
+        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user);
 
         return blogs.stream()
                 .map(blog -> {
@@ -102,16 +102,26 @@ public class BlogService {
     }
 
     //레포지토리에서 레디스에
-    // user_likes:user_id , blog_id, 1 (true 의미) -> 형태로 저장
-    private Set<Integer> getUserLikesBlogsIds(MyUser user, List<Blog> blogs){
+    // user_likes:user_id , blog_id, true/false  -> 형태로 저장
+    private Set<Integer> getUserLikesBlogsIds(MyUser user){
         //좋아요 정보가 존재하지 않으면 db에서 가져와서 레디스에 좋아요 정보 저장하고
-        if(!redisHashService.exists("user_likes:" + user.getUserId())){
-            userLikesBlogRepository.findAllByUser_UserId(user.getUserId()).stream().map(UserLikesBlog::getBlog).forEach(blog ->{
-                redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "true");
-            });
-        }
+        Set<Integer> userLikesBlogsIds = new HashSet<>();
+
+        userLikesBlogRepository.findAllByUser(user).forEach(userLikesBlog -> {
+            boolean isLiked = userLikesBlog.getIsLiked();
+
+            if (isLiked) {
+                // 좋아요가 눌린 게시물인 경우
+                redisHashService.save("user_likes:" + user.getUserId(), userLikesBlog.getBlog().getId().toString(), "true");
+                userLikesBlogsIds.add(userLikesBlog.getBlog().getId());
+            } else {
+                // 좋아요가 눌리지 않은 게시물인 경우
+                redisHashService.save("user_likes:" + user.getUserId(), userLikesBlog.getBlog().getId().toString(), "false");
+            }
+        });
+
         //좋아요 누른 게시물 아이디 Set으로  return
-        return redisHashService.getAll("user_likes:" + user.getUserId()).keySet().stream().map(Integer::valueOf).collect(Collectors.toSet());
+        return userLikesBlogsIds;
     }
 
     @ExeTimer
@@ -174,8 +184,6 @@ public class BlogService {
     @Async
     //비동기적으로 처리 ? redis에 저장해놨다가 나중에 가져와서 db에 저장?
     public CompletableFuture<String> likeBlog(Integer blogId, MyUser user) throws Exception {
-
-        // 좋아요 누르면 redis에 blog_00:11(유저 아이디)로 저장
         // redis에 저장해놨다가 비동기적으로 나중에 db에 저장
 
         Blog blog = blogRepository.findById(blogId).orElse(null);
@@ -225,22 +233,24 @@ public class BlogService {
                 Blog blog = blogRepository.findById(Integer.valueOf(blogId)).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
 
                 UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
-                if(userLikesBlog == null) { //db에 없을때 새로 저장 (좋아요 누르기)
-                    //UserLikeBlog에 isLiked 변수에 기본값으로 true 저장
+
+                if(userLikesBlog == null) {
                     userLikesBlog = UserLikesBlog.builder()
                             .blog(blog)
                             .user(user)
-                            .isLiked(true)
+                            .isLiked(Boolean.valueOf(isLiked))
                             .build();
+
                     userLikesBlogRepository.save(userLikesBlog);
+                }else {
+                    userLikesBlog.setIsLiked(Boolean.valueOf(isLiked));
                 }
-                else {
-                    userLikesBlog.setIsLiked(!userLikesBlog.getIsLiked());
-//                    userLikesBlogRepository.save(userLikesBlog);
-                }
+
 
                 Integer likeCount = userLikesBlogRepository.countAllByBlog(blog); //db에서 blog에 해당하는 좋아요 갯수 가져오기
                 blog.setLikeCount(likeCount); //좋아요 갯수 저장
+
+//                redisHashService.delete(key, blogId);
             });
 
 //            redisRepository.getAndDeleteValue(key); //레디스 데이터 삭제
