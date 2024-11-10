@@ -1,12 +1,8 @@
 package com.github.accountmanagementproject.web.dto.pagination;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 
@@ -17,11 +13,11 @@ import java.time.LocalDate;
 public class PageRequestDto {
 
     private Integer cursor = null;  // 커서: 마지막 조회 항목의 ID, 첫 요청 시에는 null
-    private int size = 9;  // 한 번에 9개씩 불러오기
+    private int size = 10;  // 한 번에 9개씩 불러오기
     private String location = "전체";  // 필터 필드 (예: 전체, 역삼, 삼성 등)
     private LocalDate date = null;  // 기본 날짜: 오늘
 
     public PageRequestDto() {
-        this.size = 9;
+        this.size = 10;
     }
 }

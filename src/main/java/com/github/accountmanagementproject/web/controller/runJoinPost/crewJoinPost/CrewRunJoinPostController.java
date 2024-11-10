@@ -7,16 +7,13 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
-
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.service.runJoinPost.crewJoinPost.CrewJoinRunPostService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
-
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -113,10 +110,10 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 //    @PreAuthorize("@crewSecurityService.isUserInCrew(authentication, #crewId)") 수정 필요
 //    @PreAuthorize("isAuthenticated()")
     @GetMapping("/list")
-    public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @AuthenticationPrincipal String email) {
-                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
-//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
-//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
+    public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @RequestParam String email) {
+//                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
 
         PageResponseDto<CrewRunPostResponse> response = crewJoinRunPostService.getAll(pageRequestDto, user);
 

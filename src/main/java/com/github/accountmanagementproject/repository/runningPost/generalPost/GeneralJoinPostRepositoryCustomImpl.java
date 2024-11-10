@@ -1,12 +1,8 @@
 package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
-import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.image.QRunJoinPostImage;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,7 +33,7 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
         List<GeneralJoinPost> posts = queryFactory.selectFrom(generalJoinPost)
                 .where(dateCondition, locationCondition, cursorCondition)
                 .leftJoin(generalJoinPost.generalJoinPostImages, qrunJoinPostImage).fetchJoin()
-                .orderBy(generalJoinPost.createdAt.desc())
+                .orderBy(generalJoinPost.createdAt.desc(), generalJoinPost.generalPostId.desc())
                 .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
 

@@ -19,19 +19,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface CrewControllerDocs {
 
     @Operation(summary = "크루 목록 조회", description = "크루 목록을 조회합니다.<br>" +
-            "criteria = 정렬 조건 (latest = 최신순, popular = 인기순, name = 이름순, member = 크루원수순, activities = 활동량(게시글 수))")
+            "criteria = 정렬 조건 (latest = 최신순, popular = 인기순, name = 이름순, member = 크루원수순, activities = 활동량(게시글 수))<br>" +
+            "인기순은 한달간 가입한 크루원 수로 판단하고, 활동량은 크루원들의 일주일간 게시글 수로 판단합니다.")
     CustomSuccessResponse getAvailableCrewLists(
             @Parameter(description = "한번 요청에 보여줄 크루 수 기본값 = 20", example = "20")
             int size,
             @Parameter(description = "다음 페이지를 요청할 때 필요한 커서값 (이전 응답의 nextCursor 의 값 그대로 요청)", example = "1")
             String cursor,
-             @Parameter(description = "다음 페이지를 요청할 때 필요한 커서Id값 (이전 응답의 nextCursorId 의 값 그대로 요청)", example = "1")
-             Long cursorId,
+            @Parameter(description = "다음 페이지를 요청할 때 필요한 커서Id값 (이전 응답의 nextCursorId 의 값 그대로 요청)", example = "1")
+            Long cursorId,
             @Parameter(description = "값을 역순으로 받을지 여부", example = "false")
-             boolean reverse,
+            boolean reverse,
             @Parameter(description = "정렬 조건", schema = @Schema(allowableValues = {"latest", "popular", "name", "member", "activities"}))
             String criteria,
-             String email);
+            String email);
 
 
     @Operation(summary = "크루 생성", description = "크루를 생성합니다.")
@@ -83,7 +84,7 @@ public interface CrewControllerDocs {
                     })
     )
     ResponseEntity<CustomSuccessResponse> createCrew(CrewCreationRequest request,
-                                                      String email);
+                                                     String email);
 
     @Operation(summary = "크루 가입", description = "크루에 가입하는 API")
     @ApiResponse(responseCode = "201", description = "크루 생성 성공",

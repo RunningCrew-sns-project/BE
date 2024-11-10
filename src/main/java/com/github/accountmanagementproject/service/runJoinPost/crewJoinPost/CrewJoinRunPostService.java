@@ -15,7 +15,6 @@ import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
-
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
@@ -26,15 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;

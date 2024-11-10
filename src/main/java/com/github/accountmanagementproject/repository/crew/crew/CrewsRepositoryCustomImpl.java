@@ -2,16 +2,24 @@ package com.github.accountmanagementproject.repository.crew.crew;
 
 import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
+import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
+import com.github.accountmanagementproject.repository.crew.crewuser.QCrewsUsers;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.QCrewJoinPost;
 import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,37 +60,74 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
         return fetchOne != null;
     }
 
+    private JPQLQuery<Long> numberOfUsersSignedUpInAMonth() {
+        return JPAExpressions.select(QCrewsUsers.crewsUsers.count())
+                .from(QCrewsUsers.crewsUsers)
+                .where(QCrewsUsers.crewsUsers.crewsUsersPk.crew.eq(QCREW)
+                        .and(QCrewsUsers.crewsUsers.joinDate.after(LocalDateTime.now().minusMonths(1))));
+    }
+
+    private JPQLQuery<Long> numberOfPostsWriteInAMonth() {
+        return JPAExpressions.select(QCrewJoinPost.crewJoinPost.count())
+                .from(QCrewJoinPost.crewJoinPost)
+                .where(QCrewJoinPost.crewJoinPost.crew.eq(QCREW)
+                        .and(QCrewJoinPost.crewJoinPost.createdAt.after(LocalDateTime.now().minusDays(7))));
+    }
+
+    private JPQLQuery<Long> completedCrewUsersCount() {
+        return JPAExpressions.select(QCrewsUsers.crewsUsers.count())
+                .from(QCrewsUsers.crewsUsers)
+                .where(QCrewsUsers.crewsUsers.crewsUsersPk.crew.eq(QCREW)
+                        .and(QCrewsUsers.crewsUsers.status.eq(CrewsUsersStatus.COMPLETED)));
+    }
+
     @Override
     public List<CrewListResponse> findAvailableCrews(String email, SearchRequest request) {
 
-        OrderSpecifier<?>[] specifier = setSortingCriteria( request.getSearchCriteria(), request.isReverse() );
-        BooleanExpression expression = setExpression( email, request );
+        OrderSpecifier<?>[] specifier = setCrewListSpecifiers(request.getSearchCriteria(), request.isReverse());
+        BooleanExpression expression = setCrewListExpression(email, request);
+        Expression<CrewListResponse> projections = setCrewListProjections(request.getSearchCriteria());
 
-        return queryFactory.select(
-                        Projections.constructor(CrewListResponse.class,
-                                QCREW.crewId,
-                                QCREW.crewName,
-                                QCrewImage.crewImage.imageUrl,
-                                QCREW.crewIntroduction,
-                                QCREW.activityRegion,
-                                QCREW.createdAt,
-                                QCREW.crewUsers.size().longValue(),
-                                QCREW.maxCapacity))
+        JPQLQuery<CrewListResponse> query = queryFactory.select(projections)
                 .from(QCREW)
                 .leftJoin(QCREW.crewUsers, QMyUser.myUser)
-                .leftJoin(QCREW.crewImages, QCrewImage.crewImage)
+                .leftJoin(QCREW.crewImages, QCrewImage.crewImage);
+        if(request.getSearchCriteria()==SearchCriteria.ACTIVITIES){
+            query = query.leftJoin(QCrewJoinPost.crewJoinPost)
+                    .on(QCrewJoinPost.crewJoinPost.crew.eq(QCREW));
+        }
+        return query
                 .where(expression)
                 .groupBy(QCREW)
                 .orderBy(specifier)
-                .limit(request.getSize()+1)
+                .limit(request.getSize() + 1)
                 .fetch();
+
     }
 
-    private BooleanExpression setExpression(String email, SearchRequest request) {
+
+    private Expression<CrewListResponse> setCrewListProjections(SearchCriteria searchCriteria) {
+        return Projections.constructor(CrewListResponse.class,
+                QCREW.crewId,
+                QCREW.crewName,
+                QCrewImage.crewImage.imageUrl,
+                QCREW.crewIntroduction,
+                QCREW.activityRegion,
+                QCREW.createdAt,
+                completedCrewUsersCount(),
+                QCREW.maxCapacity,
+                switch (searchCriteria) {
+                    case POPULAR -> numberOfUsersSignedUpInAMonth();
+                    case ACTIVITIES -> numberOfPostsWriteInAMonth();
+                    default -> Expressions.constant(0L);
+                });
+    }
+
+    private BooleanExpression setCrewListExpression(String email, SearchRequest request) {
         BooleanExpression expression = email.equals("anonymousUser") ? QCREW.maxCapacity.gt(QCREW.crewUsers.size())
                 : QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email)).and(QCREW.maxCapacity.gt(QCREW.crewUsers.size()));
 
-        if (request.getCursor()!=null) expression = expression.and( cursorExpressionDetails(request) );
+        if (request.getCursor() != null) expression = expression.and(cursorExpressionDetails(request));
         return expression;
     }
 
@@ -90,80 +135,98 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
         CursorHolder cursorHolder = request.getCursorHolder();
         boolean reverse = request.isReverse();
 
-        switch (request.getSearchCriteria()){
-            case NAME -> {
-                return getNameCursorCondition( cursorHolder, reverse );
-            }
-            case MEMBER -> {
-                return getMemberCursorCondition( cursorHolder, reverse );
-            }
-            case LATEST -> {
-                return getLatestCursorCondition( cursorHolder, reverse );
-            }
-        }
-        throw new IllegalArgumentException("Invalid criteria");
+        return switch (request.getSearchCriteria()) {
+            case POPULAR -> getPopularCursorCondition(cursorHolder, reverse);
+            case NAME -> getNameCursorCondition(cursorHolder, reverse);
+            case MEMBER -> getMemberCursorCondition(cursorHolder, reverse);
+            case LATEST-> getLatestCursorCondition(cursorHolder, reverse);
+            case ACTIVITIES -> getActivityCursorCondition(cursorHolder, reverse);
+        };
+    }
+
+    private BooleanExpression getPopularCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+        JPQLQuery<Long> signedInAMonth = numberOfUsersSignedUpInAMonth();
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
+        BooleanExpression popularCondition = reverse
+                ? signedInAMonth.gt(cursorHolder.getPopularOrActivitiesCursor())
+                : signedInAMonth.lt(cursorHolder.getPopularOrActivitiesCursor());
+        return popularCondition
+                .or(signedInAMonth.eq(cursorHolder.getPopularOrActivitiesCursor()).and(idCondition));
 
     }
-    private BooleanExpression getIdCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+
+    private BooleanExpression getIdCursorCondition(Long cursorId, boolean reverse) {
         return reverse
-                ? QCREW.crewId.goe(cursorHolder.getIdCursor())
-                : QCREW.crewId.loe(cursorHolder.getIdCursor());
+                ? QCREW.crewId.goe(cursorId)
+                : QCREW.crewId.loe(cursorId);
     }
 
     private BooleanExpression getNameCursorCondition(CursorHolder cursorHolder, boolean reverse) {
-        BooleanExpression idCondition = getIdCursorCondition(cursorHolder, reverse);
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
         BooleanExpression nameCondition = reverse
                 ? QCREW.crewName.lt(cursorHolder.getNameCursor())
                 : QCREW.crewName.gt(cursorHolder.getNameCursor());
 
         return nameCondition
-                .or( QCREW.crewName.eq(cursorHolder.getNameCursor()).and(idCondition) );
+                .or(QCREW.crewName.eq(cursorHolder.getNameCursor()).and(idCondition));
+    }
+    private BooleanExpression getActivityCursorCondition(CursorHolder cursorHolder, boolean reverse) {
+        JPQLQuery<Long> wroteInAMonth = numberOfPostsWriteInAMonth();
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
+        BooleanExpression wroteCondition = reverse
+                ? wroteInAMonth.gt(cursorHolder.getPopularOrActivitiesCursor())
+                : wroteInAMonth.lt(cursorHolder.getPopularOrActivitiesCursor());
+
+        return wroteCondition
+                .or(wroteInAMonth.eq(cursorHolder.getPopularOrActivitiesCursor()).and(idCondition));
     }
 
     private BooleanExpression getMemberCursorCondition(CursorHolder cursorHolder, boolean reverse) {
-        BooleanExpression idCondition = getIdCursorCondition(cursorHolder, reverse);
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
+        JPQLQuery<Long> completedUserCount = completedCrewUsersCount();
         BooleanExpression memberCondition = reverse
-                ? QCREW.crewUsers.size().gt(cursorHolder.getMemberCursor())
-                : QCREW.crewUsers.size().lt(cursorHolder.getMemberCursor());
+                ? completedUserCount.gt(cursorHolder.getMemberCursor())
+                : completedUserCount.lt(cursorHolder.getMemberCursor());
 
         return memberCondition.
-        or( QCREW.crewUsers.size().eq(cursorHolder.getMemberCursor()).and(idCondition) );
+                or(completedUserCount.eq(cursorHolder.getMemberCursor()).and(idCondition));
     }
 
     private BooleanExpression getLatestCursorCondition(CursorHolder cursorHolder, boolean reverse) {
-        BooleanExpression idCondition = getIdCursorCondition(cursorHolder, reverse);
+        BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
         BooleanExpression createdAtCondition = reverse
                 ? QCREW.createdAt.gt(cursorHolder.getCreatedAtCursor())
                 : QCREW.createdAt.lt(cursorHolder.getCreatedAtCursor());
 
         return createdAtCondition
-                .or( QCREW.createdAt.eq(cursorHolder.getCreatedAtCursor()).and(idCondition) );
+                .or(QCREW.createdAt.eq(cursorHolder.getCreatedAtCursor()).and(idCondition));
     }
 
 
-    private OrderSpecifier<?>[] setSortingCriteria(SearchCriteria criteria, boolean reverse){
-        switch (criteria){
-            case NAME ->
-            {
-                return new OrderSpecifier<?>[]{
-                        reverse ? QCREW.crewName.desc() : QCREW.crewName.asc(),
-                        reverse ? QCREW.crewId.asc() : QCREW.crewId.desc()
-                };
-            }
-            case MEMBER ->{
-                return new OrderSpecifier<?>[]{
-                        reverse ? QCREW.crewUsers.size().asc() : QCREW.crewUsers.size().desc(),
-                        reverse ? QCREW.crewId.asc() : QCREW.crewId.desc()
-                };
-            }
-            case LATEST -> {
-                return new OrderSpecifier<?>[]{
-                        reverse ? QCREW.createdAt.asc() : QCREW.createdAt.desc(),
-                        reverse ? QCREW.crewId.asc() : QCREW.crewId.desc()
-                };
-            }
-        }
-        throw new IllegalArgumentException("Invalid criteria");
+    private OrderSpecifier<?>[] setCrewListSpecifiers(SearchCriteria criteria, boolean reverse) {
+        OrderSpecifier<Long> subOrderBy = reverse ? QCREW.crewId.asc() : QCREW.crewId.desc();
+        return switch (criteria) {
+            case NAME -> new OrderSpecifier<?>[]{
+                    reverse ? QCREW.crewName.desc() : QCREW.crewName.asc(),
+                    subOrderBy
+            };
+            case MEMBER -> new OrderSpecifier<?>[]{
+                    reverse ? Expressions.asNumber(completedCrewUsersCount()).asc() : Expressions.asNumber(completedCrewUsersCount()).desc(),
+                    subOrderBy
+            };
+            case LATEST -> new OrderSpecifier<?>[]{
+                    reverse ? QCREW.createdAt.asc() : QCREW.createdAt.desc(),
+                    subOrderBy
+            };
+            case POPULAR -> new OrderSpecifier<?>[]{
+                    reverse ? Expressions.asNumber(numberOfUsersSignedUpInAMonth()).asc() : Expressions.asNumber(numberOfUsersSignedUpInAMonth()).desc(),
+                    subOrderBy
+            };
+            case ACTIVITIES -> new OrderSpecifier<?>[]{
+                    reverse ? Expressions.asNumber(numberOfPostsWriteInAMonth()).asc() : Expressions.asNumber(numberOfPostsWriteInAMonth()).desc(),
+                    subOrderBy
+            };
+        };
     }
 
 
