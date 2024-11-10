@@ -10,8 +10,8 @@ public abstract class MyConverter<T extends Enum<T> & MyEnumInterface> implement
 
     private final Class<T> targetEnumClass;
 
-    public MyConverter(Class<T> enumName) {
-        this.targetEnumClass = enumName;
+    public MyConverter(Class<T> clazz) {
+        this.targetEnumClass = clazz;
     }
 
 
@@ -22,11 +22,11 @@ public abstract class MyConverter<T extends Enum<T> & MyEnumInterface> implement
 
     @Override
     public T convertToEntityAttribute(String myEnumName) {
-        return myEnumName==null ? null : EnumValueToEnum(myEnumName, targetEnumClass);
+        return myEnumName==null ? null : EnumValueToEnum(myEnumName);
     }
 
-    public static <T extends Enum<T> & MyEnumInterface> T EnumValueToEnum(String value, Class<T> enumClass){
-        for(T myEnum : EnumSet.allOf(enumClass)){
+    public T EnumValueToEnum(String value){
+        for(T myEnum : EnumSet.allOf(targetEnumClass)){
             if(myEnum.getValue().equals(value)) return myEnum;
         }
         return null;

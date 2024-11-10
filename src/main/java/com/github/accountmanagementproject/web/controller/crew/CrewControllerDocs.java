@@ -24,6 +24,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
 
+    @Operation(summary = "크루 목록 조회", description = "크루 목록을 조회합니다.<br>" +
+            "criteria = 정렬 조건 (latest = 최신순, popular = 인기순, name = 이름순, member = 크루원수순, activities = 활동량(게시글 수))")
+    CustomSuccessResponse getAvailableCrewLists(
+            @Parameter(description = "한번 요청에 보여줄 크루 수 기본값 = 20", example = "20")
+            int size,
+            @Parameter(description = "다음 페이지를 요청할 때 필요한 커서값 (이전 응답의 nextCursor 의 값 그대로 요청)", example = "1")
+            String cursor,
+             @Parameter(description = "다음 페이지를 요청할 때 필요한 커서Id값 (이전 응답의 nextCursorId 의 값 그대로 요청)", example = "1")
+             Long cursorId,
+            @Parameter(description = "값을 역순으로 받을지 여부", example = "false")
+             boolean reverse,
+            @Parameter(description = "정렬 조건", schema = @Schema(allowableValues = {"latest", "popular", "name", "member", "activities"}))
+            String criteria,
+             String email);
+
+
     @Operation(summary = "크루 생성", description = "크루를 생성합니다.")
     @ApiResponse(responseCode = "201", description = "크루 생성 성공",
             content = @Content(mediaType = "application/json",

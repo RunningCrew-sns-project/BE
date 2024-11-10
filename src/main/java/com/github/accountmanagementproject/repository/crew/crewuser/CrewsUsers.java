@@ -41,23 +41,12 @@ public class CrewsUsers {
     public boolean duplicateRequest(){
         return this.status==CrewsUsersStatus.WAITING||this.status==CrewsUsersStatus.COMPLETED;
     }
-    public boolean forcedExitOrWithdraw(){
-        if(this.status==CrewsUsersStatus.WITHDRAWAL){
-            LocalDateTime now = LocalDateTime.now();
-            return now.isAfter(this.withdrawalDate.plusDays(1));
-        }else if (this.status==CrewsUsersStatus.FORCED_EXIT){
-            LocalDateTime now = LocalDateTime.now();
-            return now.isAfter(this.withdrawalDate.plusDays(30));
-        }
-        return false;
-    }
     public LocalDateTime getReleaseDay() {
         if (this.status == CrewsUsersStatus.WITHDRAWAL) {
             return this.withdrawalDate.plusDays(1);
         } else if (this.status == CrewsUsersStatus.FORCED_EXIT) {
             return this.withdrawalDate.plusDays(30);
-        }
-        return withdrawalDate;
+        }else return this.withdrawalDate.plusDays(7);
     }
 }
 
