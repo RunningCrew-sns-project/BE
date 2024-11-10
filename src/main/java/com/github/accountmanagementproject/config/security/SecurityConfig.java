@@ -6,7 +6,6 @@ import com.github.accountmanagementproject.web.filtersAndInterceptor.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -45,7 +44,6 @@ public class SecurityConfig {
                 })
                 .authorizeHttpRequests(a->a
                         .requestMatchers("/api/auth/authorize-test").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/api/crews").authenticated()
                         .requestMatchers("/api/auth/auth-test", "/api/account/*").authenticated()
                         .requestMatchers("/resources/**","/api/auth/*", "/api/email/*",
                                 "/error","/swagger-ui/**", "/v3/api-docs/**", "/running-docs.html").permitAll()

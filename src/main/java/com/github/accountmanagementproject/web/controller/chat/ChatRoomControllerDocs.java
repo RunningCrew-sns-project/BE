@@ -17,6 +17,9 @@ import java.util.Optional;
 
 public interface ChatRoomControllerDocs {
 
+    @GetMapping("/allRooms")
+    List<ChatRoomResponse> findAllRoomList();
+
     @Operation(summary = "참여중인 채팅방 불러오기", description = "유저가 현재 참여하고 있는 채팅방 조회")
     @GetMapping("/myRooms")
     List<ChatRoomResponse> myChatRoomList(@AuthenticationPrincipal String principal);

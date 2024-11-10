@@ -28,6 +28,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 ?request.getHeader("Authorization").split(" ")[1].trim()
                 :null;
 
+        //옵셔널 사용하는 방법과 3항연산자중 취향에 따라 선택 외부 메서드로 빼는 경우도 있음.
+//        String token = Optional.ofNullable(request.getHeader("Authorization"))
+//                .filter(t -> t.startsWith("Bearer "))
+//                .map(t -> t.substring(7))
+//                .orElse(null);
+
         if(token!=null){
             try {
                 Authentication authentication = jwtProvider.getAuthentication(token);

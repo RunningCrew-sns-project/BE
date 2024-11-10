@@ -34,7 +34,7 @@ public class CrewJoinPostRepositoryCustomImpl implements CrewJoinPostRepositoryC
         List<CrewJoinPost> posts = queryFactory.selectFrom(crewJoinPost)
                 .where(dateCondition, locationCondition, cursorCondition) // cursorCondition 추가
                 .leftJoin(crewJoinPost.crewJoinPostImages, runJoinPostImage).fetchJoin()
-                .orderBy(crewJoinPost.createdAt.desc(), crewJoinPost.crewPostId.desc())
+                .orderBy(crewJoinPost.createdAt.desc())
                 .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
 
