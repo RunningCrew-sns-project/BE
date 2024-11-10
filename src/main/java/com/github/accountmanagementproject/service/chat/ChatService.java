@@ -6,6 +6,7 @@ import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
 import com.github.accountmanagementproject.service.ExeTimer;
+import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
 import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
 import com.github.accountmanagementproject.web.dto.chat.*;
@@ -32,6 +33,14 @@ public class ChatService{
     private final ChatMongoRepository chatMongoRepository;
     private final MongoTemplate mongoTemplate;
 
+    public List<ChatRoomResponse> findAllRoom() {
+        return userChatMappingRepository.findAll()
+                .stream()
+                .map(UserChatMapping::getChatRoom)
+                .map(this::mappingChatRoom)
+                .toList();
+    }
+
     public List<ChatRoomResponse> findMyRoomList(MyUser user) {
         return userChatMappingRepository.findAllByUser(user)
                 .stream()
@@ -47,8 +56,11 @@ public class ChatService{
         ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
         chatRoomResponse.setUserCount(userList.size());
         chatRoomResponse.setUserList(userResponses);
-        chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
-        chatRoomResponse.setLastMessageTime(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getTime());
+
+        if(!chatMongoRepository.findAllByRoomId(chatRoom.getRoomId()).isEmpty()) {
+            chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
+            chatRoomResponse.setLastMessageTime(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getTime());
+        }
 
         return chatRoomResponse;
     }
@@ -103,13 +115,17 @@ public class ChatService{
     // 채팅방 유저 리스트 삭제
     public void deleteUser(Integer roomId, MyUser user){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
-//        this.decreaseUser(roomId);
         UserChatMapping userChatMapping = userChatMappingRepository.findByUserAndChatRoom(user, chatRoom);
         userChatMappingRepository.delete(userChatMapping);
 
         Objects.requireNonNull(chatRoom).setUserCount(chatRoom.getUserCount() - 1);
 
         userChatMappingRepository.flush();
+
+        //모든 유저가 나가면 채팅방 삭제
+        if(chatRoom.getUserCount() == 0){
+            chatRoomRepository.delete(chatRoom);
+        }
     }
 
     //채팅방 전체 userList 조회
@@ -141,6 +157,9 @@ public class ChatService{
 
         log.info(chatMongoRepository.findAllByRoomId(roomId).toString());
 //        log.info(String.valueOf(mongoTemplate.find(query, ChatMongoDto.class).get(0).toString()));
-        return mongoTemplate.find(query, ChatMongoDto.class);
+        return mongoTemplate.find(query, ChatMongoDto.class).reversed();
     }
+
+
+
 }

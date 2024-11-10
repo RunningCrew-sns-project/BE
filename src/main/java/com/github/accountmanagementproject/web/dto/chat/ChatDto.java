@@ -23,6 +23,7 @@ public class ChatDto {
     private String sender;//채팅을 보낸 사람 (id)
     private String userName; //유저 이름
     private String message;// 메세지
+    private Boolean isSentByUser;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime time; // 채팅 발송 시간
