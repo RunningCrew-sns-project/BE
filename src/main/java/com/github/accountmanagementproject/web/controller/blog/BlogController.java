@@ -26,7 +26,7 @@ public class BlogController implements BlogControllerDocs{
     @GetMapping
     public CustomSuccessResponse getAllBlogs(@RequestParam(defaultValue = "10") Integer size,
                                              @RequestParam(required = false) Integer cursor,
-                                             @RequestParam(required = false, defaultValue = "false") Boolean isMyBlog,
+                                             @RequestParam Boolean isMyBlog,
                                              @AuthenticationPrincipal String principal) {
 
         System.out.println("Size: " + size + ", Cursor: " + cursor);

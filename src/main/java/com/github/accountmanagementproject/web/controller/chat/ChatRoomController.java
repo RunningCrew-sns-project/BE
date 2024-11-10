@@ -26,11 +26,6 @@ public class ChatRoomController implements ChatRoomControllerDocs{
     private final ChatService chatService;
 
     @Override
-    @GetMapping("/allRooms")
-    public List<ChatRoomResponse> findAllRoomList(){
-        return chatService.findAllRoom();
-    }
-    @Override
     @GetMapping("/myRooms")
     public List<ChatRoomResponse> myChatRoomList(@AuthenticationPrincipal String principal) {
         log.info(principal + "사용자 인증 정보!!!!!");
@@ -41,7 +36,6 @@ public class ChatRoomController implements ChatRoomControllerDocs{
     @Override
     @PostMapping("/createRoom")
     public String createRoom(@RequestBody String roomName, @AuthenticationPrincipal String principal){
-        log.info(principal);
         MyUser user = accountConfig.findMyUser(principal);
         ChatRoom chatRoom = chatService.createChatRoom(roomName, user);
         log.info("Chat room created: {}", chatRoom);
