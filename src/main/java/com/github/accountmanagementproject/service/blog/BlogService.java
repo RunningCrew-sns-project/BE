@@ -214,12 +214,13 @@ public class BlogService {
 
         for (String key : keys) { //반복문 돌며
             log.info(key);
-            String[] parts = key.split(":"); //blog_00:11 을 : 기준으로 분리
-            Integer userId = Integer.parseInt(parts[1]); // blog_00:11 에서 11만 가져오기
 
+            Integer userId = Integer.valueOf(key.substring(11));
             MyUser user = myUsersJpa.findById(userId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("해당 유저를 찾을 수 없습니다.").build()); //해당하는 유저 가져오기
 
             Map<String, String> resultMap = redisHashService.getAll(key);
+
+
             log.info(resultMap.toString());
             resultMap.forEach((blogId, isLiked)->{
                 Blog blog = blogRepository.findById(Integer.valueOf(blogId)).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
