@@ -314,52 +314,6 @@ public interface CrewControllerDocs {
                                           @RequestParam Boolean approveOrReject);
 
 
-    // "/api/crews" 로 생성된 크루 리스트
-    @Operation(
-            summary = "크루 리스트 조회",
-            description = "커서 기반의 페이징을 사용하여 필터링된 크루 리스트를 조회합니다."
-    )
-    @Parameters({
-            @Parameter(name = "cursor", description = "마지막 조회 항목의 ID. 첫 요청 시에는 null로 전달", example = "10"),
-            @Parameter(name = "size", description = "페이지 당 항목 수. 기본값은 10", example = "10"),
-            @Parameter(name = "location", description = "필터링할 지역. 기본값은 '전체'", example = "전체"),
-            @Parameter(name = "date", description = "조회 기준 날짜. yyyy-MM-dd 형식", example = "2023-11-10")
-    })
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "정상적으로 크루 리스트가 조회되었습니다.",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = PageResponseDto.class),
-                            examples = @ExampleObject(value = """
-            {
-              "content": [
-                {
-                  "crewId": 1,
-                  "crewName": "Example Crew",
-                  "crewIntroduction": "This is an example crew.",
-                  "crewImageUrls": ["url1", "url2"],
-                  "crewMaster": "Master Nickname",
-                  "activityRegion": "서울",
-                  "createdAt": "2023-11-10T12:00:00",
-                  "memberCount": 15,
-                  "maxCapacity": 20
-                }
-              ],
-              "countPerScroll": 10,
-              "lastScroll": false,
-              "nextCursor": 11
-            }
-            """)
-                    )
-            ),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터가 포함되어 있습니다."),
-            @ApiResponse(responseCode = "500", description = "서버 오류로 인해 요청을 처리할 수 없습니다.")
-    })
-    CustomSuccessResponse getAllCrews(PageRequestDto pageRequestDto);
-
-
     @Operation(
             summary = "크루 상세 정보와 게시물 목록 조회",
             description = "특정 크루의 상세 정보와 크루에 연관된 달리기 참여 게시물 목록을 페이징하여 반환합니다."
