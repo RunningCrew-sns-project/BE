@@ -17,5 +17,6 @@ public class OAuthSignUpRequest extends AccountModifyRequest {
     @Schema(description = "소셜 아이디", example = "Z9Vp6uyQ1S03CtxKHCnFS80KItHrRxIuwWse12EIupw")
     private String socialId;
     @NotNull(message = "소셜 공급자 값은 필수입니다.")
+    @Schema(description = "소셜 공급자", example = "네이버")
     private OAuthProvider provider;
 }

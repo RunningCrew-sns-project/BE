@@ -19,6 +19,4 @@ public class CrewDetailResponse {
     private LocalDateTime createdAt;
     private long memberCount;
     private int maxCapacity;
-
-
 }
