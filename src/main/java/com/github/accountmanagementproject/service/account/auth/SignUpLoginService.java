@@ -53,7 +53,7 @@ public class SignUpLoginService {
         }catch (DateTimeException e){
             throw new CustomBadRequestException.ExceptionBuilder()
                     .systemMessage(e.getMessage())
-                    .customMessage("호환되지 않는 날짜 형식 (exists. yyyy-M-d)")
+                    .customMessage("호환되지 않는 날짜 형식 (ex. yyyy-M-d)")
                     .request(signUpRequest.getDateOfBirth())
                     .build();
         }

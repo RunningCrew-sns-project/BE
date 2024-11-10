@@ -8,5 +8,6 @@ import org.mapstruct.factory.Mappers;
 public interface ChatMongoMapper {
     ChatMongoMapper INSTANCE = Mappers.getMapper(ChatMongoMapper.class);
 
+    @Mapping(target = "isSentByUser", expression = "java(chatDto.getSender().equals(currentUser))")
     ChatMongoDto chatDtoToChatMongoDto(ChatDto chatDto, String currentUser);
 }

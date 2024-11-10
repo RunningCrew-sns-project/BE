@@ -73,7 +73,7 @@ function showMessage(chat) {
 
 	const usernameElement = document.createElement('span');
 	usernameElement.className = 'username'
-	usernameElement.innerText = chat.userName;
+	usernameElement.innerText = chat.sender;
 
 	// p 요소에 텍스트 추가
 
@@ -122,7 +122,7 @@ async function loadPreviousMessages(roomId){
 			? `http://localhost:8080/api/chat/message?roomId=${roomId}&limit=30&lastTime=${lastMessageTime}`
 			: `http://localhost:8080/api/chat/message?roomId=${roomId}&limit=30`;
 
-		const response = await fetch(url,{
+		const response = await fetch("http://localhost:8080/api/chat/message?roomId=20&limit=20",{
 			headers : headerList
 		});
 
@@ -147,7 +147,7 @@ async function loadPreviousMessages(roomId){
 
 				const usernameElement = document.createElement('span');
 				usernameElement.className = 'username'
-				usernameElement.innerText = message.userName;
+				usernameElement.innerText = message.sender;
 
 				// p 요소에 텍스트 추가
 
@@ -179,7 +179,7 @@ async function loadPreviousMessages(roomId){
 
 				// messageWrapper에 messageElement 추가하고 chatMessagesDiv에 추가
 
-				chatMessagesDiv.appendChild(messageWrapper);// prepend 사용하여 위에 추가
+				chatMessagesDiv.prepend(messageWrapper);// prepend 사용하여 위에 추가
 			});
 		}else
 			hasMoreMessages = false;
@@ -209,7 +209,7 @@ async function login() {
 
 		if (response.ok) {
 			const res = await response.json();
-			console.log("응답이요~ " + res.success)
+			console.log("응답이요~ " + res)
 			accessToken = "Bearer " + res.success.responseData.accessToken
 			refreshToken = res.success.responseData.refreshToken;
 			userEmail = emailOrPhoneNumber
@@ -245,14 +245,16 @@ function getUserEmail() {
 async function loadChatRooms() {
 	try {
 		const response = await fetch('http://localhost:8080/api/chat/myRooms',{
-			headers: headerList
+			headers: {
+				"Authorization":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MzA4MTk5NzAsImV4cCI6MTczMDgyMzU3MCwic3ViIjoiYWJjMTIzQGFiYy5jb20iLCJyb2xlcyI6IlJPTEVfVVNFUiJ9.-Ux2ktu-bTGPMGHirFqNBa7sgSPqUUWIgM9341mRLdU"
+			}
 		});  // ChatRoomResponse 데이터를 반환하는 API 호출
-		// if(!response.ok) {
-		// 	localStorage.removeItem('accessToken');
-		// 	localStorage.removeItem('refreshToken');
-		// 	localStorage.removeItem('userEmail');
-		// 	login()
-		// }
+		if(!response.ok) {
+			localStorage.removeItem('accessToken');
+			localStorage.removeItem('refreshToken');
+			localStorage.removeItem('userEmail');
+			login()
+		}
 		const rooms = await response.json();
 
 		displayChatRooms(rooms);
@@ -406,7 +408,7 @@ async function createChatRoom() {
 	console.log(roomName)
 
 	try {
-		const response = await fetch('http://localhost:8080/api/chat/createRoom', {
+		const response = await fetch('http://localhost:8080/chat/createRoom', {
 			method: 'POST',
 			headers: headerList,
 			body: roomName,  // roomName을 JSON 형태로 전달
@@ -545,7 +547,7 @@ let isLoading = false;
 
 chatMessages.addEventListener('scroll', () => {
 	// 스크롤이 맨 위에 도달했는지 확인
-	if (chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight && !isLoading) {
+	if (chatMessages.scrollTop === 0 && !isLoading) {
 		isLoading = true; // 로딩 상태로 설정
 		loadPreviousMessages(roomId).then(() => {
 			isLoading = false; // 로딩이 끝난 후 상태를 원래대로 되돌림

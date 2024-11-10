@@ -23,9 +23,9 @@ public class ChatMongoDto {
     private Integer roomId;
     private String sender;
     private String message;
-    private String userName;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime time;
+    private Boolean isSentByUser;
 
     @Override
     public String toString() {
