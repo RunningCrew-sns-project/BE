@@ -45,8 +45,8 @@ public class RedisHashService {
         return hashOperations.entries(key);
     }
 
-    public Boolean exists(String key, String field){
-        return hashOperations.hasKey(key, field);
+    public Boolean exists(String key){
+       return redisTemplate.hasKey(key);
     }
 
     public List<String> multiGet(String key, List<String> field) {

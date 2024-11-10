@@ -106,7 +106,7 @@ public class BlogService {
     // user_likes:user_id , blog_id, 1 (true 의미) -> 형태로 저장
     private Set<Integer> getUserLikesBlogsIds(MyUser user, List<Blog> blogs){
         //좋아요 정보가 존재하지 않으면 레디스에 좋아요 정보 저장하고
-        if(!redisHashService.exists("user_likes:" + user.getUserId(), "*")){
+        if(!redisHashService.exists("user_likes:" + user.getUserId())){
             userLikesBlogRepository.findByUser(user).stream().map(UserLikesBlog::getBlog).forEach(blog ->{
                 redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "true");
             });
@@ -205,6 +205,7 @@ public class BlogService {
     @Scheduled(fixedDelay = 30000) //비동기 타이머 30초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
+        log.info(keys.toString());
 
 //        https://velog.io/@sejinkim/Redis-KEYS-vs-SCAN
 //        여기 한번 보고 수정
