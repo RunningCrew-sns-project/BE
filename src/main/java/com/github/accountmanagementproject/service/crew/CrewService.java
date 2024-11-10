@@ -7,7 +7,6 @@ import com.github.accountmanagementproject.exception.CustomBindException;
 import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.exception.DuplicateKeyException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
@@ -18,13 +17,16 @@ import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJ
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crew.*;
+<<<<<<< HEAD
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
+=======
 import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+>>>>>>> develop
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,9 +41,11 @@ public class CrewService {
     private final AccountConfig accountConfig;
     private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
+<<<<<<< HEAD
     private final MyUsersRepository myUsersRepository;
     private final NotificationService notificationService;
     private final CrewJoinPostRepository crewJoinPostRepository;
+=======
 
     @Transactional(readOnly = true)
     public InfiniteScrollingCollection<CrewListResponse, SearchCriteria> getAvailableCrewLists(String email, SearchRequest request) {
@@ -62,6 +66,7 @@ public class CrewService {
                     .request(request)
                     .build();
     }
+>>>>>>> develop
 
     @Transactional
     public void crewCreation(@Valid CrewCreationRequest request, String email) {
@@ -227,11 +232,14 @@ public class CrewService {
             //'가입 완료' 상태로 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
+<<<<<<< HEAD
             // 승인 알림 전송 , requestCrewUserId: 수신자 ID (알림을 받을 사용자) , crewId: 참여 요청된 크루 ID, masterUserId: 크루 마스터 ID
             notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다.");
         }
         else if(crewsUser.getStatus() == CrewsUsersStatus.COMPLETED){
+=======
         } else if (crewsUser.getStatus() == CrewsUsersStatus.COMPLETED) {
+>>>>>>> develop
             return "이미 가입된 유저입니다";
         } else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
@@ -244,7 +252,31 @@ public class CrewService {
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
     }
 
+<<<<<<< HEAD
+    // "/api/crews" 로 생성된 크루 리스트
+    @Transactional(readOnly = true)
+    public PageResponseDto<CrewListResponse> getAllCrews(PageRequestDto pageRequestDto) {
+        List<Crew> crews = crewsRepository.findFilteredCrews(
+                pageRequestDto.getLocation(),
+                pageRequestDto.getCursor(),
+                pageRequestDto.getSize()
+        );
 
+        boolean hasNext = crews.size() > pageRequestDto.getSize();
+        if (hasNext) {
+            crews.remove(crews.size() - 1); // 추가로 가져온 한 항목을 제거하여 응답 내용 설정
+        }
+
+        List<CrewListResponse> crewResponses = crews.stream().map(crew -> {
+            CrewListResponse response = CrewMapper.INSTANCE.crewForListResponse(crew);
+            response.setMemberCount(crewsUsersRepository.countCrewUsersByCrewId(crew.getCrewId()));
+            return response;
+        }).toList();
+
+        Integer nextCursor = hasNext ? crewResponses.get(crewResponses.size() - 1).getCrewId().intValue() : null;
+
+        return new PageResponseDto<>(crewResponses, pageRequestDto.getSize(), !hasNext, nextCursor);
+    }
 
 
     @Transactional(readOnly = true)
@@ -279,5 +311,7 @@ public class CrewService {
         return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
     }
 
+=======
+>>>>>>> develop
 
 }
