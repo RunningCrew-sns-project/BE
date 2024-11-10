@@ -1,7 +1,6 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
-import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 

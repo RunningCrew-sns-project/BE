@@ -1,6 +1,5 @@
 package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
-import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
