@@ -1,22 +1,30 @@
 package com.github.accountmanagementproject.service.crew;
 
+import com.github.accountmanagementproject.alarm.service.NotificationService;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
 import com.github.accountmanagementproject.exception.CustomBindException;
 import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.exception.DuplicateKeyException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersPk;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crew.*;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
+import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +39,9 @@ public class CrewService {
     private final AccountConfig accountConfig;
     private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
+    private final NotificationService notificationService;
+    private final MyUsersRepository myUsersRepository;
+    private final CrewJoinPostRepository crewJoinPostRepository;
 
     @Transactional(readOnly = true)
     public InfiniteScrollingCollection<CrewListResponse, SearchCriteria> getAvailableCrewLists(String email, SearchRequest request) {
@@ -210,21 +221,50 @@ public class CrewService {
                 .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                         .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(crewsUsersPk).build());
 
+        Long masterUserId = myUsersRepository.findByEmail(email).get().getUserId();
         //유저의 상태가 '가입 대기' 상태이고, 승인 요청이라면
         if (crewsUser.getStatus() == CrewsUsersStatus.WAITING && approveOrReject) {
             //'가입 완료' 상태로 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
+            notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다.");
         } else if (crewsUser.getStatus() == CrewsUsersStatus.COMPLETED) {
             return "이미 가입된 유저입니다";
         } else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.REJECTED);
             crewsUser.setWithdrawalDate(LocalDateTime.now());
+            notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");
         }
 
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
     }
 
 
+    @Transactional(readOnly = true)
+    public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(Long crewId, PageRequestDto pageRequestDto) {
+        Crew crew = crewsRepository.findByIdWithImages(crewId)
+                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder().customMessage("크루를 찾을 수 없습니다.").build());
+        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew);
+
+        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
+                pageRequestDto.getDate(),
+                pageRequestDto.getLocation(),
+                pageRequestDto.getCursor(),
+                pageRequestDto.getSize()
+        );
+
+        List<CrewRunPostResponse> postResponses = crewJoinPosts.stream()
+                .map(post -> CrewRunPostResponseMapper.toDto(post, crew))
+                .toList();
+
+        boolean hasNext = postResponses.size() > pageRequestDto.getSize();
+        Integer nextCursor = hasNext ? postResponses.get(postResponses.size() - 1).getRunId().intValue() : null;
+        if (hasNext) {
+            postResponses = postResponses.subList(0, pageRequestDto.getSize());
+        }
+
+        CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses);
+        return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
+    }
 }
