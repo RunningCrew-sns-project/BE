@@ -25,20 +25,6 @@ import java.util.List;
 public class CrewController implements CrewControllerDocs {
     private final CrewService crewService;
 
-
-
-    @GetMapping
-    public CustomSuccessResponse getAvailableCrewLists(
-            @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String cursor,
-            @RequestParam(required = false) Long cursorId ,@RequestParam(required = false) boolean reverse,
-            @RequestParam(required = false) String criteria, @AuthenticationPrincipal String email) {
-        return new CustomSuccessResponse.SuccessDetail()
-                .message("크루 목록 조회 성공")
-                .responseData(crewService.getAvailableCrewLists(email, new SearchRequest(size, reverse, criteria, cursor, cursorId)))
-                .build();
-    }
-
-
     @Override
     @PostMapping
     public ResponseEntity<CustomSuccessResponse> createCrew(@RequestBody @Valid CrewCreationRequest request,
