@@ -5,11 +5,9 @@ import com.github.accountmanagementproject.exception.SimpleRunAppException;
 import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
-
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
 import com.github.accountmanagementproject.service.runJoinPost.generalJoinPost.GeneralJoinRunPostService;
-
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;

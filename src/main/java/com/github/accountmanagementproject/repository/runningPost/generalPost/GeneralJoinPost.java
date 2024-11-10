@@ -2,7 +2,6 @@ package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;

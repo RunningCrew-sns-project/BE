@@ -1,7 +1,6 @@
 package com.github.accountmanagementproject.web.dto.pagination;
 
 import lombok.Data;
-import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
