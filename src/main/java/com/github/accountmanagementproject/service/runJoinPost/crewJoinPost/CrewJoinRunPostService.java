@@ -8,7 +8,6 @@ import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
-import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
@@ -16,9 +15,9 @@ import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
-
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,7 +84,7 @@ public class CrewJoinRunPostService {
     // 게시글 생성
     @Transactional
     @CacheEvict(allEntries = true)
-    public CrewJoinPost createCrewPost(CrewRunPostCreateRequest request, MyUser user, Long crewId) {
+    public CrewRunPostResponse createCrewPost(CrewRunPostCreateRequest request, MyUser user, Long crewId) {
 
         // 사용자 자격 확인 - 크루 마스터 또는 크루 회원으로 승인(COMPLETED) 여부 확인
         Crew crew = validateUserAndCrew(user, crewId);
@@ -103,9 +99,9 @@ public class CrewJoinRunPostService {
         CrewJoinPost savedPost = crewJoinPostRepository.save(runJoinPost);
 
         // 비동기로 이미지 처리
-        processPostDetails(savedPost.getRunId(), request);
+        processPostDetails(savedPost.getCrewPostId(), request);
 
-        return savedPost;
+        return CrewRunPostResponseMapper.toDto(savedPost, crew);
     }
 
     private Crew validateUserAndCrew(MyUser user, Long crewId) {
@@ -137,21 +133,25 @@ public class CrewJoinRunPostService {
     // 크루 게시글 상세보기
     @Transactional(readOnly = true)
     @Cacheable(key = "'post_' + #runId")
-    public CrewJoinPost getPostById(Long runId, MyUser user) {
+    public CrewRunPostResponse getPostById(Long runId, MyUser user) {
 
         CrewJoinPost crewPost = getCrewPost(runId);
 
         if (!isAuthorizedUser(crewPost.getCrew().getCrewId(), user)) {
             throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_VIEW);
         }
-        return crewPost;
+
+        Crew crew = crewRepository.findByIdWithImages(crewPost.getCrew().getCrewId())
+                .orElseThrow(
+                        () -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found with crewId: " + crewPost.getCrew().getCrewId()));
+        return CrewRunPostResponseMapper.toDto(crewPost, crew);
     }
 
 
     // 크루 글 수정
     @Transactional
     @CacheEvict(allEntries = true)
-    public CrewJoinPost updateCrewPostByRunId(Long runId, Long crewId, MyUser user, CrewRunPostUpdateRequest request) {
+    public CrewRunPostResponse updateCrewPostByRunId(Long runId, Long crewId, MyUser user, CrewRunPostUpdateRequest request) {
 
         Crew crew = validateUserAndCrew(user, crewId);
         CrewJoinPost crewPost = getCrewPost(runId);
@@ -160,7 +160,9 @@ public class CrewJoinRunPostService {
         try {
             handleImageUpdate(crewPost, request);  // 이미지 업데이트
             updatePostFields(crewPost, request, user);  // 게시글 필드 업데이트
-            return crewJoinPostRepository.save(crewPost);
+
+            CrewJoinPost updatedPost = crewJoinPostRepository.save(crewPost);
+            return CrewRunPostResponseMapper.toDto(updatedPost, crew);
         } catch (Exception e) {
             handleUpdateFailure(request);   // 실패 시 새로 업로드된 이미지들 삭제
             throw new SimpleRunAppException(ErrorCode.STORAGE_UPDATE_FAILED,
@@ -276,26 +278,44 @@ public class CrewJoinRunPostService {
      * @Param : location (장소)
      * @Return 최신순 desc
      */
-    @Cacheable(key = "'crew_' + '_page_' + #pageRequestDto.page + '_user_' + #user.userId")
+    @Cacheable(key = "'crew_' + '_cursor_' + #pageRequestDto.cursor + '_user_' + #user.userId")
     public PageResponseDto<CrewRunPostResponse> getAll(PageRequestDto pageRequestDto, MyUser user) {
 
-        Pageable pageable = pageRequestDto.getPageable();
+        // findFilteredPosts 메서드에 cursor와 size 전달
+        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
+                pageRequestDto.getDate(),
+                pageRequestDto.getLocation(),
+                pageRequestDto.getCursor(),
+                pageRequestDto.getSize()
+        );
 
-        long totalCount = crewJoinPostRepository.countAll();
-        log.debug("Total posts count: {}", totalCount);
+        // 다음 페이지 여부 판단
+        boolean hasNext = crewJoinPosts.size() > pageRequestDto.getSize();
+        if (hasNext) {
+            crewJoinPosts.remove(crewJoinPosts.size() - 1); // 다음 페이지 확인용으로 가져온 항목 제거
+        }
 
-        Slice<CrewJoinPost> crewJoinPosts = crewJoinPostRepository  // 권한 확인 후, 게시물 조회
-                .findFilteredPosts(pageRequestDto.getDate(), pageRequestDto.getLocation(), pageable);
-        log.debug("Found posts size: {}", crewJoinPosts.getContent().size());
-
-        crewJoinPosts.forEach(post -> checkUserCrewMembership(user, post));
-
+        // 권한 확인 후, 각 게시물에 대한 DTO 변환
         List<CrewRunPostResponse> lists = crewJoinPosts.stream()
-                .map(CrewRunPostResponse::toDto).toList();
-        Slice<CrewRunPostResponse> responseSlice = new SliceImpl<>(lists, pageable, crewJoinPosts.hasNext());
+                .map(post -> {
+                    checkUserCrewMembership(user, post);  // 권한 확인
 
-        return new PageResponseDto<>(responseSlice);
+                    // 각 CrewJoinPost에 연결된 Crew 정보 가져오기
+                    Crew crew = crewRepository.findByIdWithImages(post.getCrew().getCrewId())
+                            .orElseThrow(() -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND,
+                                    "Crew not found for crewJoinPost"));
+
+                    // CrewRunPostResponseMapper를 사용하여 DTO로 변환
+                    return CrewRunPostResponseMapper.toDto(post, crew);
+                })
+                .toList();
+
+        // 다음 커서 설정 (현재 페이지 마지막 항목의 ID 다음 항목의 ID를 커서로 설정)
+        Integer nextCursor = hasNext ? lists.get(lists.size() - 1).getRunId().intValue() : null;
+
+        return new PageResponseDto<>(lists, pageRequestDto.getSize(), !hasNext, nextCursor);
     }
+
 
     private void checkUserCrewMembership(MyUser user, CrewJoinPost post) {
         // 사용자가 크루의 승인된 멤버인지 확인
@@ -318,10 +338,20 @@ public class CrewJoinRunPostService {
     }
 
 
+    // DTO 로 변환
+    @Transactional(readOnly = true)
+    public CrewRunPostResponse getCrewPostById(Long runId) {
+        CrewJoinPost crewJoinPost = crewJoinPostRepository.findById(runId)
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with runId: " + runId));
 
-//    public Crew findOneCrew(Integer userId) {
-//        return crewRepository.findByCrewMasterUserId(Long.valueOf(userId));
-//    }
+        // 관련 크루 정보 조회 및 fetch join으로 이미지 정보까지 로드
+        Crew crew = crewRepository.findByIdWithImages(crewJoinPost.getCrew().getCrewId())
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found for crewJoinPost"));
+
+        // CrewRunPostResponseMapper를 사용하여 DTO로 변환
+        return CrewRunPostResponseMapper.toDto(crewJoinPost, crew);
+    }
 
 
 }
+

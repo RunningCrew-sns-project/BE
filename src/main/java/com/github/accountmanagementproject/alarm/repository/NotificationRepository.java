@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.messaging.repository;
+package com.github.accountmanagementproject.alarm.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

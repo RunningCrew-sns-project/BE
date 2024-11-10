@@ -1,12 +1,8 @@
 package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
-import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.image.QRunJoinPostImage;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,29 +17,26 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
 
 
     @Override
-    public Slice<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Pageable pageable) {
+    public List<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size) {
         QGeneralJoinPost generalJoinPost = QGeneralJoinPost.generalJoinPost;
-        QRunJoinPostImage runJoinPostImage = QRunJoinPostImage.runJoinPostImage;
+        QRunJoinPostImage qrunJoinPostImage = QRunJoinPostImage.runJoinPostImage;
 
+        // 필터 조건 설정
         BooleanExpression dateCondition = date != null ? generalJoinPost.createdAt.goe(date.atStartOfDay()) : null;
         BooleanExpression locationCondition = null;
         if (location != null && !location.trim().isEmpty() && !location.equals("전체")) {
             locationCondition = generalJoinPost.location.eq(location);
         }
+        BooleanExpression cursorCondition = cursor != null ? generalJoinPost.generalPostId.lt(cursor) : null;
 
+        // 쿼리 실행
         List<GeneralJoinPost> posts = queryFactory.selectFrom(generalJoinPost)
-                .where(dateCondition, locationCondition)
-                .leftJoin(generalJoinPost.generalJoinPostImages, runJoinPostImage).fetchJoin()  // fetch join 추가
+                .where(dateCondition, locationCondition, cursorCondition)
+                .leftJoin(generalJoinPost.generalJoinPostImages, qrunJoinPostImage).fetchJoin()
                 .orderBy(generalJoinPost.createdAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize() + 1)  // 다음 페이지 존재 여부 확인을 위해 limit을 한 개 더 가져옴
+                .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
 
-        boolean hasNext = posts.size() > pageable.getPageSize();
-        if (hasNext) {
-            posts.remove(posts.size() - 1); // 실제 응답에는 다음 페이지 확인 용도로 가져온 한 건 제거
-        }
-
-        return new SliceImpl<>(posts, pageable, hasNext);
+        return posts;
     }
 }

@@ -6,8 +6,6 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
-import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
-import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
@@ -15,9 +13,6 @@ import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
@@ -26,10 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +48,11 @@ public class GeneralJoinRunPostService {
 
     @Async
     @Transactional
-    public CompletableFuture<Void> processGeneralPostDetails(Long runId, GeneralRunPostCreateRequest request) {
+    public CompletableFuture<Void> processGeneralPostDetails(Long generalPostId, GeneralRunPostCreateRequest request) {
         return CompletableFuture.runAsync(() -> {
             try {
-                GeneralJoinPost post = generalJoinPostRepository.findById(runId)
-                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + runId));
+                GeneralJoinPost post = generalJoinPostRepository.findById(generalPostId)
+                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + generalPostId));
 
                 // 이미지 처리
                 if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
@@ -91,7 +84,7 @@ public class GeneralJoinRunPostService {
         generalPost.setDistance(calculatedDistance);
         // 엔티티 저장 후 ID를 기반으로 비동기 작업 호출
         GeneralJoinPost savedPost = generalJoinPostRepository.save(generalPost);
-        processGeneralPostDetails(savedPost.getRunId(), request);
+        processGeneralPostDetails(savedPost.getGeneralPostId(), request);
         return savedPost;
     }
 
@@ -108,21 +101,22 @@ public class GeneralJoinRunPostService {
 
     // 게시글 상세보기
     @Transactional(readOnly = true)
-    @Cacheable(key = "'post_' + #runId")
-    public GeneralJoinPost getPostById(Long runId) {
-        return getCrewPost(runId);
+    @Cacheable(key = "'post_' + #generalPostId")
+    public GeneralJoinPost getPostById(Long generalPostId) {
+        return getCrewPost(generalPostId);
     }
 
-    private GeneralJoinPost getCrewPost(Long runId) {
-        return generalJoinPostRepository.findByIdWithImages(runId)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with runId: " + runId));
+    private GeneralJoinPost getCrewPost(Long generalPostId) {
+        return generalJoinPostRepository.findByIdWithImages(generalPostId)
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with runId: " + generalPostId));
     }
 
 
     // 글 수정
     @Transactional
-    public GeneralJoinPost updateGeneralPost(Long runId, MyUser user, GeneralRunPostUpdateRequest request) {
-        GeneralJoinPost generalPost = getCrewPost(runId);
+    @CachePut(key = "'post_' + #generalPostId")  // 또는 @CacheEvict(key = "'post_' + #generalPostId")
+    public GeneralJoinPost updateGeneralPost(Long generalPostId, MyUser user, GeneralRunPostUpdateRequest request) {
+        GeneralJoinPost generalPost = getCrewPost(generalPostId);
         validateGeneralPostAuthor(generalPost, user);
 
         try {
@@ -190,8 +184,8 @@ public class GeneralJoinRunPostService {
     // 게시글 삭제
     @Transactional
     @CacheEvict(allEntries = true)
-    public void deleteGeneralPost(Long runId, MyUser user) {
-        GeneralJoinPost generalPost = getCrewPost(runId);
+    public void deleteGeneralPost(Long generalPostId, MyUser user) {
+        GeneralJoinPost generalPost = getCrewPost(generalPostId);
         validateGeneralPostAuthor(generalPost, user);
 
         try {
@@ -227,19 +221,32 @@ public class GeneralJoinRunPostService {
      * @Param : location (장소)
      * @Return 최신순 desc
      */
-    @Cacheable(key = "'general_' + '_page_' + #pageRequestDto.page")
+    @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor")
     public PageResponseDto<GeneralRunPostResponse> getAll(PageRequestDto pageRequestDto) {
-        Pageable pageable = pageRequestDto.getPageable();
+        // findFilteredPosts 메서드에 cursor와 size 전달
+        List<GeneralJoinPost> joinPosts = generalJoinPostRepository.findFilteredPosts(
+                pageRequestDto.getDate(),
+                pageRequestDto.getLocation(),
+                pageRequestDto.getCursor(),
+                pageRequestDto.getSize()
+        );
 
-        Slice<GeneralJoinPost> JoinPosts = generalJoinPostRepository  // 게시물 조회
-                .findFilteredPosts(pageRequestDto.getDate(), pageRequestDto.getLocation(), pageable);
+        // 다음 페이지 여부 판단
+        boolean hasNext = joinPosts.size() > pageRequestDto.getSize();
+        if (hasNext) {
+            joinPosts.remove(joinPosts.size() - 1); // 다음 페이지 확인용으로 가져온 항목 제거
+        }
 
-        List<GeneralRunPostResponse> lists = JoinPosts.stream()
-                .map(GeneralRunPostResponse::toDto).toList();
+        // 각 게시물을 DTO로 변환
+        List<GeneralRunPostResponse> lists = joinPosts.stream()
+                .map(GeneralRunPostResponse::toDto)
+                .toList();
 
-        Slice<GeneralRunPostResponse> responseSlice = new SliceImpl<>(lists, pageable, JoinPosts.hasNext());
+        // 다음 커서 설정 (마지막 요소의 ID를 커서로 설정)
+        Integer nextCursor = hasNext ? lists.get(lists.size() - 1).getRunId().intValue() : null;
 
-        return new PageResponseDto<>(responseSlice);
+        // PageResponseDto 객체로 반환
+        return new PageResponseDto<>(lists, pageRequestDto.getSize(), !hasNext, nextCursor);
     }
 
 

@@ -10,7 +10,7 @@
 //import com.github.accountmanagementproject.repository.crew.crew.Crew;
 //import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 //import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
-//import com.github.accountmanagementproject.repository.runningPost.RunJoinPost;
+//import com.github.accountmanagementproject.repository.runningPost.repository.RunJoinPost;
 //import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 //import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 //import com.github.accountmanagementproject.repository.runningPost.repository.RunJoinPostRepository;
