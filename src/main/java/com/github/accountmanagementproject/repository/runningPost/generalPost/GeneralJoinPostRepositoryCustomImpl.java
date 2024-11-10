@@ -33,7 +33,7 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
         List<GeneralJoinPost> posts = queryFactory.selectFrom(generalJoinPost)
                 .where(dateCondition, locationCondition, cursorCondition)
                 .leftJoin(generalJoinPost.generalJoinPostImages, qrunJoinPostImage).fetchJoin()
-                .orderBy(generalJoinPost.createdAt.desc(), generalJoinPost.generalPostId.desc())
+                .orderBy(generalJoinPost.createdAt.desc())
                 .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
 

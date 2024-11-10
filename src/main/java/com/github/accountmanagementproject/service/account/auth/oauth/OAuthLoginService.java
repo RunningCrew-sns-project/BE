@@ -34,7 +34,7 @@ public class OAuthLoginService {
     private final MyUsersRepository myUsersRepository;
     private final SocialIdsRepository socialIdsRepository;
     private final AccountConfig accountConfig;
-    private final OAuthClientManager oAuthClientManager;
+    private final com.github.accountmanagementproject.service.account.auth.oauth.OAuthClientManager oAuthClientManager;
     private final JwtProvider jwtProvider;
 
     @Transactional
@@ -103,7 +103,7 @@ public class OAuthLoginService {
         } catch (DateTimeException e) {
             throw new CustomBadRequestException.ExceptionBuilder()
                     .systemMessage(e.getMessage())
-                    .customMessage("호환되지 않는 날짜 형식 (ex. yyyy-M-d)")
+                    .customMessage("호환되지 않는 날짜 형식 (exists. yyyy-M-d)")
                     .request(oAuthSignUpRequest.getDateOfBirth())
                     .build();
         }

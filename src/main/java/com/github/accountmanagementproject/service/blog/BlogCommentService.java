@@ -47,7 +47,10 @@ public class BlogCommentService {
         BlogComment blogComment = blogCommentRepository.findById(commentId).orElse(null);
 
         if(!user.equals(blogComment.getUser())) {
-            throw new IllegalArgumentException("권한이 없습니다.");
+            throw new CustomBadCredentialsException.ExceptionBuilder()
+                    .customMessage("권한이 없습니다")
+                    .request("작성자 권한 필요")
+                    .build();
         }
 
         blogComment.setContent(comment.getContent());
