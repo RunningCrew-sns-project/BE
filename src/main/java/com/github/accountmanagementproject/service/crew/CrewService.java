@@ -33,7 +33,7 @@ public class CrewService {
     private final CrewsUsersRepository crewsUsersRepository;
 
     @Transactional(readOnly = true)
-    public InfiniteScrollingCollection<CrewListResponse, s> getAvailableCrewLists(String email, SearchRequest request) {
+    public InfiniteScrollingCollection<CrewListResponse, SearchCriteria> getAvailableCrewLists(String email, SearchRequest request) {
         if (request.getCursor()!=null) request.makeCursorHolder();
 
         List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
