@@ -4,7 +4,6 @@ import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.crew.crewuser.QCrewsUsers;
-import com.github.accountmanagementproject.repository.runningPost.QRunJoinPost;
 import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
