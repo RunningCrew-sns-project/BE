@@ -2,12 +2,15 @@ package com.github.accountmanagementproject.web.controller.crew;
 
 import com.github.accountmanagementproject.service.crew.CrewService;
 import com.github.accountmanagementproject.web.dto.crew.CrewCreationRequest;
+<<<<<<< HEAD
 import com.github.accountmanagementproject.web.dto.crew.CrewDetailResponse;
 import com.github.accountmanagementproject.web.dto.crew.CrewDetailWithPostsResponse;
 import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
+=======
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
+>>>>>>> develop
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
+<<<<<<< HEAD
 import java.util.List;
+=======
+>>>>>>> develop
 
 @RequiredArgsConstructor
 @RestController
@@ -109,7 +114,20 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
-    // 크루 Info + 크루 달리기 게시물 목록
+
+    // "/api/crews" 로 생성된 크루 리스트
+    @GetMapping("/list")
+    @Override
+    public CustomSuccessResponse getAllCrews(PageRequestDto pageRequestDto) {
+        PageResponseDto<CrewListResponse> crews = crewService.getAllCrews(pageRequestDto);
+
+        return new CustomSuccessResponse.SuccessDetail()
+                .httpStatus(HttpStatus.OK)
+                .message("크루 리스트가 정상적으로 조회되었습니다.")
+                .responseData(crews)
+                .build();
+    }
+
     @GetMapping("/{crewId}/list")
     public CustomSuccessResponse getCrewDetailsWithPosts(
             @PathVariable Long crewId, PageRequestDto pageRequestDto) {
