@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface CrewControllerDocs {
 
     @Operation(summary = "크루 목록 조회", description = "크루 목록을 조회합니다.<br>" +
-            "criteria = 정렬 조건 (latest = 최신순, popular = 인기순, name = 이름순, member = 크루원수순, activities = 활동량(게시글 수))")
+            "criteria = 정렬 조건 (latest = 최신순, popular = 인기순, name = 이름순, member = 크루원수순, activities = 활동량(게시글 수))<br>" +
+            "인기순은 한달간 가입한 크루원 수로 판단하고, 활동량은 크루원들의 일주일간 게시글 수로 판단합니다.")
     CustomSuccessResponse getAvailableCrewLists(
             @Parameter(description = "한번 요청에 보여줄 크루 수 기본값 = 20", example = "20")
             int size,

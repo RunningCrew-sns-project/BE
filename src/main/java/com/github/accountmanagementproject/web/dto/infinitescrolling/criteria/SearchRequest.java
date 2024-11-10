@@ -29,6 +29,9 @@ public class SearchRequest {
         try {
             CursorHolder holder = CursorHolder.fromId(cursorId);
             switch (this.searchCriteria) {
+                case POPULAR,ACTIVITIES -> {
+                    this.cursorHolder = holder.withPopularOrActivitiesCursor(Long.parseLong(cursor));
+                }
                 case NAME -> {
                     this.cursorHolder = holder.withName(cursor);
                 }
@@ -36,7 +39,7 @@ public class SearchRequest {
                     this.cursorHolder = holder.withCreatedAt(LocalDateTime.parse(cursor, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                 }
                 case MEMBER -> {
-                    this.cursorHolder = holder.withMember(Integer.parseInt(cursor));
+                    this.cursorHolder = holder.withMember(Long.parseLong(cursor));
                 }
             }
         }catch (NullPointerException e){

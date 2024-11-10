@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 public class CursorHolder {
     private Long idCursor;
     private String nameCursor;
-    private Integer memberCursor;
+    private Long memberCursor;
+    private Long popularOrActivitiesCursor;
     private LocalDateTime createdAtCursor;
 
     public static CursorHolder fromId(Long cursor) {
@@ -22,13 +23,17 @@ public class CursorHolder {
         return this;
     }
 
-    public CursorHolder withMember(Integer cursor) {
+    public CursorHolder withMember(Long cursor) {
         this.memberCursor = cursor;
         return this;
     }
 
     public CursorHolder withCreatedAt(LocalDateTime cursor) {
         this.createdAtCursor = cursor;
+        return this;
+    }
+    public CursorHolder withPopularOrActivitiesCursor(Long cursor) {
+        this.popularOrActivitiesCursor = cursor;
         return this;
     }
 }
