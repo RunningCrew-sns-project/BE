@@ -15,6 +15,5 @@ public interface CrewsRepositoryCustom {
 
     List<CrewListResponse> findAvailableCrews(String email, SearchRequest request);
 
-
 //    List<MyCrewResponse> findMyCrewsByEmail(String email, Boolean isRequesting);
 }
