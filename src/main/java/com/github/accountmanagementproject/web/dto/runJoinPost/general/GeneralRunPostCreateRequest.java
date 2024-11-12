@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -68,7 +69,7 @@ public class GeneralRunPostCreateRequest {
                 .targetLongitude(request.getTargetLongitude())
                 .status(GeneralRunJoinPostStatus.OPEN)
                 .postType(PostType.GENERAL)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .updatedAt(null)
                 .build();
 

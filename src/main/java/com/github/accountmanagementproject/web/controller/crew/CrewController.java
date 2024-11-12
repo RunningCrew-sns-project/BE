@@ -109,9 +109,9 @@ public class CrewController implements CrewControllerDocs {
     @GetMapping("/{crewId}/list")
     @Override
     public CustomSuccessResponse getCrewDetailsWithPosts(
-            @PathVariable Long crewId, PageRequestDto pageRequestDto) {
+            @PathVariable Long crewId, @RequestParam String email, PageRequestDto pageRequestDto) {
 
-        PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(crewId, pageRequestDto);
+        PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(email, crewId, pageRequestDto);
 
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)

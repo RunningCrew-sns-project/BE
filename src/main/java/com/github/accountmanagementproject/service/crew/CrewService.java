@@ -227,36 +227,38 @@ public class CrewService {
             //'가입 완료' 상태로 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
-            notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다.");
+            notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다."); // 알림
         } else if (crewsUser.getStatus() == CrewsUsersStatus.COMPLETED) {
             return "이미 가입된 유저입니다";
         } else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.REJECTED);
             crewsUser.setWithdrawalDate(LocalDateTime.now());
-            notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");
+            notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");  // 알림
         }
 
         return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
     }
 
 
+    // 크루 Info + 크루 달리기 게시물 목록
     @Transactional(readOnly = true)
-    public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(Long crewId, PageRequestDto pageRequestDto) {
+    public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(String email, Long crewId, PageRequestDto pageRequestDto) {
         Crew crew = crewsRepository.findByIdWithImages(crewId)
                 .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder().customMessage("크루를 찾을 수 없습니다.").build());
-        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew);
+        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew); // 크루 찾아서 DTO 로 변환(크루 Info)
 
-        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
+        int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
+        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(  // 크루 달리기 게시물 목록 반환
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                pageRequestDto.getSize()
+                size
         );
 
         List<CrewRunPostResponse> postResponses = crewJoinPosts.stream()
                 .map(post -> CrewRunPostResponseMapper.toDto(post, crew))
-                .toList();
+                .toList();    // 크루 달리기 게시물 목록 -> DTO 로 변환
 
         boolean hasNext = postResponses.size() > pageRequestDto.getSize();
         Integer nextCursor = hasNext ? postResponses.get(postResponses.size() - 1).getRunId().intValue() : null;
@@ -264,7 +266,8 @@ public class CrewService {
             postResponses = postResponses.subList(0, pageRequestDto.getSize());
         }
 
-        CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses);
+        CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses); // 크루 Info + 크루 달리기 게시물 목록
         return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
     }
+
 }

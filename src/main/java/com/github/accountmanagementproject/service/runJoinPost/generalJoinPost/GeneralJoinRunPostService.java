@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -168,7 +169,7 @@ public class GeneralJoinRunPostService {
                 request.getTargetLongitude()
         );
         updatedPost.setDistance(calculatedDistance);
-        updatedPost.setUpdatedAt(LocalDateTime.now());
+        updatedPost.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
     }
 
     private void handleImageUpdateFailure(GeneralRunPostUpdateRequest request) {
@@ -223,12 +224,14 @@ public class GeneralJoinRunPostService {
      */
     @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor")
     public PageResponseDto<GeneralRunPostResponse> getAll(PageRequestDto pageRequestDto) {
+        int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
+
         // findFilteredPosts 메서드에 cursor와 size 전달
         List<GeneralJoinPost> joinPosts = generalJoinPostRepository.findFilteredPosts(
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                pageRequestDto.getSize()
+                size
         );
 
         // 다음 페이지 여부 판단
