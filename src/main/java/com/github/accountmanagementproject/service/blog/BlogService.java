@@ -199,11 +199,12 @@ public class BlogService {
             redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "false");
 
             return CompletableFuture.completedFuture("좋아요를 취소했습니다.");
-        }else {
+        }if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) == null || redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("false")){
             //TODO : 좋아요 처리
             redisHashService.save("user_likes:"+user.getUserId(), blog.getId().toString(), "true");
             return CompletableFuture.completedFuture("좋아요를 눌렀습니다.");
         }
+        return CompletableFuture.completedFuture("좋아요 메소드 실행.");
     }
 
 
@@ -275,7 +276,7 @@ public class BlogService {
         blog.setContent(blogRequestDTO.getContent());
         blog.setRecord(blogRequestDTO.getRecord());
         blog.setDistance(blogRequestDTO.getDistance());
-
+        blog.setCreatedAt(LocalDateTime.now());
 
         for(String imageUrl : blogRequestDTO.getImageUrl()){
             blogImagesRepository.save(BlogImages.builder()

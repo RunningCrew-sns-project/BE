@@ -158,9 +158,7 @@ public class ChatService{
 
         log.info(chatMongoRepository.findAllByRoomId(roomId).toString());
 //        log.info(String.valueOf(mongoTemplate.find(query, ChatMongoDto.class).get(0).toString()));
-        List<ChatMongoDto> results = mongoTemplate.find(query, ChatMongoDto.class);
-        Collections.reverse(results); // 리스트를 역순으로 정렬
-        return results;
+        return mongoTemplate.find(query, ChatMongoDto.class);
     }
 
 

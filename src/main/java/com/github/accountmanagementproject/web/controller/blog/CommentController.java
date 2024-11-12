@@ -5,7 +5,9 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.blog.BlogCommentService;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,20 +29,25 @@ public class CommentController implements CommentControllerDocs{
 
     @Override
     @PostMapping
-    public String createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
-                                @AuthenticationPrincipal String principal) {
+    public CustomSuccessResponse createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
+                                               @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
-        blogCommentService.createComment(blogId, comment, user);
-        return "댓글 작성 완료";
+
+        return new CustomSuccessResponse.SuccessDetail()
+                .responseData(blogCommentService.createComment(blogId, comment, user))
+                .message("댓글이 성공적으로 작성되었습니다.")
+                .build();
     }
 
     @Override
     @PutMapping
-    public String updateComment(@RequestParam(name = "commentId") Integer commentId, @RequestBody CommentRequestDTO comment,
+    public CustomSuccessResponse updateComment(@RequestParam(name = "commentId") Integer commentId, @RequestBody CommentRequestDTO comment,
                                 @AuthenticationPrincipal String principal){
         MyUser user = accountConfig.findMyUser(principal);
-        blogCommentService.updateComment(commentId, comment, user);
-        return "댓글 수정 완료";
+        return new CustomSuccessResponse.SuccessDetail()
+                .responseData(blogCommentService.updateComment(commentId, comment, user))
+                .message("댓글이 성공적으로 수정되었습니다.")
+                .build();
     }
 
     @Override
