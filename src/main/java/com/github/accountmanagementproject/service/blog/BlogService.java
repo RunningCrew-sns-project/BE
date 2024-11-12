@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Slf4j
+@EnableScheduling
 public class BlogService {
     private final BlogRepository blogRepository;
     private final BlogCommentRepository blogCommentRepository;
@@ -197,11 +199,14 @@ public class BlogService {
         if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) != null && redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("true")) {
             //TODO : 좋아요 취소
             redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "false");
+            redisHashService.decrement("blog_" + blog.getId().toString(), "likeCount"); //redis에 저장된 좋아요 카운트 감소
 
             return CompletableFuture.completedFuture("좋아요를 취소했습니다.");
         }if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) == null || redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("false")){
             //TODO : 좋아요 처리
             redisHashService.save("user_likes:"+user.getUserId(), blog.getId().toString(), "true");
+            redisHashService.increment("blog_" + blog.getId().toString(), "likeCount"); //redis에 저장된 좋아요 카운트 증가
+
             return CompletableFuture.completedFuture("좋아요를 눌렀습니다.");
         }
         return CompletableFuture.completedFuture("좋아요 메소드 실행.");
@@ -244,11 +249,11 @@ public class BlogService {
 
                     userLikesBlogRepository.save(userLikesBlog);
                 }else {
-                    userLikesBlog.setIsLiked(Boolean.valueOf(isLiked));
+                    userLikesBlog.setIsLiked(Boolean.parseBoolean(isLiked));
                 }
 
 
-                Integer likeCount = userLikesBlogRepository.countAllByBlog(blog); //db에서 blog에 해당하는 좋아요 갯수 가져오기
+                Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
                 blog.setLikeCount(likeCount); //좋아요 갯수 저장
 
 //                redisHashService.delete(key, blogId);
