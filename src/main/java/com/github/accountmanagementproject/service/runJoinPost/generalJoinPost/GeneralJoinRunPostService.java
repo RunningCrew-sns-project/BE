@@ -222,7 +222,9 @@ public class GeneralJoinRunPostService {
      * @Param : location (장소)
      * @Return 최신순 desc
      */
-    @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor")
+//    @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor", cacheNames = "generalRunPosts", unless = "#result == null")
+//    @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor", cacheNames = "generalRunPosts", unless = "#result.content.isEmpty()")
+//    @Cacheable(key = "'general_' + '_cursor_' + #pageRequestDto.cursor")
     public PageResponseDto<GeneralRunPostResponse> getAll(PageRequestDto pageRequestDto) {
         int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
 

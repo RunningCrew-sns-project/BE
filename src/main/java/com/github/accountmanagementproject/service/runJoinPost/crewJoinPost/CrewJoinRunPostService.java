@@ -279,7 +279,7 @@ public class CrewJoinRunPostService {
      * @Param : location (장소)
      * @Return 최신순 desc
      */
-    @Cacheable(key = "'crew_' + '_cursor_' + #pageRequestDto.cursor + '_user_' + #user.userId")
+//    @Cacheable(key = "'crew_' + '_cursor_' + #pageRequestDto.cursor + '_user_' + #user.userId")
     public PageResponseDto<CrewRunPostResponse> getAll(PageRequestDto pageRequestDto, MyUser user) {
         int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
 

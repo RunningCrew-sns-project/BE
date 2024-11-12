@@ -2,10 +2,8 @@ package com.github.accountmanagementproject.service.crew;
 
 import com.github.accountmanagementproject.alarm.service.NotificationService;
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
-import com.github.accountmanagementproject.exception.CustomBindException;
-import com.github.accountmanagementproject.exception.CustomNotFoundException;
-import com.github.accountmanagementproject.exception.DuplicateKeyException;
+import com.github.accountmanagementproject.exception.*;
+import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
@@ -244,30 +242,46 @@ public class CrewService {
     // 크루 Info + 크루 달리기 게시물 목록
     @Transactional(readOnly = true)
     public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(String email, Long crewId, PageRequestDto pageRequestDto) {
+        MyUser user = accountConfig.findMyUser(email);
+
+        // 크루 정보 조회 및 권한 확인
         Crew crew = crewsRepository.findByIdWithImages(crewId)
                 .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder().customMessage("크루를 찾을 수 없습니다.").build());
-        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew); // 크루 찾아서 DTO 로 변환(크루 Info)
+        if (!isAuthorizedUser(crew, crewId, user)) {
+            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_VIEW, "Unauthorized access to the crew post.");
+        }
 
-        int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
-        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(  // 크루 달리기 게시물 목록 반환
+        // 크루 기본 정보 DTO로 변환
+        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew);
+
+        // 게시물 목록 조회 및 페이징 처리
+        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                size
+                pageRequestDto.getSize()
         );
 
+        // 게시물 DTO 변환
         List<CrewRunPostResponse> postResponses = crewJoinPosts.stream()
                 .map(post -> CrewRunPostResponseMapper.toDto(post, crew))
-                .toList();    // 크루 달리기 게시물 목록 -> DTO 로 변환
+                .toList();
 
+        // 다음 커서 및 마지막 페이지 여부 설정
         boolean hasNext = postResponses.size() > pageRequestDto.getSize();
-        Integer nextCursor = hasNext ? postResponses.get(postResponses.size() - 1).getRunId().intValue() : null;
-        if (hasNext) {
-            postResponses = postResponses.subList(0, pageRequestDto.getSize());
-        }
+        Integer nextCursor = hasNext ? postResponses.get(pageRequestDto.getSize() - 1).getRunId().intValue() : null;
 
-        CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses); // 크루 Info + 크루 달리기 게시물 목록
+        // 결과 응답 설정
+        CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses);
         return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
     }
+
+    public boolean isAuthorizedUser(Crew crew, Long crewId, MyUser user) {
+        boolean isCrewMaster = crew.getCrewMaster().getUserId().equals(user.getUserId()); // 1. 크루 마스터 확인
+        boolean isCrewMember = crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(  // 2. 승인된 멤버 확인
+                crewId, user.getUserId(), CrewsUsersStatus.COMPLETED);
+        return isCrewMaster || isCrewMember;   // 3. 둘 중 하나라도 true 이면 접근 가능
+    }
+
 
 }

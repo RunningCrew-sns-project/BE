@@ -108,6 +108,11 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     // "크루 달리기 모집" 목록 가져오기
 //    @PreAuthorize("isAuthenticated()")
+    @CrossOrigin(
+            origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
+            allowedHeaders = "*",
+            allowCredentials = "true"
+    )
     @GetMapping("/list")
     public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @AuthenticationPrincipal String email) {
                 MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
