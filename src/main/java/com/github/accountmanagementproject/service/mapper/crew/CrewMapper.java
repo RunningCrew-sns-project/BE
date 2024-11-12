@@ -11,6 +11,7 @@ import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -117,5 +118,4 @@ public interface CrewMapper {
     default String getFirstCrewImageUrl(List<CrewImage> img) {
         return img.isEmpty() ? null : img.get(0).getImageUrl();
     }
-
 }

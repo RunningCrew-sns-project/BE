@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -194,7 +195,7 @@ public class CrewService {
         //객체 저장 - 트랜잭셔널 적용되어있구 원래있던 객체 불러와서 수정한거라 save 안쓰셔도 괜찮습니다
 //        crewsUsersRepository.save(crewsUser);
 
-        return "crewUser : " + crewsUser + " 을/를 성공적으로 퇴장시켰습니다.";
+        return "crewUser : " + crewsUser.getCrewsUsersPk().getUser().getNickname() + " 을/를 성공적으로 퇴장시켰습니다.";
     }
 
     //가입요청을 확인하여 승인, 거절 로직
@@ -235,7 +236,7 @@ public class CrewService {
             notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");  // 알림
         }
 
-        return "요청 유저 : " + requestCrewUser + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
+        return "요청 유저 : " + requestCrewUser.getNickname() + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
     }
 
 

@@ -31,7 +31,7 @@ public class BlogCommentService {
     }
 
     @Transactional
-    public void createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
+    public BlogComment createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
         Blog blog = blogRepository.findById(blogId).orElse(null);
         BlogComment blogComment = BlogComment.builder()
                 .blog(blog)
@@ -40,10 +40,11 @@ public class BlogCommentService {
                 .createdAt(LocalDateTime.now())
                 .build();
         blogCommentRepository.save(blogComment);
+        return blogComment;
     }
 
     @Transactional
-    public void updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
+    public BlogComment updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
         BlogComment blogComment = blogCommentRepository.findById(commentId).orElse(null);
 
         if(!user.equals(blogComment.getUser())) {
@@ -55,6 +56,8 @@ public class BlogCommentService {
 
         blogComment.setContent(comment.getContent());
         blogCommentRepository.save(blogComment);
+
+        return blogComment;
     }
 
     public void deleteComment(Integer commentId, MyUser user) {
