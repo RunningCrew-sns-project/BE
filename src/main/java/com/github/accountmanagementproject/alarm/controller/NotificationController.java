@@ -8,44 +8,46 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 
-@Tag(name = "Notifications", description = "알림 관련 API")
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/notifications")
 @CrossOrigin(originPatterns = "*")
-public class NotificationController {
+public class NotificationController implements NotificationControllerDocs{
 
     private final SseEmitters sseEmitters;
 
-    /**
-     * 클라이언트와 SSE 연결을 설정하고 SseEmitter 반환
-     * 클라이언트는 이 엔드포인트를 구독하여 실시간 알림을 수신합니다.
-     * @param userId 알림을 수신할 사용자 ID
-     * @return SseEmitter 연결 객체
-     */
-    @Operation(
-            summary = "SSE 연결 설정",
-            description = "이 엔드포인트를 호출하면 서버와의 SSE 연결을 설정하여 실시간 알림을 수신할 수 있습니다.",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "SSE 연결 성공",
-                            content = @Content(mediaType = "text/event-stream",
-                                    examples = @ExampleObject(name = "SSE 연결 예시", value = """
-                        event: notification
-                        data: {"message": "새로운 알림이 있습니다"}
-                    """)
-                            )
-                    )
-            }
+
+    @CrossOrigin(
+            origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
+            allowedHeaders = "*",
+            allowCredentials = "true"
     )
     @GetMapping("/connect")
-    public SseEmitter connect(@RequestParam Long userId) {
-        return sseEmitters.addEmitter(userId);
+    @Override
+    public ResponseEntity<SseEmitter> connect(@RequestParam Long userId) {
+        SseEmitter emitter = sseEmitters.addEmitter(userId);
+
+        // 이벤트 전송
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connect")
+                    .data("Connected successfully"));
+        } catch (IOException e) {
+            sseEmitters.removeEmitter(userId);
+        }
+
+        // ResponseEntity를 통해 헤더 설정
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-cache")
+                .header("Connection", "keep-alive")
+                .body(emitter);
     }
 
 

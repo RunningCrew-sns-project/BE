@@ -15,10 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
@@ -291,13 +288,13 @@ public interface CrewControllerDocs {
 
 
     //퇴장 시키기
-    @Parameter(name = "crewId", description = "크루 아이디")
-    @Parameter(name = "outCrewsUsersId", description = "내보낼 유저의 아이디")
+//    @Parameter(name = "crewId", description = "크루 아이디")
+//    @Parameter(name = "outCrewsUsersId", description = "내보낼 유저의 아이디")
     @Operation(summary = "크루원 강퇴 시키기", description = "crewId와 내보낼 크루원의 userid를 받아 강퇴 기능 구현")
     @DeleteMapping("/sendOutCrew")
     CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
-                                      @RequestParam Long crewId,
-                                      @RequestParam Long outUserId);
+                                      @RequestParam(name = "크루 아이디") Long crewId,
+                                      @RequestParam(name = "내보낼 유저 아이디") Long outCrewsUserId);
 
     //승인, 거절
     @Parameter(name = "crewId", description = "크루 아이디")
@@ -309,9 +306,9 @@ public interface CrewControllerDocs {
     @Operation(summary = "크루 가입 신청, 거절", description = "crewId와 요청 유저 아이디, 승인/거절 요청 값을 받아 승인/거절 로직 구현")
     @PostMapping("/approveOrReject")
     CustomSuccessResponse approveOrReject(@AuthenticationPrincipal String email,
-                                          @RequestParam Long crewId,
-                                          @RequestParam Long requestCrewUserId,
-                                          @RequestParam Boolean approveOrReject);
+                                          @RequestParam(name = "크루 아이디") Long crewId,
+                                          @RequestParam(name = "요청 유저 아이디") Long requestCrewUserId,
+                                          @RequestParam(name = "승인/거절") Boolean approveOrReject);
 
 
     @Operation(
@@ -389,5 +386,5 @@ public interface CrewControllerDocs {
             @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류로 인해 요청을 처리할 수 없습니다.")
     })
-    CustomSuccessResponse getCrewDetailsWithPosts(@PathVariable Long crewId, PageRequestDto pageRequestDto);
+    CustomSuccessResponse getCrewDetailsWithPosts(@PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto);
 }

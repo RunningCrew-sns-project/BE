@@ -85,10 +85,10 @@ public class CrewController implements CrewControllerDocs {
     @DeleteMapping("/sendOutCrew")
     public CustomSuccessResponse sendOutCrew(@AuthenticationPrincipal String email,
                                              @RequestParam Long crewId,
-                                             @RequestParam Long outUserId) {
+                                             @RequestParam Long outCrewsUserId) {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("퇴장시키기 성공")// 엔티티에 유저아이디가 Long타입이라 long타입으로 수정햇습니당
-                .responseData(crewService.sendOutCrew(email, crewId, outUserId))
+                .responseData(crewService.sendOutCrew(email, crewId, outCrewsUserId))
                 .build();
     }
 
@@ -106,12 +106,17 @@ public class CrewController implements CrewControllerDocs {
     }
 
     // 크루 Info + 크루 달리기 게시물 목록
+    @CrossOrigin(
+            origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
+            allowedHeaders = "*",
+            allowCredentials = "true"
+    )
     @GetMapping("/{crewId}/list")
     @Override
     public CustomSuccessResponse getCrewDetailsWithPosts(
-            @PathVariable Long crewId, PageRequestDto pageRequestDto) {
+            @PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto) {
 
-        PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(crewId, pageRequestDto);
+        PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(email, crewId, pageRequestDto);
 
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)

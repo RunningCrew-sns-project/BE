@@ -2,6 +2,7 @@ package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -24,8 +25,8 @@ public interface CommentControllerDocs {
         @Parameter(name = "comment", description = "댓글 작성 내용", example = "작성할 댓글 내용")
     })
     @PostMapping
-    String createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
-                         @AuthenticationPrincipal String principal);
+    CustomSuccessResponse createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
+                                        @AuthenticationPrincipal String principal);
 
     @Operation(summary = "댓글 수정")
     @Parameters({
@@ -33,7 +34,7 @@ public interface CommentControllerDocs {
             @Parameter(name = "comment", description = "수정할 댓글 내용")
     })
     @PutMapping
-    String updateComment(@RequestParam(name = "commentId") Integer commentId, @RequestBody CommentRequestDTO comment,
+    CustomSuccessResponse updateComment(@RequestParam(name = "commentId") Integer commentId, @RequestBody CommentRequestDTO comment,
                          @AuthenticationPrincipal String principal);
 
     @Operation(summary = "댓글 삭제")

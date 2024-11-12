@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
@@ -8,6 +9,9 @@ import com.github.accountmanagementproject.repository.runningPost.image.RunJoinP
 import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -102,9 +106,13 @@ public class GeneralJoinPost {
 
     /** ****************************************************************/
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();  // 게시글 생성 시간
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();  // 게시글 수정 시간
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -14,6 +15,9 @@ public interface CrewsRepository extends JpaRepository<Crew, Long>, CrewsReposit
 
     @Query("SELECT c FROM Crew c WHERE c.crewMaster.userId = :crewMasterId")
     Crew findByCrewMasterId(@Param("crewMasterId") Long crewMasterId);
+
+    @Query("SELECT c FROM Crew c JOIN FETCH c.crewMaster WHERE c.crewMaster.userId = :crewMasterId")
+    List<Crew> findAllByCrewMasterUserId(@Param("crewMasterId") Long userId);
 
     @Query("SELECT c FROM Crew c LEFT JOIN FETCH c.crewImages WHERE c.crewId = :crewId")
     Optional<Crew> findByIdWithImages(@Param("crewId") Long crewId);
