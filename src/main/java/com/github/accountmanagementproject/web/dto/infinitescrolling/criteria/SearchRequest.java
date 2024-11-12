@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 public class SearchRequest {
-    private int size = 20;
+    private int size;
     private CursorHolder cursorHolder;
     private Long cursorId;
     private String cursor;

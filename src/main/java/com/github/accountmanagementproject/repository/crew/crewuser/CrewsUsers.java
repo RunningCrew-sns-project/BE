@@ -52,12 +52,12 @@ public class CrewsUsers {
         return false;
     }
     public LocalDateTime getReleaseDay() {
-        if (this.status == CrewsUsersStatus.WITHDRAWAL) {
-            return this.withdrawalDate.plusDays(1);
-        } else if (this.status == CrewsUsersStatus.FORCED_EXIT) {
-            return this.withdrawalDate.plusDays(30);
-        }
-        return withdrawalDate;
+        return switch (this.status) {
+            case WITHDRAWAL -> this.withdrawalDate.plusDays(1);
+            case FORCED_EXIT -> this.withdrawalDate.plusDays(30);
+            case REJECTED -> this.applicationDate.plusDays(7);
+            default -> withdrawalDate;
+        };
     }
 }
 
