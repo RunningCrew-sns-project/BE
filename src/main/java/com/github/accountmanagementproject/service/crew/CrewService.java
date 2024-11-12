@@ -2,10 +2,8 @@ package com.github.accountmanagementproject.service.crew;
 
 import com.github.accountmanagementproject.alarm.service.NotificationService;
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
-import com.github.accountmanagementproject.exception.CustomBindException;
-import com.github.accountmanagementproject.exception.CustomNotFoundException;
-import com.github.accountmanagementproject.exception.DuplicateKeyException;
+import com.github.accountmanagementproject.exception.*;
+import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
@@ -228,26 +226,36 @@ public class CrewService {
             //'가입 완료' 상태로 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.COMPLETED);
             crewsUser.setJoinDate(LocalDateTime.now());
-            notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다.");
+            notificationService.sendApproveNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 승인되었습니다."); // 알림
         } else if (crewsUser.getStatus() == CrewsUsersStatus.COMPLETED) {
             return "이미 가입된 유저입니다";
         } else {
             //가입 거절 시 '가입 거절' 로 상태 바꾸고
             crewsUser.setStatus(CrewsUsersStatus.REJECTED);
             crewsUser.setWithdrawalDate(LocalDateTime.now());
-            notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");
+            notificationService.sendRejectNotification(requestCrewUserId, crewId, masterUserId, "크루 가입 요청이 거절되었습니다.");  // 알림
         }
 
         return "요청 유저 : " + requestCrewUser.getNickname() + "의 요청을 " + (approveOrReject ? "승인" : "거절") + "했습니다.";
     }
 
 
+    // 크루 Info + 크루 달리기 게시물 목록
     @Transactional(readOnly = true)
-    public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(Long crewId, PageRequestDto pageRequestDto) {
+    public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(String email, Long crewId, PageRequestDto pageRequestDto) {
+        MyUser user = accountConfig.findMyUser(email);
+
+        // 크루 정보 조회 및 권한 확인
         Crew crew = crewsRepository.findByIdWithImages(crewId)
                 .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder().customMessage("크루를 찾을 수 없습니다.").build());
+        if (!isAuthorizedUser(crew, crewId, user)) {
+            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_VIEW, "Unauthorized access to the crew post.");
+        }
+
+        // 크루 기본 정보 DTO로 변환
         CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew);
 
+        // 게시물 목록 조회 및 페이징 처리
         List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
@@ -255,17 +263,26 @@ public class CrewService {
                 pageRequestDto.getSize()
         );
 
+        // 게시물 DTO 변환
         List<CrewRunPostResponse> postResponses = crewJoinPosts.stream()
                 .map(post -> CrewRunPostResponseMapper.toDto(post, crew))
                 .toList();
 
+        // 다음 커서 및 마지막 페이지 여부 설정
         boolean hasNext = postResponses.size() > pageRequestDto.getSize();
-        Integer nextCursor = hasNext ? postResponses.get(postResponses.size() - 1).getRunId().intValue() : null;
-        if (hasNext) {
-            postResponses = postResponses.subList(0, pageRequestDto.getSize());
-        }
+        Integer nextCursor = hasNext ? postResponses.get(pageRequestDto.getSize() - 1).getRunId().intValue() : null;
 
+        // 결과 응답 설정
         CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses);
         return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
     }
+
+    public boolean isAuthorizedUser(Crew crew, Long crewId, MyUser user) {
+        boolean isCrewMaster = crew.getCrewMaster().getUserId().equals(user.getUserId()); // 1. 크루 마스터 확인
+        boolean isCrewMember = crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(  // 2. 승인된 멤버 확인
+                crewId, user.getUserId(), CrewsUsersStatus.COMPLETED);
+        return isCrewMaster || isCrewMember;   // 3. 둘 중 하나라도 true 이면 접근 가능
+    }
+
+
 }

@@ -386,5 +386,5 @@ public interface CrewControllerDocs {
             @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류로 인해 요청을 처리할 수 없습니다.")
     })
-    CustomSuccessResponse getCrewDetailsWithPosts(@PathVariable Long crewId, PageRequestDto pageRequestDto);
+    CustomSuccessResponse getCrewDetailsWithPosts(@PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto);
 }

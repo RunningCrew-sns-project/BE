@@ -148,7 +148,7 @@ public interface GeneralRunJoinPostControllerDocs {
             )
     )
     Response<Void> deletePostById(
-            @Parameter(description = "게시글 ID") Long runId,
+            @Parameter(description = "게시글 ID *") Long runId,
             @Parameter(description = "유저 이메일") String email);
 
     @Operation(summary = "일반 달리기 모집 게시물 목록 조회", description = "일반 달리기 모집 게시물을 페이징하여 조회합니다.")

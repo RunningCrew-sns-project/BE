@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -22,7 +23,7 @@ public class NotificationService {
     /**
      * 가입 승인 알림 전송
      * @param recipientUserId 알림을 받을 사용자 ID
-     * @param crewId 가입 신청이 들어온 크루의 ID
+     * @param crewId 가입 신청이 들어온 크루의 ID ( DB : joinRequestId )
      * @param masterUserId 크루의 마스터 사용자 ID
      * @param message 알림 메시지 내용
      */
@@ -33,7 +34,7 @@ public class NotificationService {
     /**
      * 가입 거절 알림 전송
      * @param recipientUserId 알림을 받을 사용자 ID
-     * @param crewId 가입 신청이 들어온 크루의 ID
+     * @param crewId 가입 신청이 들어온 크루의 ID ( DB : joinRequestId )
      * @param masterUserId 크루의 마스터 사용자 ID
      * @param message 알림 메시지 내용
      */
@@ -57,7 +58,7 @@ public class NotificationService {
                 .masterUserId(masterUserId)
                 .message(message)
                 .type(type)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .build();
 
         notificationRepository.save(notification);

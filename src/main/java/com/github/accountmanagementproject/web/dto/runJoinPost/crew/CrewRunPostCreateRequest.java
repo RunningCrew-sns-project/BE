@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -72,7 +73,7 @@ public class CrewRunPostCreateRequest {
                 .targetLongitude(request.getTargetLongitude())
                 .status(CrewRunJoinPostStatus.OPEN)
                 .postType(PostType.CREW)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .updatedAt(null)
                 .build();
 

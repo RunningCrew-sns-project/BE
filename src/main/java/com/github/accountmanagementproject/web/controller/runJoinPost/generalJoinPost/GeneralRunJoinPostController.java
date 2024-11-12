@@ -94,6 +94,11 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     // "일반 달리기 모집" 목록 가져오기
 //    @PreAuthorize("@crewSecurityService.isUserInCrew(authentication, #crewId)") 수정 필요
 //    @PreAuthorize("isAuthenticated()")
+    @CrossOrigin(
+            origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
+            allowedHeaders = "*",
+            allowCredentials = "true"
+    )
     @GetMapping("/list")
     public Response<PageResponseDto<GeneralRunPostResponse>> getAll(PageRequestDto pageRequestDto) {
         PageResponseDto<GeneralRunPostResponse> response = generalRunJoinPostService.getAll(pageRequestDto);
