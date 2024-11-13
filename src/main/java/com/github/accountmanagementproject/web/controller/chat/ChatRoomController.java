@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,14 @@ public class ChatRoomController implements ChatRoomControllerDocs{
 
     @Override
     @GetMapping("/allRooms")
-    public List<ChatRoomResponse> findAllRoomList(){
-        return chatService.findAllRoom();
+    public CustomSuccessResponse findAllRoomList(@RequestParam(defaultValue = "10") Integer size,
+                                                 @RequestParam(required = false) Integer cursor,
+                                                 @AuthenticationPrincipal String email){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("채팅룸을 조회했습니다.")
+                .responseData(chatService.findAllRoom(size, cursor))
+                .build();
+
     }
     @Override
     @GetMapping("/myRooms")

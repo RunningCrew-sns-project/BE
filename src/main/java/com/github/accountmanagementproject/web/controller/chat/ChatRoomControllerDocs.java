@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public interface ChatRoomControllerDocs {
 
     @GetMapping("/allRooms")
-    List<ChatRoomResponse> findAllRoomList();
+    CustomSuccessResponse findAllRoomList(Integer size, Integer cursor, @AuthenticationPrincipal String email);
 
     @Operation(summary = "참여중인 채팅방 불러오기", description = "유저가 현재 참여하고 있는 채팅방 조회")
     @GetMapping("/myRooms")
