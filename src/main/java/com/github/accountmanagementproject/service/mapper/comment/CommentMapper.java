@@ -14,5 +14,6 @@ public interface CommentMapper {
     @Mapping(source = "user.profileImg", target = "userImg")
     @Mapping(source = "blog.id", target = "blogId")
     @Mapping(source = "id", target = "commentId")
+    @Mapping(source = "user.userId", target = "userId")
     CommentResponseDTO commentToCommentResponseDTO(BlogComment comment);
 }

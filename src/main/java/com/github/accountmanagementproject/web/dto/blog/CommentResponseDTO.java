@@ -12,10 +12,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentResponseDTO {
-    private Integer blogId;
     private Integer commentId;
-    private String content;
+
+    private Integer blogId;
+
+    private Long userId;
     private String userName;
     private String userImg;
+
+    private String content;
+
     private LocalDateTime createdAt;
 }

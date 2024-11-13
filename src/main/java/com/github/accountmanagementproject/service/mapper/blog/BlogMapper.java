@@ -16,6 +16,7 @@ public interface BlogMapper {
     @Mapping(source = "user.nickname", target = "userName")
     @Mapping(source = "id", target = "blogId")
     @Mapping(source = "user.profileImg", target = "userImg")
+    @Mapping(source = "user.userId", target = "userId")
     BlogResponseDTO blogToBlogResponseDTO(Blog blog);
 
     CommentResponseDTO blogCommentToBlogCommentResponseDTO(BlogComment blogComment);
