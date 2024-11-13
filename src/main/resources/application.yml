@@ -94,7 +94,8 @@ spring:
           starttls:
             enable: true
   #              Identity Manager 서버가 SSL을 사용하여 SMTP와 통신하도록 지시합니다.
-
+  jackson:
+    time-zone: Asia/Seoul #time-zone 한국으로 설정
 
 
 springdoc:
