@@ -17,7 +17,10 @@ public interface CommentControllerDocs {
     @Operation(summary = "블로그 id를 받아 댓글 조회")
     @Parameter(name = "blogId", description = "댓글 조회할 블로그 아이디")
     @GetMapping
-    List<CommentResponseDTO> getCommentsByBlogId(@RequestParam(name = "blogId") Integer blogId, @AuthenticationPrincipal String principal);
+    CustomSuccessResponse getCommentsByBlogId(@RequestParam(name = "blogId") Integer blogId,
+                                              @RequestParam(defaultValue = "10") Integer size,
+                                              @RequestParam(required = false) Integer cursor);
+
 
     @Operation(summary = "댓글 작성")
     @Parameters({
