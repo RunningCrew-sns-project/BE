@@ -210,7 +210,7 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-    @Scheduled(fixedDelay = 30000) //비동기 타이머 30초마다
+    @Scheduled(fixedDelay = 1000) //비동기 타이머 1초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
         log.info(keys.toString());
