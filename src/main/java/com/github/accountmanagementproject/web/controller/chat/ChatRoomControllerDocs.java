@@ -1,19 +1,14 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
-import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 public interface ChatRoomControllerDocs {

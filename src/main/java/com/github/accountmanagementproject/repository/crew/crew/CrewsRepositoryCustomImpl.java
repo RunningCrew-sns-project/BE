@@ -125,8 +125,9 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
 
     private BooleanExpression setCrewListExpression(String email, SearchRequest request) {
         BooleanExpression expression = email.equals("anonymousUser") ? QCREW.maxCapacity.gt(QCREW.crewUsers.size())
-                : QMyUser.myUser.isNull().or(QMyUser.myUser.email.ne(email)).and(QCREW.maxCapacity.gt(QCREW.crewUsers.size()));
+                : QMyUser.myUser.isNull().or( QMyUser.myUser.email.ne(email) ).and(QCREW.maxCapacity.gt(QCREW.crewUsers.size()));
 
+        if (request.getCrewRegion() != null) expression = expression.and(QCREW.activityRegion.eq(request.getCrewRegion()));
         if (request.getCursor() != null) expression = expression.and(cursorExpressionDetails(request));
         return expression;
     }

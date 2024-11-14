@@ -8,7 +8,6 @@ import com.github.accountmanagementproject.repository.chat.UserChatMappingReposi
 import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
-import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
 import com.github.accountmanagementproject.web.dto.chat.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service

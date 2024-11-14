@@ -1,6 +1,8 @@
 package com.github.accountmanagementproject.web.dto.infinitescrolling.criteria;
 
 import com.github.accountmanagementproject.exception.CustomBadRequestException;
+import com.github.accountmanagementproject.service.mapper.converter.CrewRegionConverter;
+import com.github.accountmanagementproject.web.dto.crew.CrewRegion;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,18 +12,20 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 public class SearchRequest {
-    private int size = 20;
+    private int size;
     private CursorHolder cursorHolder;
     private Long cursorId;
     private String cursor;
     private boolean reverse;
+    private CrewRegion crewRegion;
     private SearchCriteria searchCriteria;
-    public SearchRequest(int size, boolean reverse, String searchCriteria, String cursor, Long cursorId) {
+    public SearchRequest(int size, boolean reverse, String searchCriteria, String cursor, Long cursorId, String crewRegion) {
         this.size = size;
         this.reverse = reverse;
         this.searchCriteria = SearchCriteria.setValue(searchCriteria);
         this.cursor = cursor;
         this.cursorId = cursorId;
+        this.crewRegion = new CrewRegionConverter().convertToEntityAttribute(crewRegion);
     }
 
 

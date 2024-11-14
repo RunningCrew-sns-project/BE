@@ -1,7 +1,6 @@
 package com.github.accountmanagementproject.web.controller.blog;
 
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
-import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,8 +8,6 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "CommentController", description = "댓글 작성, 조회, 수정, 삭제 API")
 public interface CommentControllerDocs {

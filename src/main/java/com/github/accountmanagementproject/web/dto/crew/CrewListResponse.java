@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class CrewListResponse extends CrewResponseParent implements ScrollingResponseInterface<SearchCriteria> {
-    private String activityRegion;
+    private CrewRegion activityRegion;
     private LocalDateTime createdAt;
     private long memberCount;
     private int maxCapacity;
@@ -34,7 +34,7 @@ public class CrewListResponse extends CrewResponseParent implements ScrollingRes
         return super.getCrewId();
     }
 
-    public CrewListResponse(long crewId, String crewName, String crewImageUrl, String crewIntroduction, String activityRegion, LocalDateTime createdAt, long memberCount, int maxCapacity, Long popularOrActivitiesNumerical) {
+    public CrewListResponse(long crewId, String crewName, String crewImageUrl, String crewIntroduction, CrewRegion activityRegion, LocalDateTime createdAt, long memberCount, int maxCapacity, Long popularOrActivitiesNumerical) {
         this.activityRegion = activityRegion;
         this.createdAt = createdAt;
         this.memberCount = memberCount;
@@ -46,13 +46,13 @@ public class CrewListResponse extends CrewResponseParent implements ScrollingRes
         super.setCrewImageUrl(crewImageUrl);
     }
 
-    public boolean valueValidity(long requestId, SearchRequest requestCursor){
+    public boolean valueValidity(SearchRequest requestCursor){
         CursorHolder cursor = requestCursor.getCursorHolder();
         return switch (requestCursor.getSearchCriteria()) {
-            case NAME -> super.getCrewName().equals(cursor.getNameCursor())&&super.getCrewId()==requestId;
-            case MEMBER -> this.memberCount==cursor.getMemberCursor()&&super.getCrewId()==requestId;
-            case POPULAR,ACTIVITIES -> this.popularOrActivitiesNumerical.equals(cursor.getPopularOrActivitiesCursor())&&super.getCrewId()==requestId;
-            case LATEST -> this.createdAt.equals(cursor.getCreatedAtCursor())&&super.getCrewId()==requestId;
+            case NAME -> super.getCrewName().equals(cursor.getNameCursor())&&super.getCrewId()==requestCursor.getCursorId();
+            case MEMBER -> this.memberCount==cursor.getMemberCursor()&&super.getCrewId()==requestCursor.getCursorId();
+            case POPULAR,ACTIVITIES -> this.popularOrActivitiesNumerical.equals(cursor.getPopularOrActivitiesCursor())&&super.getCrewId()==requestCursor.getCursorId();
+            case LATEST -> this.createdAt.equals(cursor.getCreatedAtCursor())&&super.getCrewId()==requestCursor.getCursorId();
         };
     }
 }

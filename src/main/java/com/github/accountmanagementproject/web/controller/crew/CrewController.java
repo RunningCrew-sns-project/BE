@@ -27,10 +27,11 @@ public class CrewController implements CrewControllerDocs {
     public CustomSuccessResponse getAvailableCrewLists(
             @RequestParam(defaultValue = "20") int size, @RequestParam(required = false) String cursor,
             @RequestParam(required = false) Long cursorId ,@RequestParam(required = false) boolean reverse,
-            @RequestParam(required = false) String criteria, @AuthenticationPrincipal String email) {
+            @RequestParam(required = false) String criteria, @AuthenticationPrincipal String email,
+            @RequestParam(required = false) String crewRegion) {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("크루 목록 조회 성공")
-                .responseData(crewService.getAvailableCrewLists(email, new SearchRequest(size, reverse, criteria, cursor, cursorId)))
+                .responseData(crewService.getAvailableCrewLists(email, new SearchRequest(size, reverse, criteria, cursor, cursorId, crewRegion)))
                 .build();
     }
 
@@ -72,11 +73,18 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
-    @GetMapping("/{crewId}/users")
+    @GetMapping("/{crewId}/admin/users")
     public CustomSuccessResponse getCrewUsers(@PathVariable Long crewId, @RequestParam(required = false) Boolean all, @AuthenticationPrincipal String masterEmail) {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("크루 멤버 조회 성공")
                 .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
+                .build();
+    }
+    @GetMapping("/{crewId}/users")
+    public CustomSuccessResponse getSimplyCrewUsers(@PathVariable Long crewId) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 멤버 조회 성공")
+                .responseData(crewService.getSimplyCrewUsers(crewId))
                 .build();
     }
 
