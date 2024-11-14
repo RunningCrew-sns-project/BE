@@ -111,7 +111,7 @@ public class CrewService {
                     .request(crewsUsers.getStatus())
                     .build();
         } else if (!isNewRequest && LocalDateTime.now().isBefore(releaseDay)) {
-            throw new DuplicateKeyException.ExceptionBuilder()
+            throw new CustomBindException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패")
                     .customMessage("탈퇴한 또는, 강제 퇴장이나 가입 거절 당하고 재가입 조건을 충족 못한 크루 입니다.")
                     .request(Map.of("status", crewsUsers.getStatus(), "releaseDay", releaseDay))
