@@ -132,18 +132,13 @@ public class BlogService {
         // 블로그에 대한 댓글 가져오기
         Blog blog = blogRepository.findById(blogId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("블로그를 찾을 수 없습니다.").build());
 
-        List<Blog> blogList = new ArrayList<>();
-        blogList.add(blog);
-
-        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user, blogList);
-
         List<String> imageUrlList = blogImagesRepository.findAllByBlog(blog)
                 .stream()
                 .map(BlogImages::getImageUrl)
                 .toList();
 
         BlogDetails blogDetails = BlogMapper.INSTANCE.blogToBlogDetailsDTO(blog);
-        blogDetails.setLiked(userLikesBlogsIds.contains(blog.getId()));
+        blogDetails.setLiked(userLikesBlogRepository.findByUserAndBlog(user, blog).getIsLiked());
         blogDetails.setImageUrl(imageUrlList);
 
         return blogDetails;
@@ -151,8 +146,6 @@ public class BlogService {
     @ExeTimer
     @Transactional
     public BlogResponseDTO writeBlog(BlogRequestDTO blogRequestDTO, MyUser user){
-
-
         Blog blog = Blog.builder()
                 .title(blogRequestDTO.getTitle())
                 .content(blogRequestDTO.getContent())
@@ -185,39 +178,38 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-    @Async
+//    @Async
     //비동기적으로 처리 ? redis에 저장해놨다가 나중에 가져와서 db에 저장?
-    public CompletableFuture<String> likeBlog(Integer blogId, MyUser user) throws Exception {
+    public String likeBlog(Integer blogId, MyUser user){
         // redis에 저장해놨다가 비동기적으로 나중에 db에 저장
 
-        Blog blog = blogRepository.findById(blogId).orElse(null);
-        if (blog == null) {
-            throw new CustomNotFoundException.ExceptionBuilder()
-                    .customMessage("게시물이 없습니다.")
-                    .request("존재하지 않는 게시물.")
-                    .build();
-        }
+        Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("블로그를 찾을 수 없습니다.")
+                .build());
+
+        String hashKey = "user_likes:" + user.getUserId();
+        String key = blog.getId().toString();
+        String likeStatus = redisHashService.get(hashKey, key);
+
+        boolean isLiked = "true".equals(likeStatus); //likeStatus가 true이면 isLiked에 true, null이거나 true가 아니면 false
+
         //TODO : 블로그 조회 시 좋아요 정보를 미리 가지고 와서 처리
-        if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) != null && redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("true")) {
-            //TODO : 좋아요 취소
-            redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "false");
-            redisHashService.decrement("blog_" + blog.getId().toString(), "likeCount"); //redis에 저장된 좋아요 카운트 감소
-
-            return CompletableFuture.completedFuture("좋아요를 취소했습니다.");
-        }if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) == null || redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("false")){
-            //TODO : 좋아요 처리
-            redisHashService.save("user_likes:"+user.getUserId(), blog.getId().toString(), "true");
-            redisHashService.increment("blog_" + blog.getId().toString(), "likeCount"); //redis에 저장된 좋아요 카운트 증가
-
-            return CompletableFuture.completedFuture("좋아요를 눌렀습니다.");
+        if(isLiked){
+            redisHashService.save(hashKey, key, "false");
+            redisHashService.decrement("blog_" + key, "likeCount");
+            return "좋아요를 취소했습니다.";
+        }else {
+            redisHashService.save(hashKey, key, "true");
+            redisHashService.increment("blog_" + key, "likeCount");
+            return "좋아요를 눌렀습니다.";
         }
-        return CompletableFuture.completedFuture("좋아요 메소드 실행.");
     }
 
 
     @ExeTimer
     @Transactional
-    @Scheduled(fixedDelay = 10000) //비동기 타이머 1초마다
+    @Async
+    @Scheduled(fixedDelay = 1000) //비동기 타이머 1초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
         log.info(keys.toString());
