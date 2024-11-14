@@ -237,8 +237,6 @@ public class BlogService {
                 for(String blogId : resultMap.keySet()){
                     Boolean isLiked = Boolean.parseBoolean(resultMap.get(blogId));
 
-                    log.info("userID : " + userId + "blogId : " + Integer.valueOf(blogId) + " isLiked : " + Boolean.parseBoolean(resultMap.get(blogId)));
-
                     Blog blog = blogRepository.findById(Integer.valueOf(blogId)).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
 
                     UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
@@ -255,12 +253,9 @@ public class BlogService {
                         userLikesBlog.setIsLiked(isLiked);
                     }
 
-
                     Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
-                    log.info("likeCount : " + likeCount);
-                    blog.setLikeCount(likeCount); //좋아요 갯수 저장
+                      blog.setLikeCount(likeCount); //좋아요 갯수 저장
                 }
-                log.info("userId : "+ userId + "완료");
             }
         }
 

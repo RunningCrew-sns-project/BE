@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.service.blog;
 
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
@@ -30,7 +31,9 @@ public class BlogCommentService {
     public ScrollPaginationCollection<CommentResponseDTO> getCommentByBlogId(Integer blogId, Integer size, Integer cursor) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(null);
 
-        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).getId();
+        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("댓글이 없습니다.")
+                .build()).getId();
 
         PageRequest pageRequest = PageRequest.of(0, size + 1);
         Page<BlogComment> blogCommentPage = blogCommentRepository.findByIdLessThanOrderByIdDesc(lastCommentId + 1, pageRequest);

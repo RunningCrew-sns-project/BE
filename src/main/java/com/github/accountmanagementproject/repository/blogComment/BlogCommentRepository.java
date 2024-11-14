@@ -7,10 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BlogCommentRepository extends JpaRepository<BlogComment, Integer> {
     List<BlogComment> findAllByBlog(Blog blog);
-    BlogComment findTopByBlogOrderByIdDesc(Blog blog);
+    Optional<BlogComment> findTopByBlogOrderByIdDesc(Blog blog);
     Page<BlogComment> findByIdLessThanOrderByIdDesc(Integer lastCommentId, Pageable pageable);
 }
