@@ -6,11 +6,15 @@ import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
 import com.github.accountmanagementproject.repository.blogComment.BlogCommentRepository;
+import com.github.accountmanagementproject.service.ExeTimer;
+import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,14 +26,32 @@ public class BlogCommentService {
     private final BlogCommentRepository blogCommentRepository;
     private final BlogRepository blogRepository;
 
-    public List<CommentResponseDTO> getCommentByBlogId(Integer blogId, MyUser user) {
+    @ExeTimer
+    public ScrollPaginationCollection<CommentResponseDTO> getCommentByBlogId(Integer blogId, Integer size, Integer cursor) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(null);
 
-        return blogCommentRepository.findAllByBlog(blog).stream()
+        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).getId();
+
+        PageRequest pageRequest = PageRequest.of(0, size + 1);
+        Page<BlogComment> blogCommentPage = blogCommentRepository.findByIdLessThanOrderByIdDesc(lastCommentId + 1, pageRequest);
+
+        List<BlogComment> blogCommentList = blogCommentPage.getContent();
+
+        List<CommentResponseDTO> responseList = blogCommentList
+                .stream()
                 .map(CommentMapper.INSTANCE::commentToCommentResponseDTO)
                 .toList();
+
+        boolean lastScroll = responseList.size() <= size;
+
+        List<CommentResponseDTO> currentScrollItems = lastScroll ? responseList : responseList.subList(0, size);
+
+        CommentResponseDTO nextCursor = lastScroll ? null : responseList.get(size);
+
+        return ScrollPaginationCollection.of(currentScrollItems, size, lastScroll, nextCursor);
     }
 
+    @ExeTimer
     @Transactional
     public BlogComment createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
         Blog blog = blogRepository.findById(blogId).orElse(null);
@@ -43,6 +65,7 @@ public class BlogCommentService {
         return blogComment;
     }
 
+    @ExeTimer
     @Transactional
     public BlogComment updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
         BlogComment blogComment = blogCommentRepository.findById(commentId).orElse(null);
@@ -60,7 +83,8 @@ public class BlogCommentService {
         return blogComment;
     }
 
-    public void deleteComment(Integer commentId, MyUser user) {
+    @ExeTimer
+    public String deleteComment(Integer commentId, MyUser user) {
         BlogComment blogComment = blogCommentRepository.findById(commentId).get();
         if(!user.equals(blogComment.getUser())) {
             throw new CustomBadCredentialsException.ExceptionBuilder()
@@ -69,6 +93,8 @@ public class BlogCommentService {
                     .build();
         }
         blogCommentRepository.delete(blogComment);
+
+        return commentId + "를 삭제하였습니다.";
     }
 
 

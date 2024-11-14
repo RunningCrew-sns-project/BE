@@ -8,11 +8,12 @@ import com.github.accountmanagementproject.repository.chat.UserChatMappingReposi
 import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
-import com.github.accountmanagementproject.service.mapper.user.UserResponseMapper;
 import com.github.accountmanagementproject.web.dto.chat.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,7 +21,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,14 +34,26 @@ public class ChatService{
     private final ChatMongoRepository chatMongoRepository;
     private final MongoTemplate mongoTemplate;
 
-    public List<ChatRoomResponse> findAllRoom() {
-        return userChatMappingRepository.findAll()
-                .stream()
-                .map(UserChatMapping::getChatRoom)
-                .map(this::mappingChatRoom)
-                .toList();
+    @ExeTimer
+    public ScrollPaginationCollection<ChatRoomResponse> findAllRoom(Integer size, Integer cursor) {
+        Integer lastRoomId = (cursor != null) ? cursor : chatRoomRepository.findTopByOrderByRoomIdDesc().getRoomId();
+        PageRequest pageRequest = PageRequest.of(0, size + 1);
+
+        Page<ChatRoom> chatRoomPage = chatRoomRepository.findByRoomIdLessThanOrderByRoomIdDesc(lastRoomId + 1,pageRequest);
+
+        List<ChatRoom> chatRoomList = chatRoomPage.getContent();
+
+        List<ChatRoomResponse> responseList = chatRoomList.stream().map(this::mappingChatRoom).toList();
+
+        boolean lastScroll = responseList.size() <= size;
+        List<ChatRoomResponse> currentScrollItems = lastScroll ? responseList : responseList.subList(0, size);
+
+        ChatRoomResponse nextCursor = lastScroll ? null : responseList.get(size);
+
+        return ScrollPaginationCollection.of(currentScrollItems, size, lastScroll, nextCursor);
     }
 
+    @ExeTimer
     public List<ChatRoomResponse> findMyRoomList(MyUser user) {
         return userChatMappingRepository.findAllByUser(user)
                 .stream()
@@ -52,11 +64,8 @@ public class ChatService{
 
     private ChatRoomResponse mappingChatRoom(ChatRoom chatRoom){
         List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
-        List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
-        List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
         ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
-        chatRoomResponse.setUserCount(userList.size());
-        chatRoomResponse.setUserList(userResponses);
+        chatRoomResponse.setUserCount(userChatMappingList.size());
 
         if(!chatMongoRepository.findAllByRoomId(chatRoom.getRoomId()).isEmpty()) {
             chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
@@ -66,6 +75,7 @@ public class ChatService{
         return chatRoomResponse;
     }
 
+    @ExeTimer
     @Transactional
     // roomName 으로 채팅방 만들기
     public ChatRoom createChatRoom(String roomName, MyUser user){
@@ -87,6 +97,7 @@ public class ChatService{
         return chatRoom;
     }
 
+    @ExeTimer
     @Transactional
     //채팅방 유저 리스트에 유저추가
     public Boolean addUser(Integer roomId, MyUser user){
@@ -112,6 +123,7 @@ public class ChatService{
         return false;
     }
 
+    @ExeTimer
     @Transactional
     // 채팅방 유저 리스트 삭제
     public void deleteUser(Integer roomId, MyUser user){
@@ -129,13 +141,20 @@ public class ChatService{
         }
     }
 
+    @ExeTimer
     //채팅방 전체 userList 조회
-    public List<String> getUserList(Integer roomId){
+    public List<UserResponse> getUserList(Integer roomId){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
 
-        return userChatMappingRepository.findAllByChatRoom(chatRoom).stream()
-                .map(userChatMapping -> userChatMapping.getUser().getEmail())
-                .toList();
+        return userChatMappingRepository.findAllByChatRoom(chatRoom)
+                .stream()
+                .map(userChatMapping -> {
+                    MyUser user = userChatMapping.getUser();
+                    return UserResponse.builder()
+                            .userId(user.getUserId())
+                            .userName(user.getNickname())
+                            .build();
+                }).toList();
     }
 
     @ExeTimer
