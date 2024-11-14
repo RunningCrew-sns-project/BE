@@ -285,4 +285,8 @@ public class CrewService {
     }
 
 
+    public List<CrewUserParent> getSimplyCrewUsers(Long crewId) {
+        List<CrewsUsers> crewsUsers = crewsUsersRepository.findCrewUsersByCrewId(crewId, null);
+        return CrewMapper.INSTANCE.crewsUsersToCrewUserParent(crewsUsers);
+    }
 }

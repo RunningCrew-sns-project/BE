@@ -73,11 +73,18 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
-    @GetMapping("/{crewId}/users")
+    @GetMapping("/{crewId}/admin/users")
     public CustomSuccessResponse getCrewUsers(@PathVariable Long crewId, @RequestParam(required = false) Boolean all, @AuthenticationPrincipal String masterEmail) {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("크루 멤버 조회 성공")
                 .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
+                .build();
+    }
+    @GetMapping("/{crewId}/users")
+    public CustomSuccessResponse getSimplyCrewUsers(@PathVariable Long crewId) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 멤버 조회 성공")
+                .responseData(crewService.getSimplyCrewUsers(crewId))
                 .build();
     }
 
