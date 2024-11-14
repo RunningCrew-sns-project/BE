@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -101,6 +102,7 @@ public class CrewService {
 
     private void checkJoinRequestStatus(CrewsUsers crewsUsers) {
         boolean isNewRequest = crewsUsers.getStatus() == null;
+        LocalDateTime releaseDay = crewsUsers.getReleaseDay();
 
         if (!isNewRequest && crewsUsers.duplicateRequest()) {
             throw new DuplicateKeyException.ExceptionBuilder()
@@ -108,11 +110,11 @@ public class CrewService {
                     .customMessage("이미 가입했거나 가입 요청 중인 크루입니다.")
                     .request(crewsUsers.getStatus())
                     .build();
-        } else if (!isNewRequest && LocalDateTime.now().isAfter(crewsUsers.getReleaseDay())) {
+        } else if (!isNewRequest && LocalDateTime.now().isBefore(releaseDay)) {
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패")
                     .customMessage("탈퇴한 또는, 강제 퇴장이나 가입 거절 당하고 재가입 조건을 충족 못한 크루 입니다.")
-                    .request("남은 날짜 : " + crewsUsers.getReleaseDay())
+                    .request(Map.of("status", crewsUsers.getStatus(), "releaseDay", releaseDay))
                     .build();
         }
     }

@@ -35,6 +35,7 @@ public class CrewsUsers {
     public CrewsUsers requestToJoin(){
         this.status = CrewsUsersStatus.WAITING;
         this.applicationDate = LocalDateTime.now();
+        this.withdrawalDate = null;
         this.caveat = 0;
         return this;
     }
