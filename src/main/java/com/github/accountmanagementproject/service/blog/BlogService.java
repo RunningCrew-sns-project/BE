@@ -18,6 +18,7 @@ import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogDetails;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
+import jakarta.annotation.PreDestroy;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 @Service
@@ -40,13 +43,11 @@ import java.util.concurrent.CompletableFuture;
 @EnableScheduling
 public class BlogService {
     private final BlogRepository blogRepository;
-    private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
     private final MyUsersRepository myUsersJpa;
     private final RedisRepository redisRepository;
     private final BlogImagesRepository blogImagesRepository;
     private final RedisHashService redisHashService;
-    private final RedisTemplate<String, Object> redisTemplate;
 
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
@@ -209,7 +210,7 @@ public class BlogService {
     @ExeTimer
     @Transactional
     @Async
-    @Scheduled(fixedDelay = 1000) //비동기 타이머 1초마다
+    @Scheduled(fixedDelay = 2000) //비동기 타이머 1초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
         log.info(keys.toString());

@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -159,7 +160,11 @@ public class ChatService{
 
     @ExeTimer
     public List<ChatMongoDto> getMessageByRoomId(Integer roomId, MyUser user, Integer limit, Optional<LocalDateTime> lastTime) {
-        LocalDateTime lastTimeStamp = lastTime.orElse(LocalDateTime.now());
+        LocalDateTime lastTimeStamp = lastTime
+                .orElse(LocalDateTime.now())
+                .atZone(ZoneId.systemDefault())  // 현재 시스템 시간대를 사용해 ZonedDateTime 생성
+                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))  // 한국 시간대로 변환
+                .toLocalDateTime();
 
         log.info(lastTimeStamp.toString());
 
