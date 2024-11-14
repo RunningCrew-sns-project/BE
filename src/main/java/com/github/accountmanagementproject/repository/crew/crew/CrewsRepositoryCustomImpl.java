@@ -5,11 +5,13 @@ import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.crew.crewuser.QCrewsUsers;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.QCrewJoinPost;
+import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -103,6 +105,19 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .limit(request.getSize() + 1)
                 .fetch();
 
+    }
+
+    @Override
+    public UserAboutCrew findByIdAndCrewMasterEmail(Long crewId, String email) {
+
+        return queryFactory.select(Projections.fields(UserAboutCrew.class,
+                QCREW.createdAt.as("joinDate"),
+                        QCREW.createdAt.as("applicationDate"),
+                        ExpressionUtils.as(Expressions.constant(true), "isMaster")))
+                .from(QCREW)
+                .where(QCREW.crewId.eq(crewId)
+                        .and(QCREW.crewMaster.email.eq(email)))
+                .fetchOne();
     }
 
 
