@@ -15,6 +15,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersSt
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
+import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.*;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
@@ -43,10 +44,10 @@ public class CrewService {
 
     @Transactional(readOnly = true)
     public InfiniteScrollingCollection<CrewListResponse, SearchCriteria> getAvailableCrewLists(String email, SearchRequest request) {
-        if (request.getCursor()!=null) request.makeCursorHolder();
+        if (request.getCursor() != null) request.makeCursorHolder();
 
         List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
-        if(!crewList.isEmpty())
+        if (!crewList.isEmpty())
             crewListValidation(crewList.get(0), request);
 
         return InfiniteScrollingCollection.of(crewList, request.getSize(), request.getSearchCriteria());
@@ -86,9 +87,8 @@ public class CrewService {
     }
 
 
-
     private CrewsUsers validateAndJoinCrew(CrewsUsersPk crewsUsersPk) {
-        if ( crewsUsersPk.getCrew().getCrewMaster().equals( crewsUsersPk.getUser() ) )
+        if (crewsUsersPk.getCrew().getCrewMaster().equals(crewsUsersPk.getUser()))
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("자기가 만든 크루에 가입할 수 없습니다.").request(crewsUsersPk.getCrew().getCrewName()).build();
 
@@ -129,7 +129,7 @@ public class CrewService {
         Crew crew = findsCrewById(crewId);
         long crewMemberCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
         CrewDetailResponse response = CrewMapper.INSTANCE.crewToCrewDetailResponse(crew);
-        response.setMemberCount(crewMemberCount+1);
+        response.setMemberCount(crewMemberCount + 1);
         return response;
     }
 
@@ -288,5 +288,13 @@ public class CrewService {
     public List<CrewUserParent> getSimplyCrewUsers(Long crewId) {
         List<CrewsUsers> crewsUsers = crewsUsersRepository.findCrewUsersByCrewId(crewId, null);
         return CrewMapper.INSTANCE.crewsUsersToCrewUserParent(crewsUsers);
+    }
+
+    public UserAboutCrew userAboutCrew(String email, Long crewId) {
+        UserAboutCrew masterResponse = crewsRepository.findByIdAndCrewMasterEmail(crewId, email);
+        return masterResponse != null ?
+                masterResponse :
+                crewsUsersRepository.findByCrewIdAndUserEmail(crewId, email);
+
     }
 }
