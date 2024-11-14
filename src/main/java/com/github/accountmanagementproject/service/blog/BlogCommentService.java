@@ -84,7 +84,7 @@ public class BlogCommentService {
     }
 
     @ExeTimer
-    public void deleteComment(Integer commentId, MyUser user) {
+    public String deleteComment(Integer commentId, MyUser user) {
         BlogComment blogComment = blogCommentRepository.findById(commentId).get();
         if(!user.equals(blogComment.getUser())) {
             throw new CustomBadCredentialsException.ExceptionBuilder()
@@ -93,6 +93,8 @@ public class BlogCommentService {
                     .build();
         }
         blogCommentRepository.delete(blogComment);
+
+        return commentId + "를 삭제하였습니다.";
     }
 
 

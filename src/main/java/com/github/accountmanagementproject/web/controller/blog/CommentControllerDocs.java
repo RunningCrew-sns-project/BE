@@ -43,6 +43,6 @@ public interface CommentControllerDocs {
     @Operation(summary = "댓글 삭제")
     @Parameter(name = "commentId", description = "삭제할 댓글 아이디")
     @DeleteMapping
-    String deleteComment(@RequestParam Integer commentId,
-                         @AuthenticationPrincipal String principal);
+    CustomSuccessResponse deleteComment(@RequestParam Integer commentId,
+                                        @AuthenticationPrincipal String principal);
 }

@@ -22,6 +22,4 @@ public class ChatRoomResponse {
     private Integer userCount;
 
     private LocalDateTime lastMessageTime;
-
-    private List<UserResponse> userList;
 }

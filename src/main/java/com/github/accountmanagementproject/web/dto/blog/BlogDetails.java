@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BlogWithComment {
+public class BlogDetails {
     private String userImg;
     private String userName;
 
@@ -24,5 +24,4 @@ public class BlogWithComment {
     private boolean liked;
 
     private LocalDateTime createdAt;
-    private List<CommentResponseDTO> comments;
 }

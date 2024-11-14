@@ -63,11 +63,8 @@ public class ChatService{
 
     private ChatRoomResponse mappingChatRoom(ChatRoom chatRoom){
         List<UserChatMapping> userChatMappingList = userChatMappingRepository.findAllByChatRoom(chatRoom);
-        List<MyUser> userList = userChatMappingList.stream().map(UserChatMapping::getUser).toList();
-        List<UserResponse> userResponses = userList.stream().map(UserResponseMapper.INSTANCE::myUserToUserResponse).toList();
         ChatRoomResponse chatRoomResponse = ChatRoomMapper.INSTANCE.chatRoomToChatRoomResponse(chatRoom);
-        chatRoomResponse.setUserCount(userList.size());
-        chatRoomResponse.setUserList(userResponses);
+        chatRoomResponse.setUserCount(userChatMappingList.size());
 
         if(!chatMongoRepository.findAllByRoomId(chatRoom.getRoomId()).isEmpty()) {
             chatRoomResponse.setLastMessage(chatMongoRepository.findFirstByRoomIdOrderByTimeDesc(chatRoom.getRoomId()).getMessage());
@@ -145,12 +142,18 @@ public class ChatService{
 
     @ExeTimer
     //채팅방 전체 userList 조회
-    public List<String> getUserList(Integer roomId){
+    public List<UserResponse> getUserList(Integer roomId){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
 
-        return userChatMappingRepository.findAllByChatRoom(chatRoom).stream()
-                .map(userChatMapping -> userChatMapping.getUser().getEmail())
-                .toList();
+        return userChatMappingRepository.findAllByChatRoom(chatRoom)
+                .stream()
+                .map(userChatMapping -> {
+                    MyUser user = userChatMapping.getUser();
+                    return UserResponse.builder()
+                            .userId(user.getUserId())
+                            .userName(user.getNickname())
+                            .build();
+                }).toList();
     }
 
     @ExeTimer

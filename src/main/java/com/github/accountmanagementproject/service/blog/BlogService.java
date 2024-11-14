@@ -15,11 +15,9 @@ import com.github.accountmanagementproject.repository.userLikesBlog.UserLikesBlo
 import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
-import com.github.accountmanagementproject.service.mapper.comment.CommentMapper;
+import com.github.accountmanagementproject.web.dto.blog.BlogDetails;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
-import com.github.accountmanagementproject.web.dto.blog.BlogWithComment;
-import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +33,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -127,24 +124,22 @@ public class BlogService {
     }
 
     @ExeTimer
-    public BlogWithComment getBlogById(Integer blogId, MyUser user) {
+    public BlogDetails getBlogById(Integer blogId, MyUser user) {
         // 블로그에 대한 댓글 가져오기
-        Blog blog = blogRepository.findById(blogId).orElse(null);
+        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user);
+
+        Blog blog = blogRepository.findById(blogId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("블로그를 찾을 수 없습니다.").build());
+
         List<String> imageUrlList = blogImagesRepository.findAllByBlog(blog)
                 .stream()
                 .map(BlogImages::getImageUrl)
                 .toList();
 
-        List<CommentResponseDTO> comments = blogCommentRepository.findAllByBlog(blog).
-                stream().map(CommentMapper.INSTANCE::commentToCommentResponseDTO)
-                .toList();
+        BlogDetails blogDetails = BlogMapper.INSTANCE.blogToBlogDetailsDTO(blog);
+        blogDetails.setLiked(userLikesBlogsIds.contains(blog.getId()));
+        blogDetails.setImageUrl(imageUrlList);
 
-        BlogWithComment blogWithComment = BlogMapper.INSTANCE.blogToBlogWithCommentResponseDTO(blog);
-        blogWithComment.setComments(comments);
-        blogWithComment.setLiked(userLikesBlogRepository.findByUserAndBlog(user, blog) != null);
-        blogWithComment.setImageUrl(imageUrlList);
-
-        return blogWithComment;
+        return blogDetails;
     }
     @ExeTimer
     @Transactional

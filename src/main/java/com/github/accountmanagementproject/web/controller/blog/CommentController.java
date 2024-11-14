@@ -52,10 +52,12 @@ public class CommentController implements CommentControllerDocs{
 
     @Override
     @DeleteMapping
-    public String deleteComment(@RequestParam Integer commentId,
+    public CustomSuccessResponse deleteComment(@RequestParam Integer commentId,
                                 @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
-        blogCommentService.deleteComment(commentId, user);
-        return "댓글 삭제 완료";
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("댓글을 성공적으로 삭제했습니다.")
+                .responseData(blogCommentService.deleteComment(commentId, user))
+                .build();
     }
 }
