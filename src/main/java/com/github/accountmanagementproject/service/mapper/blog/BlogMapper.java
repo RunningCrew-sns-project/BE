@@ -2,8 +2,8 @@ package com.github.accountmanagementproject.service.mapper.blog;
 
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blogComment.BlogComment;
+import com.github.accountmanagementproject.web.dto.blog.BlogDetails;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
-import com.github.accountmanagementproject.web.dto.blog.BlogWithComment;
 import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,5 +24,5 @@ public interface BlogMapper {
     @Mapping(source = "user.nickname", target = "userName")
     @Mapping(source = "id", target = "blogId")
     @Mapping(source = "user.profileImg", target = "userImg")
-    BlogWithComment blogToBlogWithCommentResponseDTO(Blog blog);
+    BlogDetails blogToBlogDetailsDTO(Blog blog);
 }
