@@ -3,6 +3,8 @@ package com.github.accountmanagementproject.repository.crew.crew;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crewattachment.CrewAttachment;
 import com.github.accountmanagementproject.repository.crew.crewimage.CrewImage;
+import com.github.accountmanagementproject.service.mapper.converter.CrewRegionConverter;
+import com.github.accountmanagementproject.web.dto.crew.CrewRegion;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,8 +32,8 @@ public class Crew {
     @JoinColumn(name = "crew_master", nullable = false)
     private MyUser crewMaster;
 
-    @Column(name = "activity_region")
-    private String activityRegion;
+    @Convert(converter = CrewRegionConverter.class)
+    private CrewRegion activityRegion;
     @Column(name = "max_capacity")
     private int maxCapacity;
     @Column(name = "created_at")

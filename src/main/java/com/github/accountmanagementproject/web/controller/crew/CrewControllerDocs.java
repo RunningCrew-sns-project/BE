@@ -15,7 +15,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
@@ -34,7 +37,9 @@ public interface CrewControllerDocs {
             boolean reverse,
             @Parameter(description = "정렬 조건", schema = @Schema(allowableValues = {"latest", "popular", "name", "member", "activities"}))
             String criteria,
-            String email);
+            String email,
+            @Parameter(description = "크루 활동 지역", schema = @Schema(allowableValues = {"서울", "경기도", "인천", "부산", "대구", "광주", "대전", "울산", "강원도", "충청도", "전라도", "경상도", "제주도"}))
+            String crewRegion);
 
 
     @Operation(summary = "크루 생성", description = "크루를 생성합니다.")

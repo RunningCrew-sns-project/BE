@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,14 +46,15 @@ public class CrewService {
         if (request.getCursor()!=null) request.makeCursorHolder();
 
         List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
-        crewListValidation(crewList.get(0), request);
+        if(!crewList.isEmpty())
+            crewListValidation(crewList.get(0), request);
 
         return InfiniteScrollingCollection.of(crewList, request.getSize(), request.getSearchCriteria());
     }
 
     private void crewListValidation(CrewListResponse firstCrew, SearchRequest request) {
         if (request.getCursor() == null) return;
-        if (!firstCrew.valueValidity(request.getCursorId(), request))
+        if (!firstCrew.valueValidity(request))
             throw new CustomBindException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패")
                     .customMessage("커서의 값과, 커서 아이디가 이 전 응답과 일치하지 않습니다.")
