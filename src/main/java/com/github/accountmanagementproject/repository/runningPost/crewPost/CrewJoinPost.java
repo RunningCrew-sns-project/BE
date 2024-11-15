@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
+import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
 import jakarta.persistence.*;
@@ -12,14 +13,13 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Builder(toBuilder = true) // 기존 빌더를 복사하여 업데이트 가능하도록 설정
@@ -78,21 +78,32 @@ public class CrewJoinPost {
     @Column(name = "post_type", nullable = false)
     private PostType postType;   // 게시자 분류
 
+    @Builder.Default // 이 부분 추가, 빌더 패턴 사용 시에도 ArrayList가 초기화
     @OneToMany(mappedBy = "crewJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RunJoinPostImage> crewJoinPostImages;
+    private List<CrewJoinPostImage> crewJoinPostImages = new ArrayList<>();  // 초기화
 
 
-    public void addJoinPostImage(RunJoinPostImage image) {
+    public void addJoinPostImage(CrewJoinPostImage image) {
         crewJoinPostImages.add(image);
         image.setCrewJoinPost(this);  // 연관관계 설정
     }
 
     public void clearJoinPostImages() {
-        for (RunJoinPostImage image : crewJoinPostImages) {
+        for (CrewJoinPostImage image : crewJoinPostImages) {
             image.setCrewJoinPost(null);  // 참조 해제
         }
         crewJoinPostImages.clear();  // 고아 상태로 만들기
     }
+
+//    @Transactional
+//    public void clearJoinPostImages() {
+//        Iterator<CrewJoinPostImage> iterator = crewJoinPostImages.iterator();
+//        while (iterator.hasNext()) {
+//            CrewJoinPostImage image = iterator.next();
+//            image.setCrewJoinPost(null);
+//            iterator.remove();
+//        }
+//    }
 
     /** ****************************************************************/
 

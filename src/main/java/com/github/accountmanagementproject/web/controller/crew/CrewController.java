@@ -105,6 +105,7 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
+
     // 크루 Info + 크루 달리기 게시물 목록
     @CrossOrigin(
             origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
@@ -112,9 +113,9 @@ public class CrewController implements CrewControllerDocs {
             allowCredentials = "true"
     )
     @GetMapping("/{crewId}/list")
-    @Override
-    public CustomSuccessResponse getCrewDetailsWithPosts(
-            @PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto) {
+//    @Override
+    public CustomSuccessResponse getCrewDetailsWithCrewPosts(
+            @PathVariable Long crewId, @RequestParam String email, PageRequestDto pageRequestDto) {
 
         PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(email, crewId, pageRequestDto);
 
@@ -124,4 +125,6 @@ public class CrewController implements CrewControllerDocs {
                 .responseData(response)
                 .build();
     }
+
+
 }

@@ -16,8 +16,10 @@ public class PageRequestDto {
     private int size = 20;  // 기본값을 20으로 설정 (요청 없을 시)
     private String location = "전체";  // 필터 필드 (예: 전체, 역삼, 삼성 등)
     private LocalDate date = null;  // 기본 날짜: 오늘
+    private String sortType = "newest"; // 정렬 방식: newest (최신순), oldest (오래된 순)
 
     public PageRequestDto() {
-        this.size = 9;
+        this.size = 20;
+        this.sortType = "newest";
     }
 }

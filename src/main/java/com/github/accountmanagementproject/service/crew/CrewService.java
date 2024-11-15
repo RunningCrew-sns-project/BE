@@ -25,6 +25,7 @@ import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostR
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponseMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CrewService {
@@ -194,7 +196,8 @@ public class CrewService {
 
         //객체 저장 - 트랜잭셔널 적용되어있구 원래있던 객체 불러와서 수정한거라 save 안쓰셔도 괜찮습니다
 //        crewsUsersRepository.save(crewsUser);
-
+        Long masterUserId = myUsersRepository.findByEmail(crewMasterEmail).get().getUserId();
+        notificationService.sendKickNotification(outUserId, crewId, masterUserId,  "모임에서 강퇴되었습니다.");
         return "crewUser : " + crewsUser.getCrewsUsersPk().getUser().getNickname() + " 을/를 성공적으로 퇴장시켰습니다.";
     }
 
@@ -243,7 +246,9 @@ public class CrewService {
     // 크루 Info + 크루 달리기 게시물 목록
     @Transactional(readOnly = true)
     public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(String email, Long crewId, PageRequestDto pageRequestDto) {
-        MyUser user = accountConfig.findMyUser(email);
+//        MyUser user = accountConfig.findMyUser(email);
+        MyUser user = myUsersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
 
         // 크루 정보 조회 및 권한 확인
         Crew crew = crewsRepository.findByIdWithImages(crewId)
@@ -253,14 +258,16 @@ public class CrewService {
         }
 
         // 크루 기본 정보 DTO로 변환
-        CrewListResponse crewResponse = CrewMapper.INSTANCE.crewForListResponse(crew);
+        CrewDetailResponse crewResponse = getCrewDetail(crewId);
 
         // 게시물 목록 조회 및 페이징 처리
-        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
+        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredCrewPosts(
+                crewId,
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                pageRequestDto.getSize()
+                pageRequestDto.getSize(),
+                pageRequestDto.getSortType()
         );
 
         // 게시물 DTO 변환

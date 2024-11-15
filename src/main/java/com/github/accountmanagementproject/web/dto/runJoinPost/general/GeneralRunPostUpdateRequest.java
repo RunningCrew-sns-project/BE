@@ -3,6 +3,8 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.general;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -47,7 +49,7 @@ public class GeneralRunPostUpdateRequest {
     private double targetLatitude; // 종료 위도
     private double targetLongitude; // 종료 경도
 
-    private List<FileDto> fileDtos;  // 파일 이미지
+    private List<String> fileUrls;  // 파일 이미지
 
 
     public GeneralJoinPost updateEntity(GeneralJoinPost post, MyUser user) {
@@ -65,6 +67,17 @@ public class GeneralRunPostUpdateRequest {
         post.setTargetLatitude(this.targetLatitude != 0 ? this.targetLatitude : post.getTargetLatitude());
         post.setTargetLongitude(this.targetLongitude != 0 ? this.targetLongitude : post.getTargetLongitude());
         post.setUpdatedAt(LocalDateTime.now());
+
+        if (fileUrls != null && !fileUrls.isEmpty()) {
+            post.clearJoinPostImages();
+            fileUrls.forEach(url -> {
+                RunJoinPostImage image = RunJoinPostImage.builder()
+                        .fileName(url)  // 또는 파일명 생성 로직
+                        .imageUrl(url)
+                        .build();
+                post.addJoinPostImage(image);
+            });
+        }
         return post;
     }
 

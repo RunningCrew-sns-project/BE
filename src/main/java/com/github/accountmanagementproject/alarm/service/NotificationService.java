@@ -67,6 +67,13 @@ public class NotificationService {
         sseEmitters.sendNotification(recipientUserId, message);
     }
 
+    /**
+     * 강퇴
+     */
+    public void sendKickNotification(Long recipientUserId, Long postId, Long masterUserId, String message) {
+        createAndSendNotification(recipientUserId, postId, masterUserId, message, NotificationType.FORCED_EXIT);
+    }
+
 
     /**
      * 특정 사용자의 알림 목록 조회

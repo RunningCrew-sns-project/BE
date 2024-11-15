@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface CrewJoinPostRepositoryCustom {
 
-    List<CrewJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size);
+    List<CrewJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size, String sortType);
+
+    List<CrewJoinPost> findFilteredCrewPosts(Long crewId, LocalDate date, String location, Integer cursor, int size, String sortType);
 }
