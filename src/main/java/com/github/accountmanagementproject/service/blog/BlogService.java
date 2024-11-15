@@ -198,12 +198,10 @@ public class BlogService {
         if(isLiked){
             redisHashService.save(hashKey, key, "false");
             redisHashService.decrement("blog_" + key, "likeCount");
-//            syncUserLikesBlog();
             return "좋아요를 취소했습니다.";
         }else {
             redisHashService.save(hashKey, key, "true");
             redisHashService.increment("blog_" + key, "likeCount");
-//            syncUserLikesBlog();
             return "좋아요를 눌렀습니다.";
         }
     }
@@ -255,11 +253,7 @@ public class BlogService {
 
                     Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
                     blog.setLikeCount(likeCount); //좋아요 갯수 저장
-
-//                    redisHashService.delete("blog_" + blogId, "likeCount"); //저장 후 삭제
                 }
-
-//                redisHashService.deleteHashKey(key);
             }
         }
     }
