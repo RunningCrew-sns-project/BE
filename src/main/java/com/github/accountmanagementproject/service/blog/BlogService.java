@@ -18,6 +18,7 @@ import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogDetails;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
+import jakarta.annotation.PreDestroy;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 @Service
@@ -40,13 +43,11 @@ import java.util.concurrent.CompletableFuture;
 @EnableScheduling
 public class BlogService {
     private final BlogRepository blogRepository;
-    private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
     private final MyUsersRepository myUsersJpa;
     private final RedisRepository redisRepository;
     private final BlogImagesRepository blogImagesRepository;
     private final RedisHashService redisHashService;
-    private final RedisTemplate<String, Object> redisTemplate;
 
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
@@ -197,10 +198,12 @@ public class BlogService {
         if(isLiked){
             redisHashService.save(hashKey, key, "false");
             redisHashService.decrement("blog_" + key, "likeCount");
+            syncUserLikesBlog();
             return "좋아요를 취소했습니다.";
         }else {
             redisHashService.save(hashKey, key, "true");
             redisHashService.increment("blog_" + key, "likeCount");
+            syncUserLikesBlog();
             return "좋아요를 눌렀습니다.";
         }
     }
@@ -208,8 +211,8 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-    @Async
-    @Scheduled(fixedDelay = 1000) //비동기 타이머 1초마다
+//    @Async
+//    @Scheduled(fixedDelay = 100) //비동기 타이머 1초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
         log.info(keys.toString());
@@ -246,7 +249,7 @@ public class BlogService {
                     }
 
                     Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
-                      blog.setLikeCount(likeCount); //좋아요 갯수 저장
+                    blog.setLikeCount(likeCount); //좋아요 갯수 저장
                 }
             }
         }
