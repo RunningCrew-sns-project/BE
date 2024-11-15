@@ -59,6 +59,10 @@ public class RedisHashService {
         hashOperations.delete(key, field);
     }
 
+    public void deleteHashKey(String key){
+       redisTemplate.delete(key);
+    }
+
     public void increment(String key, String field) {
         hashOperations.increment(key, field, 1);
     }
