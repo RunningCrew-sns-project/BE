@@ -3,8 +3,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersSt
 
 public class CrewsUsersStatusConverter extends MyConverter<CrewsUsersStatus>{
 
-    public static final Class<CrewsUsersStatus> ENUM_CLASS = CrewsUsersStatus.class;
     public CrewsUsersStatusConverter() {
-        super(ENUM_CLASS);
+        super(CrewsUsersStatus.class);
     }
 }

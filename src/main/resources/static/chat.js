@@ -126,16 +126,22 @@ async function loadPreviousMessages(roomId){
 			headers : headerList
 		});
 
-		const data = await response.json();
+		const responseJson = await response.json();
 		// data.forEach((message) => {
 		// 	showMessage(message);
 		// })
+
+		const data = responseJson.success.responseData;
+		data.forEach(message=>{
+			console.log("응답데이터 : " + message.sender)
+		})
+
+		console.log("메세지 가져오기 : " + data);
 
 		if(data.length > 0){
 			lastMessageTime = data[data.length -1].time;
 			// lastMessageTime = data[0].time;
 
-			console.log(data)
 			data.forEach((message) => {
 
 				const chatMessagesDiv = document.getElementById('chat-messages');
@@ -253,7 +259,11 @@ async function loadChatRooms() {
 		// 	localStorage.removeItem('userEmail');
 		// 	login()
 		// }
-		const rooms = await response.json();
+
+		const responseData = await response.json();
+		console.log("loadChatRooms : " + responseData.success.responseData);
+		const rooms = responseData.success.responseData
+
 
 		displayChatRooms(rooms);
 	} catch (error) {
@@ -293,8 +303,8 @@ async function joinRoom(id, title) {
 	chatMessagesDiv.innerHTML = '';
 
 	try {
-		const response = await getUserList();  // 채팅방 유저 리스트 불러오기
-		userList = await response.json();
+		userList = await getUserList();  // 채팅방 유저 리스트 불러오기
+
 
 		console.log("응답 유저 리스트 : " + userList)
 		displayUserList(userList);  // 유저 목록 표시
@@ -318,9 +328,12 @@ async function joinRoom(id, title) {
 
 async function getUserList(){
 
-	return await fetch(`http://localhost:8080/api/chat/userlist/${roomId}`,{
+	const response = await fetch(`http://localhost:8080/api/chat/userlist/${roomId}`,{
 		headers: headerList
 	});
+	const data = await response.json();
+	console.log(data.success.responseData)
+	return data.success.responseData;
 }
 
 // 유저 목록 표시
@@ -371,8 +384,7 @@ async function updateUserList(newUser) {
 		return;  // 이미 유저가 목록에 있는 경우 함수 종료
 	}
 
-	const response = await getUserList();
-	userList = await response.json();
+	userList = await getUserList();
 	displayUserList(userList);
 	loadChatRooms()
 }
@@ -448,8 +460,12 @@ function formatDateToHHMMSS(isoString) {
 function sendMessage() {
 	console.log("sendMessage 호출")
 	const messageBox = document.getElementById('message-box');
-	const formattedDate = new Date().toISOString()
+	// const date = new Date();
+	// const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로 변환
+	// const formattedDate = new Date(date.getTime() + kstOffset).toISOString();
 
+	const formattedDate = new Date().toISOString()
+	console.log("sendmessage time : " + formattedDate)
 	const message = messageBox.value.trim();
 
 	console.log("메시지 박스 값:", message);

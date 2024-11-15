@@ -11,10 +11,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BlogResponseDTO {
+    private Integer blogId;
+
+    private Long userId;
     private String userName;
     private String userImg;
 
-    private Integer blogId;
     private String title;
     private String content;
     private String record;

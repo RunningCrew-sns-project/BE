@@ -15,6 +15,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersSt
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
+import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.*;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.InfiniteScrollingCollection;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
@@ -30,8 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -46,17 +47,18 @@ public class CrewService {
 
     @Transactional(readOnly = true)
     public InfiniteScrollingCollection<CrewListResponse, SearchCriteria> getAvailableCrewLists(String email, SearchRequest request) {
-        if (request.getCursor()!=null) request.makeCursorHolder();
+        if (request.getCursor() != null) request.makeCursorHolder();
 
         List<CrewListResponse> crewList = crewsRepository.findAvailableCrews(email, request);
-        crewListValidation(crewList.get(0), request);
+        if (!crewList.isEmpty())
+            crewListValidation(crewList.get(0), request);
 
         return InfiniteScrollingCollection.of(crewList, request.getSize(), request.getSearchCriteria());
     }
 
     private void crewListValidation(CrewListResponse firstCrew, SearchRequest request) {
         if (request.getCursor() == null) return;
-        if (!firstCrew.valueValidity(request.getCursorId(), request))
+        if (!firstCrew.valueValidity(request))
             throw new CustomBindException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패")
                     .customMessage("커서의 값과, 커서 아이디가 이 전 응답과 일치하지 않습니다.")
@@ -88,9 +90,8 @@ public class CrewService {
     }
 
 
-
     private CrewsUsers validateAndJoinCrew(CrewsUsersPk crewsUsersPk) {
-        if ( crewsUsersPk.getCrew().getCrewMaster().equals( crewsUsersPk.getUser() ) )
+        if (crewsUsersPk.getCrew().getCrewMaster().equals(crewsUsersPk.getUser()))
             throw new DuplicateKeyException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패").customMessage("자기가 만든 크루에 가입할 수 없습니다.").request(crewsUsersPk.getCrew().getCrewName()).build();
 
@@ -110,11 +111,11 @@ public class CrewService {
                     .customMessage("이미 가입했거나 가입 요청 중인 크루입니다.")
                     .request(crewsUsers.getStatus())
                     .build();
-        } else if (!isNewRequest && LocalDateTime.now().isAfter(crewsUsers.getReleaseDay())) {
-            throw new DuplicateKeyException.ExceptionBuilder()
+        } else if (!isNewRequest && LocalDateTime.now().isBefore(crewsUsers.getReleaseDay())) {
+            throw new CustomBindException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패")
                     .customMessage("탈퇴한 또는, 강제 퇴장이나 가입 거절 당하고 재가입 조건을 충족 못한 크루 입니다.")
-                    .request("남은 날짜 : " + crewsUsers.getReleaseDay())
+                    .request(Map.of("status", crewsUsers.getStatus(), "releaseDay", crewsUsers.getReleaseDay()))
                     .build();
         }
     }
@@ -131,7 +132,7 @@ public class CrewService {
         Crew crew = findsCrewById(crewId);
         long crewMemberCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
         CrewDetailResponse response = CrewMapper.INSTANCE.crewToCrewDetailResponse(crew);
-        response.setMemberCount(crewMemberCount+1);
+        response.setMemberCount(crewMemberCount + 1);
         return response;
     }
 
@@ -292,4 +293,16 @@ public class CrewService {
     }
 
 
+    public List<CrewUserParent> getSimplyCrewUsers(Long crewId) {
+        List<CrewsUsers> crewsUsers = crewsUsersRepository.findCrewUsersByCrewId(crewId, null);
+        return CrewMapper.INSTANCE.crewsUsersToCrewUserParent(crewsUsers);
+    }
+
+    public UserAboutCrew userAboutCrew(String email, Long crewId) {
+        UserAboutCrew masterResponse = crewsRepository.findByIdAndCrewMasterEmail(crewId, email);
+        return masterResponse != null ?
+                masterResponse :
+                crewsUsersRepository.findByCrewIdAndUserEmail(crewId, email);
+
+    }
 }

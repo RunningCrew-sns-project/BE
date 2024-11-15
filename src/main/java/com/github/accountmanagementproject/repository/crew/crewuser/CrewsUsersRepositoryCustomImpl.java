@@ -3,9 +3,12 @@ package com.github.accountmanagementproject.repository.crew.crewuser;
 import com.github.accountmanagementproject.repository.account.user.QMyUser;
 import com.github.accountmanagementproject.repository.crew.crew.QCrew;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
+import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -64,6 +67,21 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                                 .and(QCREWSUSERS.status.eq(CrewsUsersStatus.COMPLETED)))
                         .fetchOne()
         ).orElse(0L);
+    }
+
+    @Override
+    public UserAboutCrew findByCrewIdAndUserEmail(Long crewId, String email) {
+        return queryFactory.select(Projections.fields(UserAboutCrew.class,
+                        QCREWSUSERS.status,
+                        QCREWSUSERS.joinDate,
+                        QCREWSUSERS.applicationDate,
+                        QCREWSUSERS.withdrawalDate,
+                        QCREWSUSERS.caveat,
+                        ExpressionUtils.as(Expressions.constant(false), "isMaster")))
+                .from(QCREWSUSERS)
+                .where(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId)
+                        .and(QCREWSUSERS.crewsUsersPk.user.email.eq(email)))
+                .fetchOne();
     }
 
 
