@@ -460,11 +460,11 @@ function formatDateToHHMMSS(isoString) {
 function sendMessage() {
 	console.log("sendMessage 호출")
 	const messageBox = document.getElementById('message-box');
-	const date = new Date();
-	const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로 변환
-	const formattedDate = new Date(date.getTime() + kstOffset).toISOString();
+	// const date = new Date();
+	// const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로 변환
+	// const formattedDate = new Date(date.getTime() + kstOffset).toISOString();
 
-	// const formattedDate = new Date().toISOString()
+	const formattedDate = new Date().toISOString()
 	console.log("sendmessage time : " + formattedDate)
 	const message = messageBox.value.trim();
 

@@ -198,10 +198,12 @@ public class BlogService {
         if(isLiked){
             redisHashService.save(hashKey, key, "false");
             redisHashService.decrement("blog_" + key, "likeCount");
+            syncUserLikesBlog();
             return "좋아요를 취소했습니다.";
         }else {
             redisHashService.save(hashKey, key, "true");
             redisHashService.increment("blog_" + key, "likeCount");
+            syncUserLikesBlog();
             return "좋아요를 눌렀습니다.";
         }
     }
@@ -209,8 +211,8 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-    @Async
-    @Scheduled(fixedDelay = 2000) //비동기 타이머 1초마다
+//    @Async
+//    @Scheduled(fixedDelay = 100) //비동기 타이머 1초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
         log.info(keys.toString());
@@ -247,7 +249,7 @@ public class BlogService {
                     }
 
                     Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
-                      blog.setLikeCount(likeCount); //좋아요 갯수 저장
+                    blog.setLikeCount(likeCount); //좋아요 갯수 저장
                 }
             }
         }
