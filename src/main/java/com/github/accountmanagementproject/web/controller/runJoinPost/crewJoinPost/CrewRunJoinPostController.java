@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/join-posts/crews")
 @CrossOrigin(originPatterns = "*")
-public class CrewRunJoinPostController {
+public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs {
     // implements CrewRunJoinPostControllerDocs
 
     private final CrewJoinPostRepository crewJoinPostRepository;
@@ -49,29 +49,27 @@ public class CrewRunJoinPostController {
     // 게시글 생성
     @PostMapping("/{crewId}/create")
     @ResponseStatus(HttpStatus.CREATED)
-//    @Override
+    @Override
     public Response<CrewRunPostResponse> createCrewPost(
             @RequestBody @Valid CrewRunPostCreateRequest request,
             @PathVariable Long crewId,
-            @RequestParam String email) {
+            @AuthenticationPrincipal String email) {
 
-//        MyUser user = accountConfig.findMyUser(email);
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
+        MyUser user = accountConfig.findMyUser(email);
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
         CrewRunPostResponse createdPost = crewJoinRunPostService.createCrewPost(request, user, crewId);
         return Response.success("크루 게시물이 생성되었습니다.", createdPost);
     }
 
 
-    // 상세 보기 , crewPostSequence 로 조회
-//    @PreAuthorize("@crewSecurityService.isUserInCrew(authentication, #crewId)") 수정 필요
-//    @PreAuthorize("isAuthenticated()")
+    // 상세 보기
     @GetMapping("/{runId}")
-//    @Override
-    public Response<CrewRunPostResponse> getCrewPostByRunId(@PathVariable Long runId, @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(email);
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
+    @Override
+    public Response<CrewRunPostResponse> getCrewPostByRunId(@PathVariable Long runId, @AuthenticationPrincipal String email) {
+        MyUser user = accountConfig.findMyUser(email);
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
         CrewRunPostResponse crewRunPostResponse = crewJoinRunPostService.getPostById(runId, user);
         return Response.success(HttpStatus.OK, "크루 게시물이 정상 조회되었습니다.", crewRunPostResponse);
@@ -80,12 +78,12 @@ public class CrewRunJoinPostController {
 
     // 글 수정
     @PostMapping("/{crewId}/update/{runId}")
-//    @Override
+    @Override
     public Response<CrewRunPostResponse> updateCrewPost(@PathVariable Long crewId, @PathVariable Long runId,
-                                                        @RequestBody @Valid CrewRunPostUpdateRequest request, @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(email);
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
+                                                        @RequestBody @Valid CrewRunPostUpdateRequest request, @AuthenticationPrincipal String email) {
+        MyUser user = accountConfig.findMyUser(email);
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
         CrewRunPostResponse updatedPost = crewJoinRunPostService.updateCrewPostByRunId(runId, crewId, user, request);
         return Response.success(HttpStatus.OK, "크루 게시물이 정상 수정되었습니다.", updatedPost);
@@ -94,12 +92,12 @@ public class CrewRunJoinPostController {
 
     // 게시글 삭제
     @DeleteMapping("/{crewId}/delete/{runId}")
-//    @Override
+    @Override
     public Response<Void> deleteCrewPost(@PathVariable Long crewId, @PathVariable Long runId,
-                                         @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(email);
-        MyUser user = usersRepository.findByEmail(email)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
+                                         @AuthenticationPrincipal String email) {
+        MyUser user = accountConfig.findMyUser(email);
+//        MyUser user = usersRepository.findByEmail(email)
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_DELETE, "User not found with email: " + email));
 
         crewJoinRunPostService.deleteCrewPostByRunId(runId, user, crewId);
         return Response.success(HttpStatus.OK, "게시물이 정상 삭제되었습니다.", null);
@@ -113,10 +111,11 @@ public class CrewRunJoinPostController {
             allowCredentials = "true"
     )
     @GetMapping("/list")
-    public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @RequestParam String email) {
-                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
-//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
-//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
+    @Override
+    public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @AuthenticationPrincipal String email) {
+//                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
 
         PageResponseDto<CrewRunPostResponse> response = crewJoinRunPostService.getAll(pageRequestDto, user);
 
@@ -126,18 +125,18 @@ public class CrewRunJoinPostController {
 
     // CrewJoinPost 목록과 참여 인원 수를 반환하는 API
     // Test 목적
-    @GetMapping("/crew-count")
-    public List<Map<String, Object>> getCrewPostsWithParticipantCount() {
-        return crewJoinPostRepository.findCrewPostsWithParticipantCount().stream().map(result -> {
-            CrewJoinPost post = (CrewJoinPost) result[0];
-            Long participantCount = (Long) result[1];
-            Map<String, Object> postInfo = new HashMap<>();
-            postInfo.put("postId", post.getCrewPostId());
-            postInfo.put("title", post.getTitle());
-            postInfo.put("participantCount", participantCount);
-            return postInfo;
-        }).collect(Collectors.toList());
-    }
+//    @GetMapping("/crew-count")
+//    public List<Map<String, Object>> getCrewPostsWithParticipantCount() {
+//        return crewJoinPostRepository.findCrewPostsWithParticipantCount().stream().map(result -> {
+//            CrewJoinPost post = (CrewJoinPost) result[0];
+//            Long participantCount = (Long) result[1];
+//            Map<String, Object> postInfo = new HashMap<>();
+//            postInfo.put("postId", post.getCrewPostId());
+//            postInfo.put("title", post.getTitle());
+//            postInfo.put("participantCount", participantCount);
+//            return postInfo;
+//        }).collect(Collectors.toList());
+//    }
 
 
 }
