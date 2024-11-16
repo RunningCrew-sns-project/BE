@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,7 @@ public class CrewService {
                     .customMessage("이미 가입했거나 가입 요청 중인 크루입니다.")
                     .request(crewsUsers.getStatus())
                     .build();
-        } else if (!isNewRequest && LocalDateTime.now().isBefore(crewsUsers.getReleaseDay())) {
+        } else if (!isNewRequest && LocalDate.now().isBefore(crewsUsers.getReleaseDay())) {
             throw new CustomBindException.ExceptionBuilder()
                     .systemMessage("유효성 검사 실패")
                     .customMessage("탈퇴한 또는, 강제 퇴장이나 가입 거절 당하고 재가입 조건을 충족 못한 크루 입니다.")

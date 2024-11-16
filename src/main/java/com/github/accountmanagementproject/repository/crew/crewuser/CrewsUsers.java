@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -52,12 +53,12 @@ public class CrewsUsers {
         }
         return false;
     }
-    public LocalDateTime getReleaseDay() {
+    public LocalDate getReleaseDay() {
         return switch (this.status) {
-            case WITHDRAWAL -> this.withdrawalDate.plusDays(1);
-            case FORCED_EXIT -> this.withdrawalDate.plusDays(30);
-            case REJECTED -> this.applicationDate.plusDays(7);
-            default -> withdrawalDate;
+            case WITHDRAWAL -> this.withdrawalDate.plusDays(2).toLocalDate();
+            case FORCED_EXIT -> this.withdrawalDate.plusDays(31).toLocalDate();
+            case REJECTED -> this.applicationDate.plusDays(8).toLocalDate();
+            default -> withdrawalDate.toLocalDate();
         };
     }
 }
