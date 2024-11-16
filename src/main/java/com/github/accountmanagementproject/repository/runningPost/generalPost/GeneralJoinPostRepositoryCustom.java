@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface GeneralJoinPostRepositoryCustom {
 
-    List<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size);
+    List<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size, String sortType);
 }

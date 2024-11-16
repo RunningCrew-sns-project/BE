@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.service.runJoinPost.generalJoinPost;
 
+import com.github.accountmanagementproject.alarm.service.NotificationService;
 import com.github.accountmanagementproject.exception.SimpleRunAppException;
 import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
@@ -8,7 +9,15 @@ import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
+import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
+import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupId;
+import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupRepository;
+import com.github.accountmanagementproject.repository.runningPost.userRunGroups.ParticipationStatus;
+import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
+import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroupId;
+import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroupRepository;
 import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
@@ -16,7 +25,11 @@ import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.JoinResponse;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheConfig;
@@ -26,12 +39,16 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest.extractFileNameFromUrl;
 
 
 @Slf4j
@@ -44,36 +61,44 @@ public class GeneralJoinRunPostService {
     private final MyUsersRepository userRepository;
     private final CrewsRepository crewRepository;
     private final CrewsUsersRepository crewsUsersRepository;
+    private final UserRunGroupRepository userRunGroupRepository;
     private final StorageService storageService;
 
 
     @Async
     @Transactional
-    public CompletableFuture<Void> processGeneralPostDetails(Long generalPostId, GeneralRunPostCreateRequest request) {
+    public CompletableFuture<Void> processGeneralPostDetails(Long generalPostId,
+                                                             GeneralRunPostCreateRequest request) {
         return CompletableFuture.runAsync(() -> {
             try {
                 GeneralJoinPost post = generalJoinPostRepository.findById(generalPostId)
-                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + generalPostId));
+                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND));
 
-                // 이미지 처리
-                if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
-                    post.clearJoinPostImages();  // 기존 이미지를 제거하여 orphan 상태로 만듦
+                post.clearJoinPostImages();  // 기존 이미지를 제거하여 orphan 상태로 만듦
 
-                    // 새로운 이미지 DTO를 순회하며 엔티티를 생성하고 기존 컬렉션에 추가
-                    for (FileDto fileDto : request.getFileDtos()) {
-                        RunJoinPostImage newImage = RunJoinPostImage.builder()
-                                .fileName(fileDto.getFileName())
-                                .imageUrl(fileDto.getFileUrl())
+                // fileUrls 처리
+                if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+                    for (String fileUrl : request.getFileUrls()) {
+                        RunJoinPostImage image = RunJoinPostImage.builder()
+                                .fileName(extractFileNameFromUrl(fileUrl))
+                                .imageUrl(fileUrl)
                                 .build();
-                        post.addJoinPostImage(newImage);  // 연관관계 편의 메서드 사용
+                        post.addJoinPostImage(image);  // 연관관계 편의 메서드 사용
                     }
                 }
+
                 generalJoinPostRepository.save(post);
             } catch (Exception e) {
+                // 에러 발생 시 업로드된 파일 삭제
+                if (request.getFileUrls() != null) {
+                    storageService.uploadCancel(request.getFileUrls());
+                }
                 log.error("Failed to process post details: {}", e.getMessage(), e);
+                throw new SimpleRunAppException(ErrorCode.IMAGE_PROCESSING_ERROR);
             }
         });
     }
+
 
     @Transactional
     @CacheEvict(allEntries = true)
@@ -107,6 +132,7 @@ public class GeneralJoinRunPostService {
         return getCrewPost(generalPostId);
     }
 
+
     private GeneralJoinPost getCrewPost(Long generalPostId) {
         return generalJoinPostRepository.findByIdWithImages(generalPostId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with runId: " + generalPostId));
@@ -139,20 +165,18 @@ public class GeneralJoinRunPostService {
     }
 
     private void handlePostImageUpdate(GeneralJoinPost generalPost, GeneralRunPostUpdateRequest request) {
-        if (request.getFileDtos() != null) {
+        if (request.getFileUrls() != null) {
             // 기존 이미지 엔티티 삭제
-            generalPost.getGeneralJoinPostImages().clear();
+            generalPost.clearJoinPostImages();
 
             // 새 이미지 정보 추가
-            List<RunJoinPostImage> newImages = request.getFileDtos().stream()
-                    .map(fileDto -> RunJoinPostImage.builder()
-                            .generalJoinPost(generalPost)
-                            .fileName(fileDto.getFileName())
-                            .imageUrl(fileDto.getFileUrl())
-                            .build())
-                    .toList();
-
-            generalPost.getGeneralJoinPostImages().addAll(newImages);
+            request.getFileUrls().forEach(url -> {
+                RunJoinPostImage image = RunJoinPostImage.builder()
+                        .fileName(url)
+                        .imageUrl(url)
+                        .build();
+                generalPost.addJoinPostImage(image);
+            });
         }
     }
 
@@ -173,11 +197,8 @@ public class GeneralJoinRunPostService {
     }
 
     private void handleImageUpdateFailure(GeneralRunPostUpdateRequest request) {
-        if (request.getFileDtos() != null) {
-            List<String> newImageUrls = request.getFileDtos().stream()
-                    .map(FileDto::getFileUrl)
-                    .collect(Collectors.toList());
-            storageService.uploadCancel(newImageUrls);
+        if (request.getFileUrls() != null) {
+            storageService.uploadCancel(request.getFileUrls());
         }
     }
 
@@ -233,7 +254,8 @@ public class GeneralJoinRunPostService {
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                size
+                size,
+                pageRequestDto.getSortType()
         );
 
         // 다음 페이지 여부 판단

@@ -12,8 +12,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "run_join_post_image")
-public class RunJoinPostImage {
+@Table(name = "crew_join_post_image")
+public class CrewJoinPostImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +25,8 @@ public class RunJoinPostImage {
     @Column(name = "image_url")
     private String imageUrl;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "crew_post_id", nullable = false)
-//    private CrewJoinPost crewJoinPost;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "general_post_id", nullable = false)
-    private GeneralJoinPost generalJoinPost;
+    @JoinColumn(name = "crew_post_id", nullable = false)
+    private CrewJoinPost crewJoinPost;
 
 }

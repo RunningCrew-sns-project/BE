@@ -6,6 +6,8 @@ import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
+import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -51,7 +53,7 @@ public class CrewRunPostCreateRequest {
     private double targetLatitude; // 종료 위도
     private double targetLongitude; // 종료 경도
 
-    private List<FileDto> fileDtos;  // 파일 이미지
+    private List<String> fileUrls;  // 파일 이미지
 
 
     public static CrewJoinPost toEntity(CrewRunPostCreateRequest request, MyUser user, Crew crew) {
@@ -77,6 +79,21 @@ public class CrewRunPostCreateRequest {
                 .updatedAt(null)
                 .build();
 
+        // 이미지 URL 처리
+        if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+            for (String fileUrl : request.getFileUrls()) {
+                CrewJoinPostImage image = CrewJoinPostImage.builder()
+                        .fileName(extractFileNameFromUrl(fileUrl))
+                        .imageUrl(fileUrl)
+                        .build();
+                post.addJoinPostImage(image);
+            }
+        }
+
         return post;
+    }
+
+    public static String extractFileNameFromUrl(String url) {
+        return url.substring(url.lastIndexOf('/') + 1);
     }
 }

@@ -6,6 +6,7 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
 import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,6 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,8 +40,19 @@ public class GeneralJoinPost {
     @JoinColumn(name = "author_id", nullable = false)
     private MyUser author;    // 작성자
 
-    @OneToMany(mappedBy = "generalJoinPost", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "id.generalJoinPost")
     private Set<UserRunGroup> participants = new HashSet<>();
+
+    @OneToMany(mappedBy = "generalJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RunGroup> participantz = new HashSet<>();
+
+    public void addParticipant(RunGroup runGroup) {
+        if (!participantz.contains(runGroup)) {
+            participantz.add(runGroup);
+            runGroup.setGeneralJoinPost(this);  // RunGroup의 setGeneralJoinPost 호출
+        }
+    }
+
 
     /** ****************************************************************/
 
@@ -53,10 +66,10 @@ public class GeneralJoinPost {
     private String location;   // 지역
 
     @Column(name = "max_participants")
-    private Integer maximumPeople ;  // 크루 모집 최대 인원
+    private Integer maximumPeople= 0;  // 크루 모집 최대 인원
 
     @Column(name = "current_people", nullable = false)
-    private Integer currentPeople; // 현재 참여 인원 수
+    private Integer currentPeople = 0;  // 현재 참여 인원 수 , 초기값 0으로 설정;
 
     @Column(name = "date")
     private LocalDate date;  // 모임 날짜, 날짜만 저장
@@ -72,8 +85,9 @@ public class GeneralJoinPost {
     @Column(name = "post_type", nullable = false)
     private PostType postType;   // 게시자 분류
 
-    @OneToMany(mappedBy = "generalJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RunJoinPostImage> generalJoinPostImages;
+    @Builder.Default  // Builder 패턴 사용 시 초기값 설정
+    @OneToMany(mappedBy = "generalJoinPost", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RunJoinPostImage> generalJoinPostImages = new ArrayList<>();  // 초기화
 
 
     public void addJoinPostImage(RunJoinPostImage image) {

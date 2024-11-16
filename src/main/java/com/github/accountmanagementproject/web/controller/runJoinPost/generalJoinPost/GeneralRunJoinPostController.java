@@ -7,19 +7,26 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
+import com.github.accountmanagementproject.service.runJoinPost.generalJoinPost.GeneralJoinRunPostAlarmService;
 import com.github.accountmanagementproject.service.runJoinPost.generalJoinPost.GeneralJoinRunPostService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.JoinResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,9 +40,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/join-posts/general")
 @CrossOrigin(originPatterns = "*")
 public class GeneralRunJoinPostController implements GeneralRunJoinPostControllerDocs {
-
+// implements GeneralRunJoinPostControllerDocs
     private final GeneralJoinPostRepository generalJoinPostRepository;
     private final GeneralJoinRunPostService generalRunJoinPostService;
+    private final GeneralJoinRunPostAlarmService alarmService;
     private final MyUsersRepository usersRepository;
     private final AccountConfig accountConfig;
 
@@ -43,10 +51,13 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     /** **************** "일반 User (크루 가입 X)" 또는 "크루"도 이용 가능************************************ */
 
     // 일반 User (크루 가입 X)
+    // 게시물 생성
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public Response<GeneralRunPostResponse> createGeneralPost(
-            @RequestBody @Valid GeneralRunPostCreateRequest request, @AuthenticationPrincipal String email) {
+            @RequestBody @Valid GeneralRunPostCreateRequest request,
+            @AuthenticationPrincipal String email) {
         MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
 //        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
 //                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
@@ -54,6 +65,68 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
         GeneralJoinPost runJoinPost = generalRunJoinPostService.createGeneralPost(request, user);
         GeneralRunPostResponse responseDto = GeneralRunPostResponse.toDto(runJoinPost);
         return Response.success("게시물이 생성되었습니다.", responseDto);
+    }
+
+
+    // 참여 신청
+    @PostMapping("/join/{runId}")
+    public Response<JoinResponse> joinGeneralPost(
+            @PathVariable Long runId,
+            @RequestParam String email) {
+
+        JoinResponse response = alarmService.applyToJoinPost(email, runId);
+        return Response.success(HttpStatus.OK,"참여 신청이 완료되었습니다.", response);
+    }
+
+//    {  // TODO :  크루 - crewId, 일반 : runId , 신청자 : userId
+//        "resultCode": "success",
+//            "code": 200,
+//            "httpStatus": "OK",
+//            "message": "참여 신청이 완료되었습니다.",
+//            "detailMessage": null,
+//            "responseData": {
+//        "nickname": "홍길동",
+//                "userEmail": "abc@abc.com",
+//                "status": "가입대기",
+//                "requestedDate": "2024-11-14T18:30:07.705042200"
+//    },
+//        "timestamp": "2024-11-14T18:30:07.8073024"
+//    }
+
+    // 참여 신청 -> 승인/거절
+    @PostMapping("/approveOrReject")
+    public Response<String> approveOrReject(
+            @RequestParam String email,  // 관지자(방장)
+            @RequestParam Long runId,
+            @RequestParam Long userId,   // 신청자
+            @RequestParam Boolean approve) {
+
+        String result = alarmService.approveOrReject(email, runId, userId, approve);
+        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
+    }
+
+//    {
+//        "resultCode": "success",
+//            "code": 200,
+//            "httpStatus": "OK",
+//            "message": "처리가 완료되었습니다.",
+//            "detailMessage": null,
+//            "responseData": "요청 유저: 졸령의 요청을 승인했습니다.",
+//            "timestamp": "2024-11-14T17:54:54.7676589"
+//    }
+
+
+    // 강퇴
+    @PostMapping("/kickout")
+    public Response<String> kickParticipant(
+            @RequestParam String email,
+            @RequestParam Long postId,
+            @RequestParam Long userId
+            ) {
+
+        String result = alarmService.forceToKickOut(email, postId, userId);
+
+        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
     }
 
 
@@ -83,9 +156,9 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     // 게시글 삭제
     @DeleteMapping("/delete/{runId}")
     public Response<Void> deletePostById(@PathVariable Long runId, @AuthenticationPrincipal String email) {
-        //        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
         generalRunJoinPostService.deleteGeneralPost(runId, user);
         return Response.success(HttpStatus.OK, "게시물이 정상 삭제되었습니다.", null);
     }
@@ -108,18 +181,18 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 
     // GeneralJoinPost 목록과 참여 인원 수를 반환하는 API
     // Test
-    @GetMapping("/general-count")
-    public List<Map<String, Object>> getGeneralPostsWithParticipantCount() {
-        return generalJoinPostRepository.findGeneralPostsWithParticipantCount().stream().map(result -> {
-            GeneralJoinPost post = (GeneralJoinPost) result[0];
-            Long participantCount = (Long) result[1];
-            Map<String, Object> postInfo = new HashMap<>();
-            postInfo.put("postId", post.getGeneralPostId());
-            postInfo.put("title", post.getTitle());
-            postInfo.put("participantCount", participantCount);
-            return postInfo;
-        }).collect(Collectors.toList());
-    }
+//    @GetMapping("/general-count")
+//    public List<Map<String, Object>> getGeneralPostsWithParticipantCount() {
+//        return generalJoinPostRepository.findGeneralPostsWithParticipantCount().stream().map(result -> {
+//            GeneralJoinPost post = (GeneralJoinPost) result[0];
+//            Long participantCount = (Long) result[1];
+//            Map<String, Object> postInfo = new HashMap<>();
+//            postInfo.put("postId", post.getGeneralPostId());
+//            postInfo.put("title", post.getTitle());
+//            postInfo.put("participantCount", participantCount);
+//            return postInfo;
+//        }).collect(Collectors.toList());
+//    }
 
 
 

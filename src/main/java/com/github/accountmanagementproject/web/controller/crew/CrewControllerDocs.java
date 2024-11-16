@@ -321,15 +321,17 @@ public interface CrewControllerDocs {
 
 
     @Operation(
-            summary = "크루 상세 정보와 게시물 목록 조회",
+            summary = "크루 상세 정보와 달리기 게시물 목록 조회",
             description = "특정 크루의 상세 정보와 크루에 연관된 달리기 참여 게시물 목록을 페이징하여 반환합니다."
     )
     @Parameters({
+            @Parameter(name = "email", description = "유저 이메일", example = "", required = true),
             @Parameter(name = "crewId", description = "크루의 고유 ID", example = "42", required = true),
             @Parameter(name = "cursor", description = "커서 기반 페이징을 위한 마지막 항목의 ID. 첫 요청 시에는 null로 전달", example = "10"),
             @Parameter(name = "size", description = "페이지 당 항목 수. 기본값은 10", example = "10"),
             @Parameter(name = "location", description = "필터링할 지역. 기본값은 '전체'", example = "전체"),
-            @Parameter(name = "date", description = "조회 기준 날짜. yyyy-MM-dd 형식", example = "2023-11-10")
+            @Parameter(name = "date", description = "조회 기준 날짜. yyyy-MM-dd 형식", example = "2023-11-10"),
+            @Parameter(name = "sortType", description = "정렬 방식: 'newest' (최신순) 또는 'oldest' (오래된 순)", example = "newest")
     })
     @ApiResponses(value = {
             @ApiResponse(
@@ -395,5 +397,5 @@ public interface CrewControllerDocs {
             @ApiResponse(responseCode = "404", description = "크루를 찾을 수 없습니다."),
             @ApiResponse(responseCode = "500", description = "서버 오류로 인해 요청을 처리할 수 없습니다.")
     })
-    CustomSuccessResponse getCrewDetailsWithPosts(@PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto);
+    CustomSuccessResponse getCrewDetailsWithCrewPosts(@PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto);
 }

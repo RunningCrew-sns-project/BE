@@ -4,13 +4,12 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.enums.GeneralRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
+import com.github.accountmanagementproject.web.dto.storage.UrlDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +18,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 
+@Setter
 @Getter
 @Builder
 @AllArgsConstructor
@@ -49,7 +49,7 @@ public class GeneralRunPostCreateRequest {
     private double targetLatitude; // 종료 위도
     private double targetLongitude; // 종료 경도
 
-    private List<FileDto> fileDtos;  // 파일 이미지
+    private List<String> fileUrls;
 
 
     public static GeneralJoinPost toEntity(GeneralRunPostCreateRequest request, MyUser user) {
@@ -59,6 +59,7 @@ public class GeneralRunPostCreateRequest {
                 .content(request.getContent())
                 .location(request.getLocation()) // 추가된 location 속성
                 .maximumPeople(request.getMaximumPeople())
+                .currentPeople(0)
                 .date(request.getDate()) // 추가된 date 속성
                 .startTime(request.getStartTime() != null ? request.getStartTime() : null) // 추가된 startTime 속성
                 .inputLocation(request.getInputLocation())
@@ -73,7 +74,22 @@ public class GeneralRunPostCreateRequest {
                 .updatedAt(null)
                 .build();
 
+        // 이미지 URL 처리
+        if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+            for (String fileUrl : request.getFileUrls()) {
+                RunJoinPostImage image = RunJoinPostImage.builder()
+                        .fileName(extractFileNameFromUrl(fileUrl))
+                        .imageUrl(fileUrl)
+                        .build();
+                post.addJoinPostImage(image);
+            }
+        }
+
         return post;
+    }
+
+    public static String extractFileNameFromUrl(String url) {
+        return url.substring(url.lastIndexOf('/') + 1);
     }
 
 }
