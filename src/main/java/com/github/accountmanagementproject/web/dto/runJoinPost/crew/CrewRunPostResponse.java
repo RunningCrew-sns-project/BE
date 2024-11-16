@@ -3,6 +3,7 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
+import com.github.accountmanagementproject.web.dto.storage.UrlDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -51,5 +52,7 @@ public class CrewRunPostResponse {
     private LocalDateTime updatedAt;
 
     private List<FileDto> banners;  // 파일 이미지
+
+
 
 }

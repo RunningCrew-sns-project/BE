@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.service.blog;
 
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import com.github.accountmanagementproject.repository.blog.BlogRepository;
@@ -28,12 +29,16 @@ public class BlogCommentService {
 
     @ExeTimer
     public ScrollPaginationCollection<CommentResponseDTO> getCommentByBlogId(Integer blogId, Integer size, Integer cursor) {
-        Blog blog = blogRepository.findById(blogId).orElseThrow(null);
+        Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("블로그를 찾을 수 없습니다.")
+                .build());
 
-        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).getId();
+        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("댓글이 없습니다.")
+                .build()).getId();
 
         PageRequest pageRequest = PageRequest.of(0, size + 1);
-        Page<BlogComment> blogCommentPage = blogCommentRepository.findByIdLessThanOrderByIdDesc(lastCommentId + 1, pageRequest);
+        Page<BlogComment> blogCommentPage = blogCommentRepository.findByBlogAndIdLessThanOrderByIdDesc(blog, lastCommentId + 1, pageRequest);
 
         List<BlogComment> blogCommentList = blogCommentPage.getContent();
 
@@ -54,7 +59,9 @@ public class BlogCommentService {
     @ExeTimer
     @Transactional
     public BlogComment createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
-        Blog blog = blogRepository.findById(blogId).orElse(null);
+        Blog blog = blogRepository.findById(blogId).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("블로그를 찾을 수 없습니다.")
+                .build());
         BlogComment blogComment = BlogComment.builder()
                 .blog(blog)
                 .content(comment.getContent())
@@ -68,7 +75,9 @@ public class BlogCommentService {
     @ExeTimer
     @Transactional
     public BlogComment updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
-        BlogComment blogComment = blogCommentRepository.findById(commentId).orElse(null);
+        BlogComment blogComment = blogCommentRepository.findById(commentId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("댓글을 찾을 수 없습니다.")
+                .build());
 
         if(!user.equals(blogComment.getUser())) {
             throw new CustomBadCredentialsException.ExceptionBuilder()
@@ -85,7 +94,9 @@ public class BlogCommentService {
 
     @ExeTimer
     public String deleteComment(Integer commentId, MyUser user) {
-        BlogComment blogComment = blogCommentRepository.findById(commentId).get();
+        BlogComment blogComment = blogCommentRepository.findById(commentId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("댓글을 찾을 수 없습니다.")
+                .build());
         if(!user.equals(blogComment.getUser())) {
             throw new CustomBadCredentialsException.ExceptionBuilder()
                     .customMessage("권한이 없습니다")

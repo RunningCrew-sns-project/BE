@@ -3,8 +3,11 @@ package com.github.accountmanagementproject.web.dto.storage;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.URL;
 
+
+@Setter
 @Getter
 @NoArgsConstructor
 public class UrlDto {

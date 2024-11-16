@@ -3,6 +3,7 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,7 +46,7 @@ public class CrewRunPostUpdateRequest {
     private double targetLatitude; // 종료 위도
     private double targetLongitude; // 종료 경도
 
-    private List<FileDto> fileDtos;  // 파일 이미지
+    private List<String> fileUrls;   // 파일 이미지
 
 
     public CrewJoinPost updateEntity(CrewJoinPost post, MyUser user) {
@@ -63,6 +64,17 @@ public class CrewRunPostUpdateRequest {
         post.setTargetLatitude(this.targetLatitude != 0 ? this.targetLatitude : post.getTargetLatitude());
         post.setTargetLongitude(this.targetLongitude != 0 ? this.targetLongitude : post.getTargetLongitude());
         post.setUpdatedAt(LocalDateTime.now());
+
+        if (fileUrls != null && !fileUrls.isEmpty()) {
+            post.clearJoinPostImages();
+            fileUrls.forEach(url -> {
+                CrewJoinPostImage image = CrewJoinPostImage.builder()
+                        .fileName(url)  // 또는 파일명 생성 로직
+                        .imageUrl(url)
+                        .build();
+                post.addJoinPostImage(image);
+            });
+        }
 
         return post;
     }

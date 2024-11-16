@@ -8,6 +8,7 @@ import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostR
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -159,6 +160,7 @@ public interface CrewRunJoinPostControllerDocs {
             @Parameter(description = "게시글 ID") Long runId,
             @Parameter(hidden = true) @AuthenticationPrincipal String principal);
 
+
     @Operation(summary = "크루 달리기 모집 게시물 목록 조회", description = "해당 크루에 속한 모든 모집 게시물을 페이징하여 조회합니다.")
     @ApiResponse(responseCode = "200", description = "모집 게시물 조회 성공",
             content = @Content(mediaType = "application/json",
@@ -202,15 +204,15 @@ public interface CrewRunJoinPostControllerDocs {
                     }""")
             )
     )
+    @Parameters({
+            @Parameter(name = "cursor", description = "커서 기반 페이징을 위한 마지막 항목의 ID. 첫 요청 시에는 null로 전달", example = "10"),
+            @Parameter(name = "size", description = "페이지 당 항목 수. 기본값은 20", example = "9"),
+            @Parameter(name = "location", description = "필터링할 지역. 기본값은 '전체'", example = "전체"),
+            @Parameter(name = "date", description = "조회 기준 날짜. yyyy-MM-dd 형식", example = "2023-11-10"),
+            @Parameter(name = "sortType", description = "정렬 방식: 'newest' (최신순) 또는 'oldest' (오래된 순)", example = "newest")
+    })
     Response<PageResponseDto<CrewRunPostResponse>> getAll(
-            @Parameter(description = "페이지 요청 정보", example = """
-                {
-                  "page": 0,
-                  "size": 9,
-                  "location": "전체",
-                  "date": null
-                }""")
-            PageRequestDto pageRequestDto,
-            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
+            PageRequestDto pageRequestDto, @AuthenticationPrincipal String principal);
+
 }
 

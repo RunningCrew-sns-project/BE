@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 public class CrewDetailWithPostsResponse {
 
-    private CrewListResponse crewInfo;
+    private CrewDetailResponse crewInfo;
     private List<CrewRunPostResponse> items;
 }

@@ -18,6 +18,7 @@ import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogDetails;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
+import jakarta.annotation.PreDestroy;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 @Service
@@ -40,13 +43,11 @@ import java.util.concurrent.CompletableFuture;
 @EnableScheduling
 public class BlogService {
     private final BlogRepository blogRepository;
-    private final BlogCommentRepository blogCommentRepository;
     private final UserLikesBlogRepository userLikesBlogRepository;
     private final MyUsersRepository myUsersJpa;
     private final RedisRepository redisRepository;
     private final BlogImagesRepository blogImagesRepository;
     private final RedisHashService redisHashService;
-    private final RedisTemplate<String, Object> redisTemplate;
 
 
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
@@ -82,7 +83,7 @@ public class BlogService {
 
     private List<BlogResponseDTO> mappingBlogResponse(MyUser user, List<Blog> blogs){
         //좋아요 목록을 불러와서 저장
-        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user);
+        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user, blogs);
 
         return blogs.stream()
                 .map(blog -> {
@@ -102,22 +103,26 @@ public class BlogService {
 
     //레포지토리에서 레디스에
     // user_likes:user_id , blog_id, true/false  -> 형태로 저장
-    private Set<Integer> getUserLikesBlogsIds(MyUser user){
+    //TODO : 가져온 블로그에서 좋아요 눌렀는지 검사해야함. 모든 좋아요 검사하니까 에러남 -> 불러온 목록에서만 좋아요 조회
+    private Set<Integer> getUserLikesBlogsIds(MyUser user, List<Blog> blogs){
         //좋아요 정보가 존재하지 않으면 db에서 가져와서 레디스에 좋아요 정보 저장하고
         Set<Integer> userLikesBlogsIds = new HashSet<>();
 
-        userLikesBlogRepository.findAllByUser(user).forEach(userLikesBlog -> {
-            boolean isLiked = userLikesBlog.getIsLiked();
+        for (Blog blog : blogs) {
+            UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
+            if (userLikesBlog != null) {
+                boolean isLiked = userLikesBlog.getIsLiked();
 
-            if (isLiked) {
-                // 좋아요가 눌린 게시물인 경우
-                redisHashService.save("user_likes:" + user.getUserId(), userLikesBlog.getBlog().getId().toString(), "true");
-                userLikesBlogsIds.add(userLikesBlog.getBlog().getId());
-            } else {
-                // 좋아요가 눌리지 않은 게시물인 경우
-                redisHashService.save("user_likes:" + user.getUserId(), userLikesBlog.getBlog().getId().toString(), "false");
+                if (isLiked) {
+                    // 좋아요가 눌린 게시물인 경우
+                    redisHashService.save("user_likes:" + user.getUserId(), userLikesBlog.getBlog().getId().toString(), "true");
+                    userLikesBlogsIds.add(userLikesBlog.getBlog().getId());
+                } else {
+                    // 좋아요가 눌리지 않은 게시물인 경우
+                    redisHashService.save("user_likes:" + user.getUserId(), userLikesBlog.getBlog().getId().toString(), "false");
+                }
             }
-        });
+        }
 
         //좋아요 누른 게시물 아이디 Set으로  return
         return userLikesBlogsIds;
@@ -126,8 +131,6 @@ public class BlogService {
     @ExeTimer
     public BlogDetails getBlogById(Integer blogId, MyUser user) {
         // 블로그에 대한 댓글 가져오기
-        Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user);
-
         Blog blog = blogRepository.findById(blogId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("블로그를 찾을 수 없습니다.").build());
 
         List<String> imageUrlList = blogImagesRepository.findAllByBlog(blog)
@@ -136,7 +139,7 @@ public class BlogService {
                 .toList();
 
         BlogDetails blogDetails = BlogMapper.INSTANCE.blogToBlogDetailsDTO(blog);
-        blogDetails.setLiked(userLikesBlogsIds.contains(blog.getId()));
+        blogDetails.setLiked(userLikesBlogRepository.findByUserAndBlog(user, blog).getIsLiked());
         blogDetails.setImageUrl(imageUrlList);
 
         return blogDetails;
@@ -144,8 +147,6 @@ public class BlogService {
     @ExeTimer
     @Transactional
     public BlogResponseDTO writeBlog(BlogRequestDTO blogRequestDTO, MyUser user){
-
-
         Blog blog = Blog.builder()
                 .title(blogRequestDTO.getTitle())
                 .content(blogRequestDTO.getContent())
@@ -178,39 +179,40 @@ public class BlogService {
 
     @ExeTimer
     @Transactional
-    @Async
+//    @Async
     //비동기적으로 처리 ? redis에 저장해놨다가 나중에 가져와서 db에 저장?
-    public CompletableFuture<String> likeBlog(Integer blogId, MyUser user) throws Exception {
+    public String likeBlog(Integer blogId, MyUser user){
         // redis에 저장해놨다가 비동기적으로 나중에 db에 저장
 
-        Blog blog = blogRepository.findById(blogId).orElse(null);
-        if (blog == null) {
-            throw new CustomNotFoundException.ExceptionBuilder()
-                    .customMessage("게시물이 없습니다.")
-                    .request("존재하지 않는 게시물.")
-                    .build();
-        }
+        Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("블로그를 찾을 수 없습니다.")
+                .build());
+
+        String hashKey = "user_likes:" + user.getUserId();
+        String key = blog.getId().toString();
+        String likeStatus = redisHashService.get(hashKey, key);
+
+        boolean isLiked = "true".equals(likeStatus); //likeStatus가 true이면 isLiked에 true, null이거나 true가 아니면 false
+
         //TODO : 블로그 조회 시 좋아요 정보를 미리 가지고 와서 처리
-        if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) != null && redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("true")) {
-            //TODO : 좋아요 취소
-            redisHashService.save("user_likes:" + user.getUserId(), blog.getId().toString(), "false");
-            redisHashService.decrement("blog_" + blog.getId().toString(), "likeCount"); //redis에 저장된 좋아요 카운트 감소
-
-            return CompletableFuture.completedFuture("좋아요를 취소했습니다.");
-        }if(redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()) == null || redisHashService.get("user_likes:" + user.getUserId(), blog.getId().toString()).equals("false")){
-            //TODO : 좋아요 처리
-            redisHashService.save("user_likes:"+user.getUserId(), blog.getId().toString(), "true");
-            redisHashService.increment("blog_" + blog.getId().toString(), "likeCount"); //redis에 저장된 좋아요 카운트 증가
-
-            return CompletableFuture.completedFuture("좋아요를 눌렀습니다.");
+        if(isLiked){
+            redisHashService.save(hashKey, key, "false");
+            redisHashService.decrement("blog_" + key, "likeCount");
+//            syncUserLikesBlog();
+            return "좋아요를 취소했습니다.";
+        }else {
+            redisHashService.save(hashKey, key, "true");
+            redisHashService.increment("blog_" + key, "likeCount");
+//            syncUserLikesBlog();
+            return "좋아요를 눌렀습니다.";
         }
-        return CompletableFuture.completedFuture("좋아요 메소드 실행.");
     }
 
 
     @ExeTimer
     @Transactional
-    @Scheduled(fixedDelay = 30000) //비동기 타이머 30초마다
+    @Async
+    @Scheduled(fixedDelay = 1000) //비동기 타이머 1초마다
     protected void syncUserLikesBlog(){
         Set<String> keys = redisRepository.keys("user_likes:*");
         log.info(keys.toString());
@@ -218,44 +220,40 @@ public class BlogService {
 //        https://velog.io/@sejinkim/Redis-KEYS-vs-SCAN
 //        여기 한번 보고 수정
         //TODO : getUserLikesBlogsIds 참고하여 db에 저장
+        if(!keys.isEmpty()){
+            for (String key : keys) { //반복문 돌며
+
+                Integer userId = Integer.valueOf(key.substring(11) );
+                MyUser user = myUsersJpa.findById(userId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("해당 유저를 찾을 수 없습니다.").build()); //해당하는 유저 가져오기
+
+                Map<String, String> resultMap = redisHashService.getAll(key);
 
 
-        for (String key : keys) { //반복문 돌며
-            log.info(key);
+                for(String blogId : resultMap.keySet()){
+                    Boolean isLiked = Boolean.parseBoolean(resultMap.get(blogId));
 
-            Integer userId = Integer.valueOf(key.substring(11));
-            MyUser user = myUsersJpa.findById(userId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("해당 유저를 찾을 수 없습니다.").build()); //해당하는 유저 가져오기
+                    Blog blog = blogRepository.findById(Integer.valueOf(blogId)).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
 
-            Map<String, String> resultMap = redisHashService.getAll(key);
+                    UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
 
+                    if(userLikesBlog == null) {
+                        userLikesBlog = UserLikesBlog.builder()
+                                .blog(blog)
+                                .user(user)
+                                .isLiked(isLiked)
+                                .build();
 
-            log.info(resultMap.toString());
-            resultMap.forEach((blogId, isLiked)->{
-                Blog blog = blogRepository.findById(Integer.valueOf(blogId)).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder().customMessage("해당 블로그를 찾을 수 없습니다.").build()); //해당하는 블로그 가져오기
+                        userLikesBlogRepository.save(userLikesBlog);
+                    }else {
+                        userLikesBlog.setIsLiked(isLiked);
+                    }
 
-                UserLikesBlog userLikesBlog = userLikesBlogRepository.findByUserAndBlog(user, blog);
-
-                if(userLikesBlog == null) {
-                    userLikesBlog = UserLikesBlog.builder()
-                            .blog(blog)
-                            .user(user)
-                            .isLiked(Boolean.valueOf(isLiked))
-                            .build();
-
-                    userLikesBlogRepository.save(userLikesBlog);
-                }else {
-                    userLikesBlog.setIsLiked(Boolean.parseBoolean(isLiked));
+                    Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
+                    blog.setLikeCount(likeCount); //좋아요 갯수 저장
                 }
-
-
-                Integer likeCount = Integer.valueOf(redisHashService.get("blog_" + blogId, "likeCount")); //db에서 blog에 해당하는 좋아요 갯수 가져오기
-                blog.setLikeCount(likeCount); //좋아요 갯수 저장
-
-//                redisHashService.delete(key, blogId);
-            });
-
-//            redisRepository.getAndDeleteValue(key); //레디스 데이터 삭제
+            }
         }
+
     }
 
 

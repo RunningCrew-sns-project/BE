@@ -10,6 +10,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRe
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
+import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
@@ -35,6 +36,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest.extractFileNameFromUrl;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,28 +59,33 @@ public class CrewJoinRunPostService {
 
     @Async
     @Transactional
-    public CompletableFuture<Void> processPostDetails(Long runId, CrewRunPostCreateRequest request) {
+    public CompletableFuture<Void> processPostDetails(Long crewPostId, CrewRunPostCreateRequest request) {
         return CompletableFuture.runAsync(() -> {
             try {
-                CrewJoinPost post = crewJoinPostRepository.findById(runId)
-                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + runId));
+                CrewJoinPost post = crewJoinPostRepository.findById(crewPostId)
+                        .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + crewPostId));
 
-                // 이미지 처리
-                if (request.getFileDtos() != null && !request.getFileDtos().isEmpty()) {
-                    post.clearJoinPostImages();  // 기존 이미지를 제거하여 orphan 상태로 만듦
+                post.clearJoinPostImages();  // 기존 이미지를 제거하여 orphan 상태로 만듦
 
-                    // 새로운 이미지 DTO를 순회하며 엔티티를 생성하고 기존 컬렉션에 추가
-                    for (FileDto fileDto : request.getFileDtos()) {
-                        RunJoinPostImage newImage = RunJoinPostImage.builder()
-                                .fileName(fileDto.getFileName())
-                                .imageUrl(fileDto.getFileUrl())
+                // fileUrls 처리
+                if (request.getFileUrls() != null && !request.getFileUrls().isEmpty()) {
+                    for (String fileUrl : request.getFileUrls()) {
+                        CrewJoinPostImage image = CrewJoinPostImage.builder()
+                                .fileName(extractFileNameFromUrl(fileUrl))
+                                .imageUrl(fileUrl)
                                 .build();
-                        post.addJoinPostImage(newImage);  // 연관관계 편의 메서드 사용
+                        post.addJoinPostImage(image);  // 연관관계 편의 메서드 사용
                     }
                 }
+
                 crewJoinPostRepository.save(post);
             } catch (Exception e) {
+                // 에러 발생 시 업로드된 파일 삭제
+                if (request.getFileUrls() != null) {
+                    storageService.uploadCancel(request.getFileUrls());
+                }
                 log.error("Failed to process post details: {}", e.getMessage(), e);
+                throw new SimpleRunAppException(ErrorCode.IMAGE_PROCESSING_ERROR);
             }
         });
     }
@@ -184,20 +192,17 @@ public class CrewJoinRunPostService {
     }
 
     private void handleImageUpdate(CrewJoinPost crewPost, CrewRunPostUpdateRequest request) {
-        if (request.getFileDtos() != null) {
-            // 기존 이미지 엔티티 삭제
-            crewPost.getCrewJoinPostImages().clear();
+        if (request.getFileUrls() != null) {
+            crewPost.clearJoinPostImages();
 
             // 새 이미지 정보 추가
-            List<RunJoinPostImage> newImages = request.getFileDtos().stream()
-                    .map(fileDto -> RunJoinPostImage.builder()
-                            .crewJoinPost(crewPost)
-                            .fileName(fileDto.getFileName())
-                            .imageUrl(fileDto.getFileUrl())
-                            .build())
-                    .toList();
-
-            crewPost.getCrewJoinPostImages().addAll(newImages);
+            request.getFileUrls().forEach(url -> {
+                CrewJoinPostImage image = CrewJoinPostImage.builder()
+                        .fileName(url)
+                        .imageUrl(url)
+                        .build();
+                crewPost.addJoinPostImage(image);
+            });
         }
     }
 
@@ -215,11 +220,8 @@ public class CrewJoinRunPostService {
     }
 
     private void handleUpdateFailure(CrewRunPostUpdateRequest request) {
-        if (request.getFileDtos() != null) {
-            List<String> newImageUrls = request.getFileDtos().stream()
-                    .map(FileDto::getFileUrl)
-                    .collect(Collectors.toList());
-            storageService.uploadCancel(newImageUrls);
+        if (request.getFileUrls() != null) {
+            storageService.uploadCancel(request.getFileUrls());
         }
     }
 
@@ -256,7 +258,7 @@ public class CrewJoinRunPostService {
 
     private void deletePostImages(CrewJoinPost crewPost) {
         List<String> imageUrls = crewPost.getCrewJoinPostImages().stream()
-                .map(RunJoinPostImage::getImageUrl)
+                .map(CrewJoinPostImage::getImageUrl)
                 .collect(Collectors.toList());
 
         if (!imageUrls.isEmpty()) {
@@ -288,7 +290,8 @@ public class CrewJoinRunPostService {
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                size
+                size,
+                pageRequestDto.getSortType()
         );
 
         // 다음 페이지 여부 판단

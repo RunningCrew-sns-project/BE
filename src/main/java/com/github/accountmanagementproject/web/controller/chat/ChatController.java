@@ -54,6 +54,7 @@ public class ChatController {
         if(!chatService.addUser(chat.getRoomId(), user)){
             chat.setMessage(user.getNickname() + "님이 입장하셨습니다. ");
             chat.setUserName(user.getNickname());
+            chat.setTime(chat.getTime().plusHours(9));
             template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
             chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
         }
@@ -71,6 +72,7 @@ public class ChatController {
         log.info("header : {}", headerAccessor.getUser().getName());
         MyUser user = accountConfig.findMyUser(headerAccessor.getUser().getName());
         chat.setUserName(user.getNickname());
+        chat.setTime(chat.getTime().plusHours(9));
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
         chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
     }
@@ -91,6 +93,7 @@ public class ChatController {
 
         chat.setMessage(user.getNickname() + "님이 퇴장하셨습니다. ");
         chat.setUserName(user.getNickname());
+        chat.setTime(chat.getTime().plusHours(9));
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
         chatMongoRepository.save(ChatMongoMapper.INSTANCE.chatDtoToChatMongoDto(chat, user.getEmail()));
     }

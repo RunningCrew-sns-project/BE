@@ -22,6 +22,13 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not founded"),
     CREW_NOT_FOUND(HttpStatus.NOT_FOUND, "크루를 찾을 수 없습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    ALREADY_JOINED(HttpStatus.CONFLICT, "이미 참여한 모임입니다."),
+    GROUP_FULL(HttpStatus.CONFLICT, "모임 정원이 초과되었습니다."),
+    INVALID_STATUS_FOR_KICK(HttpStatus.BAD_REQUEST, "강퇴할 수 없습니다."),
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+    PARTICIPATION_NOT_FOUND(HttpStatus.NOT_FOUND, "참여자를 찾을 수 없습니다."),
+    PARTICIPATION_NOT_ALLOWED(HttpStatus.CONFLICT, "자기가 만든 모임에 가입할 수 없습니다."),
+    IMAGE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 처리에 문제가 발생했습니다.")
 
     ;
 

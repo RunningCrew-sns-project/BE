@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -31,7 +32,7 @@ public interface NotificationControllerDocs {
             }
     )
     @GetMapping("/connect")
-    ResponseEntity<SseEmitter> connect(@RequestParam Long userId);
+    ResponseEntity<SseEmitter> connect(@AuthenticationPrincipal String email);
 
 
 }

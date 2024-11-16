@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,21 +81,24 @@ public class ChatService{
     // roomName 으로 채팅방 만들기
     public ChatRoom createChatRoom(String roomName, MyUser user){
         //채팅방 이름으로 채팅 방 생성후
-        ChatRoom chatRoom = ChatRoom.builder()
+        if(chatRoomRepository.findByTitle(roomName) == null) {
+            ChatRoom chatRoom = ChatRoom.builder()
                 .title(roomName)
                 .createdAt(LocalDateTime.now())
                 .build();
-        chatRoomRepository.save(chatRoom);
-
-        //Repository에 채팅방 저장
-        UserChatMapping userChatMapping = UserChatMapping.builder()
-                .user(user)
-                .chatRoom(chatRoom)
-                .build();
-        userChatMappingRepository.save(userChatMapping);
-        List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
-        chatRoom.setUserCount(userList.size());
-        return chatRoom;
+            chatRoomRepository.save(chatRoom);
+            //Repository에 채팅방 저장
+            UserChatMapping userChatMapping = UserChatMapping.builder()
+                    .user(user)
+                    .chatRoom(chatRoom)
+                    .build();
+            userChatMappingRepository.save(userChatMapping);
+            List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
+            chatRoom.setUserCount(userList.size());
+            return chatRoom;
+        }else {
+            return chatRoomRepository.findByTitle(roomName);
+        }
     }
 
     @ExeTimer
@@ -159,7 +163,11 @@ public class ChatService{
 
     @ExeTimer
     public List<ChatMongoDto> getMessageByRoomId(Integer roomId, MyUser user, Integer limit, Optional<LocalDateTime> lastTime) {
-        LocalDateTime lastTimeStamp = lastTime.orElse(LocalDateTime.now());
+        LocalDateTime lastTimeStamp = lastTime
+                .orElse(LocalDateTime.now())
+                .atZone(ZoneId.systemDefault())  // 현재 시스템 시간대를 사용해 ZonedDateTime 생성
+                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))  // 한국 시간대로 변환
+                .toLocalDateTime();
 
         log.info(lastTimeStamp.toString());
 

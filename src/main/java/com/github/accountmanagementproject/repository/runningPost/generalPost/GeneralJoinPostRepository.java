@@ -23,4 +23,9 @@ public interface GeneralJoinPostRepository extends JpaRepository<GeneralJoinPost
             "GROUP BY g.generalPostId")
     List<Object[]> findGeneralPostsWithParticipantCount();
 
+
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END " +
+            "FROM GeneralJoinPost p " +
+            "WHERE p.generalPostId = :postId AND p.author.email = :email")
+    boolean isPostAuthor(@Param("email") String email, @Param("postId") Long postId);
 }

@@ -12,6 +12,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @Tag(name = "General Run Join Post", description = "일반 유저 및 크루 회원이 이용 가능한 일반 달리기 참여 게시물 관련 API")
@@ -54,7 +59,7 @@ public interface GeneralRunJoinPostControllerDocs {
     )
     Response<GeneralRunPostResponse> createGeneralPost(
             @Parameter(description = "일반 게시글 생성 요청 정보") GeneralRunPostCreateRequest request,
-            @Parameter(description = "유저 이메일") String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String email);
 
     @Operation(summary = "게시글 상세 조회", description = "주어진 runId에 해당하는 일반 달리기 게시글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "게시글 조회 성공",
@@ -132,7 +137,7 @@ public interface GeneralRunJoinPostControllerDocs {
     Response<GeneralRunPostResponse> updatePostById(
             @Parameter(description = "게시글 ID") Long runId,
             @Parameter(description = "수정할 게시글 정보") GeneralRunPostUpdateRequest request,
-            @Parameter(description = "유저 이메일") String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
 
     @Operation(summary = "게시글 삭제", description = "기존의 일반 달리기 게시글을 삭제합니다.")
     @ApiResponse(responseCode = "200", description = "게시글 삭제 성공",
@@ -149,7 +154,7 @@ public interface GeneralRunJoinPostControllerDocs {
     )
     Response<Void> deletePostById(
             @Parameter(description = "게시글 ID *") Long runId,
-            @Parameter(description = "유저 이메일") String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
 
     @Operation(summary = "일반 달리기 모집 게시물 목록 조회", description = "일반 달리기 모집 게시물을 페이징하여 조회합니다.")
     @ApiResponse(responseCode = "200", description = "게시물 목록 조회 성공",

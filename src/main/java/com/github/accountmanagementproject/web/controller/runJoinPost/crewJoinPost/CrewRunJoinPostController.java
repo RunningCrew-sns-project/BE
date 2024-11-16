@@ -49,7 +49,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
     // 게시글 생성
     @PostMapping("/{crewId}/create")
     @ResponseStatus(HttpStatus.CREATED)
-//    @Override
+    @Override
     public Response<CrewRunPostResponse> createCrewPost(
             @RequestBody @Valid CrewRunPostCreateRequest request,
             @PathVariable Long crewId,
@@ -63,11 +63,9 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
     }
 
 
-    // 상세 보기 , crewPostSequence 로 조회
-//    @PreAuthorize("@crewSecurityService.isUserInCrew(authentication, #crewId)") 수정 필요
-//    @PreAuthorize("isAuthenticated()")
+    // 상세 보기
     @GetMapping("/{runId}")
-//    @Override
+    @Override
     public Response<CrewRunPostResponse> getCrewPostByRunId(@PathVariable Long runId, @AuthenticationPrincipal String email) {
         MyUser user = accountConfig.findMyUser(email);
 //        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
@@ -80,7 +78,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     // 글 수정
     @PostMapping("/{crewId}/update/{runId}")
-//    @Override
+    @Override
     public Response<CrewRunPostResponse> updateCrewPost(@PathVariable Long crewId, @PathVariable Long runId,
                                                         @RequestBody @Valid CrewRunPostUpdateRequest request, @AuthenticationPrincipal String email) {
         MyUser user = accountConfig.findMyUser(email);
@@ -94,7 +92,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     // 게시글 삭제
     @DeleteMapping("/{crewId}/delete/{runId}")
-//    @Override
+    @Override
     public Response<Void> deleteCrewPost(@PathVariable Long crewId, @PathVariable Long runId,
                                          @AuthenticationPrincipal String email) {
         MyUser user = accountConfig.findMyUser(email);
@@ -107,17 +105,17 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
 
     // "크루 달리기 모집" 목록 가져오기
-//    @PreAuthorize("isAuthenticated()")
     @CrossOrigin(
             origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
             allowedHeaders = "*",
             allowCredentials = "true"
     )
     @GetMapping("/list")
+    @Override
     public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @AuthenticationPrincipal String email) {
-                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
-//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
-//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
+//                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
 
         PageResponseDto<CrewRunPostResponse> response = crewJoinRunPostService.getAll(pageRequestDto, user);
 

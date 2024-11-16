@@ -72,7 +72,7 @@ public class BlogController implements BlogControllerDocs{
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .httpStatus(HttpStatus.OK)
-                .message(blogService.likeBlog(blogId, user).get())
+                .message(blogService.likeBlog(blogId, user))
                 .build();
 
     }
