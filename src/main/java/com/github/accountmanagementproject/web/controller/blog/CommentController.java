@@ -4,14 +4,10 @@ import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.blog.BlogCommentService;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
-import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/comment")
@@ -22,9 +18,13 @@ public class CommentController implements CommentControllerDocs{
 
     @Override
     @GetMapping
-    public List<CommentResponseDTO> getCommentsByBlogId(@RequestParam(name = "blogId") Integer blogId, @AuthenticationPrincipal String principal) {
-        MyUser user = accountConfig.findMyUser(principal);
-        return blogCommentService.getCommentByBlogId(blogId, user);
+    public CustomSuccessResponse getCommentsByBlogId(@RequestParam(name = "blogId") Integer blogId,
+                                                     @RequestParam(defaultValue = "10") Integer size,
+                                                     @RequestParam(required = false) Integer cursor) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("댓글을 조회했습니다.")
+                .responseData(blogCommentService.getCommentByBlogId(blogId, size, cursor))
+                .build();
     }
 
     @Override
@@ -52,10 +52,12 @@ public class CommentController implements CommentControllerDocs{
 
     @Override
     @DeleteMapping
-    public String deleteComment(@RequestParam Integer commentId,
+    public CustomSuccessResponse deleteComment(@RequestParam Integer commentId,
                                 @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
-        blogCommentService.deleteComment(commentId, user);
-        return "댓글 삭제 완료";
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("댓글을 성공적으로 삭제했습니다.")
+                .responseData(blogCommentService.deleteComment(commentId, user))
+                .build();
     }
 }

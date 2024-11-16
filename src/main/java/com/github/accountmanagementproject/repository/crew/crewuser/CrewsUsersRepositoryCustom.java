@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.repository.crew.crewuser;
 
+import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
 
 import java.util.List;
@@ -13,4 +14,7 @@ public interface CrewsUsersRepositoryCustom {
     List<CrewsUsers> findCrewUsersByCrewId(Long crewId, Boolean all);
 
     long countCrewUsersByCrewId(Long crewId);
+
+    UserAboutCrew findByCrewIdAndUserEmail(Long crewId, String email);
+
 }

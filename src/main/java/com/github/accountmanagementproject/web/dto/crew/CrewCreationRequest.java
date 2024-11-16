@@ -54,8 +54,9 @@ public class CrewCreationRequest {
                 }
             ]""")
     private List<FileDto> fileDtos;
-    @NotBlank(message = "크루 활동 지역은 필수입니다.")
-    private String activityRegion;
+    @NotNull(message = "크루 활동 지역은 필수입니다.")
+    @Schema(description = "크루 활동 지역", example = "서울")
+    private CrewRegion activityRegion;
     @NotNull(message = "크루 최대 인원 설정은 필수입니다.")
     private int maxCapacity;
 }

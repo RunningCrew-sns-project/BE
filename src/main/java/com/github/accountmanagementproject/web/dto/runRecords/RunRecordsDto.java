@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.blog;
+package com.github.accountmanagementproject.web.dto.runRecords;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,16 +11,11 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentResponseDTO {
-    private Integer commentId;
-
-    private Integer blogId;
-
+public class RunRecordsDto {
+    private Integer id;
     private Long userId;
-    private String userName;
-    private String userImg;
-
-    private String content;
-
+    private String record;
+    private String distance;
+    private Integer progress;
     private LocalDateTime createdAt;
 }

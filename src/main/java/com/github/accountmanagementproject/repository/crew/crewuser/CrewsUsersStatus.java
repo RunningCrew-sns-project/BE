@@ -1,9 +1,10 @@
 package com.github.accountmanagementproject.repository.crew.crewuser;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.github.accountmanagementproject.repository.account.user.myenum.MyEnumInterface;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum CrewsUsersStatus implements MyEnumInterface {
     COMPLETED("가입 완료"),
@@ -14,12 +15,5 @@ public enum CrewsUsersStatus implements MyEnumInterface {
 
 
     private final String value;
-
-
-    @Override
-    @JsonValue
-    public String getValue() {
-        return this.value;
-    }
 
 }

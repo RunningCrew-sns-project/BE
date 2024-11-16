@@ -3,18 +3,15 @@ package com.github.accountmanagementproject.web.controller.chat;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.chat.ChatService;
-import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
-import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -27,44 +24,62 @@ public class ChatRoomController implements ChatRoomControllerDocs{
 
     @Override
     @GetMapping("/allRooms")
-    public List<ChatRoomResponse> findAllRoomList(){
-        return chatService.findAllRoom();
+    public CustomSuccessResponse findAllRoomList(@RequestParam(defaultValue = "10") Integer size,
+                                                 @RequestParam(required = false) Integer cursor,
+                                                 @AuthenticationPrincipal String email){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("채팅룸을 조회했습니다.")
+                .responseData(chatService.findAllRoom(size, cursor))
+                .build();
+
     }
     @Override
     @GetMapping("/myRooms")
-    public List<ChatRoomResponse> myChatRoomList(@AuthenticationPrincipal String principal) {
+    public CustomSuccessResponse myChatRoomList(@AuthenticationPrincipal String principal) {
         log.info(principal + "사용자 인증 정보!!!!!");
         MyUser user = accountConfig.findMyUser(principal);
-        return chatService.findMyRoomList(user);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("사용자가 참여한 채팅방을 조회했습니다.")
+                .responseData(chatService.findMyRoomList(user))
+                .build();
+
     }
 
     @Override
     @PostMapping("/createRoom")
-    public String createRoom(@RequestBody String roomName, @AuthenticationPrincipal String principal){
+    public CustomSuccessResponse createRoom(@RequestBody String roomName, @AuthenticationPrincipal String principal){
         log.info(principal);
         MyUser user = accountConfig.findMyUser(principal);
-        ChatRoom chatRoom = chatService.createChatRoom(roomName, user);
-        log.info("Chat room created: {}", chatRoom);
-        return "채팅방 생성 : " + chatRoom.getTitle();
+
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("채팅방 생성을 완료하였습니다.")
+                .responseData(chatService.createChatRoom(roomName, user))
+                .build();
     }
 
     @Override
     @GetMapping("/userlist/{roomId}")
     @ResponseBody
-    public List<String> userList(@PathVariable Integer roomId){
-        return chatService.getUserList(roomId);
+    public CustomSuccessResponse userList(@PathVariable Integer roomId){
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("사용자 정보를 불러왔습니다.")
+                .responseData(chatService.getUserList(roomId))
+                .build();
     }
 
     @Override
     @GetMapping("/message")
-    public ResponseEntity<?> getMessageByRoomId(
+    public CustomSuccessResponse getMessageByRoomId(
             @AuthenticationPrincipal String principal,
             @RequestParam Integer roomId,
             @RequestParam(defaultValue = "10") Integer limit,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> lastTime){
         log.info(principal + "사용자 인증 정보!!!!!");
         MyUser user = accountConfig.findMyUser(principal);
-        return ResponseEntity.ok(chatService.getMessageByRoomId(roomId, user, limit, lastTime));
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("메세지를 불러왔습니다.")
+                .responseData(chatService.getMessageByRoomId(roomId, user, limit, lastTime))
+                .build();
     }
 
 }
