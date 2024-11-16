@@ -81,21 +81,24 @@ public class ChatService{
     // roomName 으로 채팅방 만들기
     public ChatRoom createChatRoom(String roomName, MyUser user){
         //채팅방 이름으로 채팅 방 생성후
-        ChatRoom chatRoom = ChatRoom.builder()
+        if(chatRoomRepository.findByTitle(roomName) == null) {
+            ChatRoom chatRoom = ChatRoom.builder()
                 .title(roomName)
                 .createdAt(LocalDateTime.now())
                 .build();
-        chatRoomRepository.save(chatRoom);
-
-        //Repository에 채팅방 저장
-        UserChatMapping userChatMapping = UserChatMapping.builder()
-                .user(user)
-                .chatRoom(chatRoom)
-                .build();
-        userChatMappingRepository.save(userChatMapping);
-        List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
-        chatRoom.setUserCount(userList.size());
-        return chatRoom;
+            chatRoomRepository.save(chatRoom);
+            //Repository에 채팅방 저장
+            UserChatMapping userChatMapping = UserChatMapping.builder()
+                    .user(user)
+                    .chatRoom(chatRoom)
+                    .build();
+            userChatMappingRepository.save(userChatMapping);
+            List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
+            chatRoom.setUserCount(userList.size());
+            return chatRoom;
+        }else {
+            return chatRoomRepository.findByTitle(roomName);
+        }
     }
 
     @ExeTimer
