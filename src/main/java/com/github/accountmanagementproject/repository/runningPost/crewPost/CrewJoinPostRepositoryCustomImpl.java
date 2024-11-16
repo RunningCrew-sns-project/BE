@@ -58,14 +58,6 @@ public class CrewJoinPostRepositoryCustomImpl implements CrewJoinPostRepositoryC
     // 크루 상세 페이지에 노출되는 목록
     @Override
     public List<CrewJoinPost> findFilteredCrewPosts(Long crewId, LocalDate date, String location, Integer cursor, int size, String sortType) {
-        System.out.println("Input parameters:");
-        System.out.println("crewId: " + crewId);
-        System.out.println("date: " + date);
-        System.out.println("location: " + location);
-        System.out.println("cursor: " + cursor);
-        System.out.println("size: " + size);
-        System.out.println("sortType: " + sortType);
-
         // 조건에 따른 BooleanExpression 설정
         BooleanExpression crewCondition = crewId != null ? crewJoinPost.crew.crewId.eq(crewId) : null;
         BooleanExpression dateCondition = date != null ? crewJoinPost.date.goe(date) : null;
@@ -79,6 +71,7 @@ public class CrewJoinPostRepositoryCustomImpl implements CrewJoinPostRepositoryC
         List<CrewJoinPost> posts = queryFactory.selectFrom(crewJoinPost)
                 .where(crewCondition, dateCondition, locationCondition, cursorCondition) // cursorCondition 추가
                 .leftJoin(crewJoinPost.crewJoinPostImages, crewJoinPostImage).fetchJoin()
+
                 .orderBy(getOrderSpecifier(sortType, crewJoinPost))
                 .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
