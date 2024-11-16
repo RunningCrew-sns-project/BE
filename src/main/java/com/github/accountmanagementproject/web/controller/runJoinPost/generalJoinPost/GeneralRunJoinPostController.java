@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/join-posts/general")
 @CrossOrigin(originPatterns = "*")
-public class GeneralRunJoinPostController {
+public class GeneralRunJoinPostController implements GeneralRunJoinPostControllerDocs {
 // implements GeneralRunJoinPostControllerDocs
     private final GeneralJoinPostRepository generalJoinPostRepository;
     private final GeneralJoinRunPostService generalRunJoinPostService;
@@ -54,13 +54,13 @@ public class GeneralRunJoinPostController {
     // 게시물 생성
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-//    @Override
+    @Override
     public Response<GeneralRunPostResponse> createGeneralPost(
             @RequestBody @Valid GeneralRunPostCreateRequest request,
-            @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+            @AuthenticationPrincipal String email) {
+        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
 
         GeneralJoinPost runJoinPost = generalRunJoinPostService.createGeneralPost(request, user);
         GeneralRunPostResponse responseDto = GeneralRunPostResponse.toDto(runJoinPost);
@@ -143,10 +143,10 @@ public class GeneralRunJoinPostController {
     @PostMapping("/update/{runId}")
     public Response<GeneralRunPostResponse> updatePostById(@PathVariable Long runId,
                                                                  @RequestBody @Valid GeneralRunPostUpdateRequest request,
-                                                           @RequestParam String email) {
-//        MyUser user = accountConfig.findMyUser(email); // TODO: 수정 예정
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+                                                           @AuthenticationPrincipal String email) {
+        MyUser user = accountConfig.findMyUser(email); // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
         GeneralJoinPost updatedPost = generalRunJoinPostService.updateGeneralPost(runId, user, request);
         GeneralRunPostResponse responseDto = GeneralRunPostResponse.toDto(updatedPost);
         return Response.success(HttpStatus.OK, "게시물이 정상 수정되었습니다.", responseDto);
@@ -155,10 +155,10 @@ public class GeneralRunJoinPostController {
 
     // 게시글 삭제
     @DeleteMapping("/delete/{runId}")
-    public Response<Void> deletePostById(@PathVariable Long runId, @RequestParam String email) {
-        //        MyUser user = accountConfig.findMyUser(principal);  // TODO: 수정 예정
-        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+    public Response<Void> deletePostById(@PathVariable Long runId, @AuthenticationPrincipal String email) {
+                MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
         generalRunJoinPostService.deleteGeneralPost(runId, user);
         return Response.success(HttpStatus.OK, "게시물이 정상 삭제되었습니다.", null);
     }
@@ -181,18 +181,18 @@ public class GeneralRunJoinPostController {
 
     // GeneralJoinPost 목록과 참여 인원 수를 반환하는 API
     // Test
-    @GetMapping("/general-count")
-    public List<Map<String, Object>> getGeneralPostsWithParticipantCount() {
-        return generalJoinPostRepository.findGeneralPostsWithParticipantCount().stream().map(result -> {
-            GeneralJoinPost post = (GeneralJoinPost) result[0];
-            Long participantCount = (Long) result[1];
-            Map<String, Object> postInfo = new HashMap<>();
-            postInfo.put("postId", post.getGeneralPostId());
-            postInfo.put("title", post.getTitle());
-            postInfo.put("participantCount", participantCount);
-            return postInfo;
-        }).collect(Collectors.toList());
-    }
+//    @GetMapping("/general-count")
+//    public List<Map<String, Object>> getGeneralPostsWithParticipantCount() {
+//        return generalJoinPostRepository.findGeneralPostsWithParticipantCount().stream().map(result -> {
+//            GeneralJoinPost post = (GeneralJoinPost) result[0];
+//            Long participantCount = (Long) result[1];
+//            Map<String, Object> postInfo = new HashMap<>();
+//            postInfo.put("postId", post.getGeneralPostId());
+//            postInfo.put("title", post.getTitle());
+//            postInfo.put("participantCount", participantCount);
+//            return postInfo;
+//        }).collect(Collectors.toList());
+//    }
 
 
 

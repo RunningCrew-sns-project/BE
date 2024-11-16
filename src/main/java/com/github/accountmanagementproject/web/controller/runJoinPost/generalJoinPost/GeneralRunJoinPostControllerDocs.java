@@ -59,8 +59,7 @@ public interface GeneralRunJoinPostControllerDocs {
     )
     Response<GeneralRunPostResponse> createGeneralPost(
             @Parameter(description = "일반 게시글 생성 요청 정보") GeneralRunPostCreateRequest request,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files,
-            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
+            @Parameter(hidden = true) @AuthenticationPrincipal String email);
 
     @Operation(summary = "게시글 상세 조회", description = "주어진 runId에 해당하는 일반 달리기 게시글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "게시글 조회 성공",
