@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Integer> {
     ChatRoom findTopByOrderByRoomIdDesc();
     Page<ChatRoom> findByRoomIdLessThanOrderByRoomIdDesc(Integer roomId, Pageable pageable);
+    ChatRoom findByTitle(String title);
 }
