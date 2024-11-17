@@ -199,7 +199,7 @@ public class CrewService {
         //객체 저장 - 트랜잭셔널 적용되어있구 원래있던 객체 불러와서 수정한거라 save 안쓰셔도 괜찮습니다
 //        crewsUsersRepository.save(crewsUser);
         Long masterUserId = myUsersRepository.findByEmail(crewMasterEmail).get().getUserId();
-        notificationService.sendKickNotification(outUserId, crewId, masterUserId,  "모임에서 강퇴되었습니다.");
+        notificationService.sendKickNotification(outUserId, crewId, masterUserId,  "모임에서 강퇴되었습니다.");  // 알림
         return "crewUser : " + crewsUser.getCrewsUsersPk().getUser().getNickname() + " 을/를 성공적으로 퇴장시켰습니다.";
     }
 

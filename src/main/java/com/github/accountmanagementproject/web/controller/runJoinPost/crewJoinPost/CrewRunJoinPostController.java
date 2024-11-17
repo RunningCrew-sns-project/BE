@@ -132,7 +132,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
 
     // 참여 신청
-    @PostMapping("join/{runId}")
+    @PostMapping("/join/{runId}")
     @Override
     public Response<CrewRunJoinResponse> participateInCrewRun(
             @PathVariable Long runId,
