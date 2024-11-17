@@ -35,7 +35,7 @@ public class BlogCommentService {
                 .customMessage("블로그를 찾을 수 없습니다.")
                 .build());
 
-        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).orElseThrow(null).getId();
+        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).map(BlogComment::getId).orElse(-1);
 
         PageRequest pageRequest = PageRequest.of(0, size + 1);
         Page<BlogComment> blogCommentPage = blogCommentRepository.findByBlogAndIdLessThanOrderByIdDesc(blog, lastCommentId + 1, pageRequest);
