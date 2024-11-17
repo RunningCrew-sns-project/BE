@@ -28,7 +28,9 @@ public interface CrewMapper {
             expression = "java(isStatusCompleted(crew) ?" +
                     " crew.getJoinDate() " +
                     ": (crew.getStatus() == null ? crew.getCrewsUsersPk().getCrew().getCreatedAt() : crew.getApplicationDate()))")
-    @Mapping(target = "status", source = "crew.status")
+    @Mapping(target = "activityRegion", source = "crew.crewsUsersPk.crew.activityRegion")
+//    @Mapping(target = "memberCount", source = "crew.crewsUsersPk.crew.crewUsers.size()")
+    @Mapping(target = "maxCapacity", source = "crew.crewsUsersPk.crew.maxCapacity")
     MyCrewResponse crewsUsersToMyCrewResponse(CrewsUsers crew);
 
     default boolean isStatusCompleted(CrewsUsers crew) {

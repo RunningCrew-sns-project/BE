@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.repository.crew.crew.QCrew;
 import com.github.accountmanagementproject.repository.crew.crewimage.QCrewImage;
 import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
+import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -109,6 +110,35 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                         )))
                 .execute();
         return result == 1;
+    }
+
+    @Override
+    public List<MyCrewResponse> findMyCrewResponseByEmail(String email, Boolean isAll) {
+        mySearchConditions(email, isAll);
+        return queryFactory.select(Projections.fields(MyCrewResponse.class,
+                        QCREWSUSERS.crewsUsersPk.crew.crewId,
+                        QCREWSUSERS.crewsUsersPk.crew.crewName,
+                        QCrewImage.crewImage.imageUrl.as("crewImageUrl"),
+                        QCREWSUSERS.crewsUsersPk.crew.crewIntroduction,
+                        QCREWSUSERS.crewsUsersPk.crew.activityRegion,
+                        QCREWSUSERS.crewsUsersPk.crew.maxCapacity,
+                        QCREWSUSERS.status,
+                        isAll!=null ? QCREWSUSERS.applicationDate.as("requestOrCompletionDate") : QCREWSUSERS.joinDate.as("requestOrCompletionDate"),
+                        ExpressionUtils.as(
+                                JPAExpressions.select(QCREWSUSERS.count())
+                                        .from(QCREWSUSERS)
+                                        .where(
+                                                QCREWSUSERS.crewsUsersPk.crew.eq(QCrew.crew)
+                                                        .and(QCREWSUSERS.status.eq(CrewsUsersStatus.COMPLETED))
+                                        ), "memberCount")))
+                .from(QCREWSUSERS)
+                .join(QCREWSUSERS.crewsUsersPk.user, QMyUser.myUser)
+                .join(QCREWSUSERS.crewsUsersPk.crew, QCrew.crew)
+                .leftJoin(QCREWSUSERS.crewsUsersPk.crew.crewImages, QCrewImage.crewImage)
+                .where(mySearchConditions(email, isAll))
+                .groupBy(QCREWSUSERS.crewsUsersPk.crew)
+                .orderBy(isAll==null ? QCREWSUSERS.joinDate.desc():QCREWSUSERS.applicationDate.desc())
+                .fetch();
     }
 
 
