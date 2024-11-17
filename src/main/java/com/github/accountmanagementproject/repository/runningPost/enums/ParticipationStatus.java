@@ -1,14 +1,13 @@
-package com.github.accountmanagementproject.repository.runningPost.userRunGroups;
-
-import com.github.accountmanagementproject.repository.runningPost.enums.BaseEnum;
+package com.github.accountmanagementproject.repository.runningPost.enums;
 
 
-public enum ParticipationStatus implements BaseEnum  {
+public enum ParticipationStatus implements BaseEnum {
 
     PENDING("가입 대기"),
     APPROVED("가입 완료"),
     REJECTED("가입 거절"),
     FORCED_EXIT("강제 퇴장");    // 강퇴 상태 추가
+
 
     private final String value;
 
