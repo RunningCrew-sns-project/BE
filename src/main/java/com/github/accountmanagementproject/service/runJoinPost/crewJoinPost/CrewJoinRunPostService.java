@@ -10,6 +10,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRe
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
+import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
@@ -48,6 +49,7 @@ public class CrewJoinRunPostService {
     private final CrewJoinPostRepository crewJoinPostRepository;
     private final MyUsersRepository userRepository;
     private final CrewsRepository crewRepository;
+    private final CrewRunGroupRepository crewRunGroupRepository;
     private final CrewsUsersRepository crewsUsersRepository;
     private final StorageService storageService;
     private final CrewJoinPostQueryService crewJoinPostQueryService;
@@ -153,7 +155,10 @@ public class CrewJoinRunPostService {
         Crew crew = crewRepository.findByIdWithImages(crewPost.getCrew().getCrewId())
                 .orElseThrow(
                         () -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND, "Crew not found with crewId: " + crewPost.getCrew().getCrewId()));
-        return CrewRunPostResponseMapper.toDto(crewPost, crew);
+//        return CrewRunPostResponseMapper.toDto(crewPost, crew);
+        CrewRunPostResponse response = CrewRunPostResponseMapper.toDto(crewPost, crew);
+        response.setPeople(crewRunGroupRepository.countParticipantsByPostId(crewPost.getCrewPostId()));
+        return response;
     }
 
 
@@ -171,7 +176,9 @@ public class CrewJoinRunPostService {
             updatePostFields(crewPost, request, user);  // 게시글 필드 업데이트
 
             CrewJoinPost updatedPost = crewJoinPostRepository.save(crewPost);
-            return CrewRunPostResponseMapper.toDto(updatedPost, crew);
+            CrewRunPostResponse response = CrewRunPostResponseMapper.toDto(updatedPost, crew);
+            response.setPeople(crewRunGroupRepository.countParticipantsByPostId(updatedPost.getCrewPostId()));
+            return response;
         } catch (Exception e) {
             handleUpdateFailure(request);   // 실패 시 새로 업로드된 이미지들 삭제
             throw new SimpleRunAppException(ErrorCode.STORAGE_UPDATE_FAILED,
@@ -311,7 +318,10 @@ public class CrewJoinRunPostService {
                                     "Crew not found for crewJoinPost"));
 
                     // CrewRunPostResponseMapper를 사용하여 DTO로 변환
-                    return CrewRunPostResponseMapper.toDto(post, crew);
+//                    return CrewRunPostResponseMapper.toDto(post, crew);
+                    CrewRunPostResponse response = CrewRunPostResponseMapper.toDto(post, crew);
+                    response.setPeople(crewRunGroupRepository.countParticipantsByPostId(post.getCrewPostId()));
+                    return response;
                 })
                 .toList();
 
