@@ -139,7 +139,7 @@ public class BlogService {
                 .toList();
 
         BlogDetails blogDetails = BlogMapper.INSTANCE.blogToBlogDetailsDTO(blog);
-        blogDetails.setLiked(userLikesBlogRepository.findByUserAndBlog(user, blog).getIsLiked());
+        blogDetails.setLiked(userLikesBlogRepository.findByUserAndBlog(user, blog) != null && userLikesBlogRepository.findByUserAndBlog(user, blog).getIsLiked());
         blogDetails.setImageUrl(imageUrlList);
 
         return blogDetails;
