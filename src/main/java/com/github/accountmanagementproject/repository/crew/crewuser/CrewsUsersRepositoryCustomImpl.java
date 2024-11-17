@@ -9,9 +9,11 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -91,6 +93,22 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                 .where(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId)
                         .and(QCREWSUSERS.crewsUsersPk.user.userId.eq(badUserId)))
                 .execute();
+    }
+
+    @Override
+    public boolean withdrawalCrew(String email, Long crewId) {
+        long result = queryFactory.update(QCREWSUSERS)
+                .set(QCREWSUSERS.status, CrewsUsersStatus.WITHDRAWAL)
+                .set(QCREWSUSERS.withdrawalDate, LocalDateTime.now())
+                .where(QCREWSUSERS.status.eq(CrewsUsersStatus.COMPLETED)
+                        .and(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId))
+                        .and(QCREWSUSERS.crewsUsersPk.user.userId.eq(
+                                JPAExpressions.select(QMyUser.myUser.userId)
+                                        .from(QMyUser.myUser)
+                                        .where(QMyUser.myUser.email.eq(email))
+                        )))
+                .execute();
+        return result == 1;
     }
 
 

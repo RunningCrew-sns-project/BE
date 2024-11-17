@@ -18,4 +18,6 @@ public interface CrewsUsersRepositoryCustom {
     UserAboutCrew findByCrewIdAndUserEmail(Long crewId, String email);
 
     void findByPkAndPlusCaveatCount(Long crewId, Long badUserId);
+
+    boolean withdrawalCrew(String email, Long crewId);
 }

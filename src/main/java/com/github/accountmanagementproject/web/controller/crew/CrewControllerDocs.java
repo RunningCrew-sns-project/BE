@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
+    @Operation(summary = "크루 탈퇴", description = "크루 탈퇴 탈퇴 후 하루지나서 재가입 가능")
+    CustomSuccessResponse withdrawalCrew( Long crewId,  String email);
     @Operation(summary = "크루원 간단 조회", description = "크루원 조회")
     CustomSuccessResponse getSimplyCrewUsers(Long crewId);
     @Operation(summary = "특정 크루에 대한 나의 정보 조회", description = "크루에 대한 나의 정보 조회")

@@ -96,6 +96,14 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
+    @DeleteMapping("/{crewId}/users")
+    public CustomSuccessResponse withdrawalCrew(@PathVariable Long crewId, @AuthenticationPrincipal String email) {
+        crewService.withdrawalCrew(email, crewId);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 탈퇴 성공")
+                .build();
+    }
+
     //퇴장 시키기
     @Override
     @DeleteMapping("/sendOutCrew")

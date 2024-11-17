@@ -332,7 +332,7 @@ public class CrewService {
 
 
     @Transactional
-    public Object giveAUserAYellowCard(String masterEmail, Long crewId, Long badUserId) {
+    public Map<String,Object> giveAUserAYellowCard(String masterEmail, Long crewId, Long badUserId) {
         isCrewMaster(masterEmail, crewId);
         CrewsUsersPk pk = makeCrewsUsersPk(crewId, badUserId);
         CrewsUsers badUser = findCrewsUsersAndValidation(pk);
@@ -347,5 +347,15 @@ public class CrewService {
             badUser.setCaveat(badUser.getCaveat()+1);
             return Map.of("message", "경고가 부여되었습니다.", "caveat", badUser.getCaveat());
         }
+    }
+
+    @Transactional
+    public void withdrawalCrew(String email, Long crewId) {
+        boolean result = crewsUsersRepository.withdrawalCrew(email, crewId);
+        if(!result)
+            throw new CustomNotFoundException.ExceptionBuilder()
+                    .customMessage("해당 크루의 가입 완료상태인 유저가 아니거나 존재하지 않는 크루")
+                    .request(Map.of("email", email, "crewId", crewId))
+                    .build();
     }
 }
