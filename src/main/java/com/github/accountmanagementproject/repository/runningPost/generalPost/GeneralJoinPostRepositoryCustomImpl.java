@@ -2,7 +2,7 @@ package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
 import com.github.accountmanagementproject.repository.runningPost.image.QRunJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.QRunGroup;
-import com.github.accountmanagementproject.repository.runningPost.userRunGroups.ParticipationStatus;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -28,7 +28,8 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
         BooleanExpression dateCondition = date != null ? generalJoinPost.date.goe(date) : null;
         BooleanExpression locationCondition = location != null && !location.trim().isEmpty() && !location.equals("전체")
                 ? generalJoinPost.location.eq(location) : null;
-        BooleanExpression cursorCondition = cursor != null ? generalJoinPost.generalPostId.lt(cursor) : null;
+        // cursor 값이 너무 작은 경우 무시하거나, 적절한 값으로 조정
+        BooleanExpression cursorCondition = (cursor != null && cursor > 10000) ? generalJoinPost.generalPostId.lt(cursor) : null;
 
         List<GeneralJoinPost> posts = queryFactory
                 .selectFrom(generalJoinPost)

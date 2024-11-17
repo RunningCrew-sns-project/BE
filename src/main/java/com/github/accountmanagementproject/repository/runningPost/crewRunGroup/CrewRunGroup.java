@@ -1,9 +1,11 @@
-package com.github.accountmanagementproject.repository.runningPost.runGroup;
+package com.github.accountmanagementproject.repository.runningPost.crewRunGroup;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
-import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
+import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupId;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,11 +19,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "run_group")
-public class RunGroup {
+@Table(name = "crew_run_group")
+public class CrewRunGroup {
 
     @EmbeddedId
-    private RunGroupId id = new RunGroupId();
+    private CrewRunGroupId id = new CrewRunGroupId();
 
     @MapsId("userId")  // RunGroupId의 userId 필드와 매핑
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,9 +35,9 @@ public class RunGroup {
     private MyUser approver;  // 승인해주는 사람 (방장)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("generalPostId")  // 복합 키의 generalPostId와 매핑
-    @JoinColumn(name = "general_post_id", nullable = false)
-    private GeneralJoinPost generalJoinPost;
+    @MapsId("crewPostId")  // 복합 키의 crewPostId와 매핑
+    @JoinColumn(name = "crew_post_id", nullable = false)
+    private CrewJoinPost crewJoinPost;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -51,12 +53,11 @@ public class RunGroup {
     @Column(name = "status_updated_at")
     private LocalDateTime statusUpdatedAt = LocalDateTime.now();
 
-
     // 연관 관계 편의 메서드
-    public void setGeneralJoinPost(GeneralJoinPost generalJoinPost) {
-        this.generalJoinPost = generalJoinPost;
-        if (generalJoinPost != null && !generalJoinPost.getParticipants().contains(this)) {
-            generalJoinPost.addParticipant(this);
+    public void setGeneralJoinPost(CrewJoinPost crewJoinPost) {
+        this.crewJoinPost = crewJoinPost;
+        if (crewJoinPost != null && !crewJoinPost.getParticipants().contains(this)) {
+            crewJoinPost.addParticipant(this);
         }
     }
 
