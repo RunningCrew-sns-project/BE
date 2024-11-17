@@ -71,11 +71,12 @@ public class JwtProvider {
 
 
     //리프레시 토큰의 유효시간만큼 저장기간을 설정하고 레디스에 저장 이후 Dto 생성
-    public TokenDto saveRefreshTokenAndCreateTokenDto(String accessToken, String refreshToken, Duration exp){
+    public TokenDto saveRefreshTokenAndCreateTokenDto(Object userId, String accessToken, String refreshToken, Duration exp){
 
         redisRepository.save(accessToken, refreshToken, exp);
 
         return TokenDto.builder()
+                .userId(userId)
                 .tokenType(getTokenType())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -94,23 +95,25 @@ public class JwtProvider {
     }
 
     @Transactional
-    public TokenDto tokenRefresh(String accessToken, String clientRefreshToken){
+    public TokenDto tokenRefresh(TokenDto tokenDto){
+        String oldAccess = tokenDto.getAccessToken();
+        String clientRefreshToken = tokenDto.getRefreshToken();
         //리프레시 토큰 유효성 검사와 파싱
-        Jws<Claims> refreshTokenClaims = tokenParsing(clientRefreshToken);
+        Jws<Claims> refreshTokenClaims = tokenParsing( clientRefreshToken );
 
-        String dbRefreshToken = redisRepository.getAndDeleteValue(accessToken);//가져오면서 지움
+        String dbRefreshToken = redisRepository.getAndDeleteValue( oldAccess );//가져오면서 지움
         //사용자의 리프레시토큰과 db의 리프레시토큰 대조
         if(!clientRefreshToken.equals(dbRefreshToken)) throw new NoSuchElementException("Not Found Exception");
 
         //payload 추출
-        Map<String, Object> payload = extractPayloadFromToken(accessToken);
+        Map<String, Object> payload = extractPayloadFromToken( oldAccess );
         //새로운 액세스 토큰 생성
         String newAccessToken = createNewAccessToken(payload.get("sub").toString(), payload.get("roles").toString());
         // 리프레시 토큰 유효시간
         Date refreshTokenExp = refreshTokenClaims.getPayload().getExpiration();
         // 해당 유효시간으로 새로운 토큰 생성
         String newRefreshToken = createRefreshToken(refreshTokenExp);
-        return saveRefreshTokenAndCreateTokenDto(newAccessToken, newRefreshToken,
+        return saveRefreshTokenAndCreateTokenDto(tokenDto.getUserId() ,newAccessToken, newRefreshToken,
                 Duration.between(Instant.now(), refreshTokenExp.toInstant()));
 
 

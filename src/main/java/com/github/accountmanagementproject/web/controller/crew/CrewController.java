@@ -96,6 +96,14 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
+    @DeleteMapping("/{crewId}/users")
+    public CustomSuccessResponse withdrawalCrew(@PathVariable Long crewId, @AuthenticationPrincipal String email) {
+        crewService.withdrawalCrew(email, crewId);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 탈퇴 성공")
+                .build();
+    }
+
     //퇴장 시키기
     @Override
     @DeleteMapping("/sendOutCrew")
@@ -142,5 +150,13 @@ public class CrewController implements CrewControllerDocs {
                 .build();
     }
 
+
+    @PutMapping("/{crewId}/admin/users")
+    public CustomSuccessResponse userAYellowCard(@PathVariable Long crewId, @RequestParam Long badUserId, @AuthenticationPrincipal String masterEmail) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("경고 성공")
+                .responseData(crewService.giveAUserAYellowCard(masterEmail, crewId, badUserId))
+                .build();
+    }
 
 }

@@ -11,4 +11,5 @@ public class TokenDto {
     private String tokenType;
     private String accessToken;
     private String refreshToken;
+    private Object userId;
 }

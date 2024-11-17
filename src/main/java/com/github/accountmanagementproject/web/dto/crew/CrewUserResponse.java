@@ -22,5 +22,7 @@ public class CrewUserResponse extends CrewUserParent {
     private int caveat;
     @Schema(description = "유저 가입신청 또는 가입 날짜", example = "2021-08-01T00:00:00")
     private LocalDateTime joinRequestOrJoinDate;
+    @Schema(description = "유저 고유 아이디", example = "22")
+    private Long userId;
 
 }
