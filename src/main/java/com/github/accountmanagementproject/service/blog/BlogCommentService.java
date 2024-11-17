@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.service.blog;
 
+import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
 import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
@@ -26,6 +27,7 @@ import java.util.List;
 public class BlogCommentService {
     private final BlogCommentRepository blogCommentRepository;
     private final BlogRepository blogRepository;
+    private final AccountConfig accountConfig;
 
     @ExeTimer
     public ScrollPaginationCollection<CommentResponseDTO> getCommentByBlogId(Integer blogId, Integer size, Integer cursor) {
@@ -33,9 +35,7 @@ public class BlogCommentService {
                 .customMessage("블로그를 찾을 수 없습니다.")
                 .build());
 
-        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
-                .customMessage("댓글이 없습니다.")
-                .build()).getId();
+        Integer lastCommentId = (cursor != null) ? cursor : blogCommentRepository.findTopByBlogOrderByIdDesc(blog).orElseThrow(null).getId();
 
         PageRequest pageRequest = PageRequest.of(0, size + 1);
         Page<BlogComment> blogCommentPage = blogCommentRepository.findByBlogAndIdLessThanOrderByIdDesc(blog, lastCommentId + 1, pageRequest);
@@ -58,23 +58,26 @@ public class BlogCommentService {
 
     @ExeTimer
     @Transactional
-    public BlogComment createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
+    public CommentResponseDTO createComment(Integer blogId, CommentRequestDTO comment, MyUser user) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(()-> new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("블로그를 찾을 수 없습니다.")
                 .build());
+
         BlogComment blogComment = BlogComment.builder()
                 .blog(blog)
                 .content(comment.getContent())
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .build();
+
         blogCommentRepository.save(blogComment);
-        return blogComment;
+
+        return CommentMapper.INSTANCE.commentToCommentResponseDTO(blogComment);
     }
 
     @ExeTimer
     @Transactional
-    public BlogComment updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
+    public CommentResponseDTO updateComment(Integer commentId, CommentRequestDTO comment, MyUser user) {
         BlogComment blogComment = blogCommentRepository.findById(commentId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("댓글을 찾을 수 없습니다.")
                 .build());
@@ -89,7 +92,7 @@ public class BlogCommentService {
         blogComment.setContent(comment.getContent());
         blogCommentRepository.save(blogComment);
 
-        return blogComment;
+        return CommentMapper.INSTANCE.commentToCommentResponseDTO(blogComment);
     }
 
     @ExeTimer

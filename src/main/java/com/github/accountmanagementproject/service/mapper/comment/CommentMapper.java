@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import org.springframework.data.jpa.repository.Query;
 
 @Mapper
 public interface CommentMapper {
