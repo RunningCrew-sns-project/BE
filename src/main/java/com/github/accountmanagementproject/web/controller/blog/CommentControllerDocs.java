@@ -21,8 +21,7 @@ public interface CommentControllerDocs {
 
     @Operation(summary = "댓글 작성")
     @Parameters({
-        @Parameter(name = "blogId", description = "댓글 작성할 블로그 아이디"),
-        @Parameter(name = "comment", description = "댓글 작성 내용", example = "작성할 댓글 내용")
+        @Parameter(name = "blogId", description = "댓글 작성할 블로그 아이디")
     })
     @PostMapping
     CustomSuccessResponse createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
@@ -30,8 +29,7 @@ public interface CommentControllerDocs {
 
     @Operation(summary = "댓글 수정")
     @Parameters({
-            @Parameter(name = "commentId", description = "수정할 댓글 아이디"),
-            @Parameter(name = "comment", description = "수정할 댓글 내용")
+            @Parameter(name = "commentId", description = "수정할 댓글 아이디")
     })
     @PutMapping
     CustomSuccessResponse updateComment(@RequestParam(name = "commentId") Integer commentId, @RequestBody CommentRequestDTO comment,

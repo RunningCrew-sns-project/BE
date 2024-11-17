@@ -246,6 +246,7 @@ public class BlogService {
                         userLikesBlogRepository.save(userLikesBlog);
                     }else {
                         userLikesBlog.setIsLiked(isLiked);
+                        userLikesBlogRepository.save(userLikesBlog);
                     }
 
                     //TODO : 여기서 레디스 데이터 가져올때

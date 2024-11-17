@@ -29,7 +29,8 @@ public class CommentController implements CommentControllerDocs{
 
     @Override
     @PostMapping
-    public CustomSuccessResponse createComment(@RequestParam(name = "blogId") Integer blogId, @RequestBody CommentRequestDTO comment,
+    public CustomSuccessResponse createComment(@RequestParam(name = "blogId") Integer blogId,
+                                               @RequestBody CommentRequestDTO comment,
                                                @AuthenticationPrincipal String principal) {
         MyUser user = accountConfig.findMyUser(principal);
 
