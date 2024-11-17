@@ -84,6 +84,15 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
                 .fetchOne();
     }
 
+    @Override
+    public void findByPkAndPlusCaveatCount(Long crewId, Long badUserId) {
+       queryFactory.update(QCREWSUSERS)
+                .set(QCREWSUSERS.caveat, QCREWSUSERS.caveat.add(1))
+                .where(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId)
+                        .and(QCREWSUSERS.crewsUsersPk.user.userId.eq(badUserId)))
+                .execute();
+    }
+
 
     private <T> BooleanExpression mySearchConditions(T emailOrCrewId, Boolean isAll){
         BooleanExpression expression;

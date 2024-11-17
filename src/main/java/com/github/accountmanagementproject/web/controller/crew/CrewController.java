@@ -143,4 +143,12 @@ public class CrewController implements CrewControllerDocs {
     }
 
 
+    @PutMapping("/{crewId}/admin/users")
+    public CustomSuccessResponse userAYellowCard(@PathVariable Long crewId, @RequestParam Long badUserId, @AuthenticationPrincipal String masterEmail) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("경고 성공")
+                .responseData(crewService.giveAUserAYellowCard(masterEmail, crewId, badUserId))
+                .build();
+    }
+
 }

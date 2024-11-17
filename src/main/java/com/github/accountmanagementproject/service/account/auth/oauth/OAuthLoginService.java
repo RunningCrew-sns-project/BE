@@ -75,7 +75,7 @@ public class OAuthLoginService {
         String refreshToken = jwtProvider.createNewRefreshToken();
         try {
             myUser.loginValueSetting(false);
-            return jwtProvider.saveRefreshTokenAndCreateTokenDto(accessToken, refreshToken, Duration.ofMinutes(3));
+            return jwtProvider.saveRefreshTokenAndCreateTokenDto(myUser.getUserId(),accessToken, refreshToken, Duration.ofMinutes(3));
         } catch (RedisConnectionFailureException e) {
             throw new CustomServerException.ExceptionBuilder()
                     .systemMessage(e.getMessage())

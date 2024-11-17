@@ -83,6 +83,13 @@ public class CrewService {
     public CrewJoinResponse joinTheCrew(String email, Long crewId) {
         MyUser user = accountConfig.findMyUser(email);
         Crew crew = findsCrewById(crewId);
+        long crewUserCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
+
+        if(crew.getMaxCapacity() <= crewUserCount)
+            throw new CustomBadRequestException.ExceptionBuilder()
+                    .customMessage("크루 인원이 가득 찼습니다.")
+                    .request(crewUserCount)
+                    .build();
 
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, user);
 
@@ -305,5 +312,40 @@ public class CrewService {
                 masterResponse :
                 crewsUsersRepository.findByCrewIdAndUserEmail(crewId, email);
 
+    }
+    private CrewsUsersPk makeCrewsUsersPk(Long crewId, Long userId) {
+        Crew crew = new Crew();
+        crew.setCrewId(crewId);
+        MyUser user = new MyUser();
+        user.setUserId(userId);
+        return new CrewsUsersPk(crew, user);
+    }
+    private CrewsUsers findCrewsUsersAndValidation(CrewsUsersPk pk){
+        CrewsUsers badUser = crewsUsersRepository.findById(pk)
+                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                        .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(pk.getCrew().getCrewId()+" "+pk.getUser().getUserId()).build());
+        if(badUser.getStatus()!=CrewsUsersStatus.COMPLETED)
+            throw new CustomBadRequestException.ExceptionBuilder()
+                    .customMessage("가입 완료 상태의 멤버가 아닙니다.").request(badUser.getStatus()).build();
+        return badUser;
+    }
+
+
+    @Transactional
+    public Object giveAUserAYellowCard(String masterEmail, Long crewId, Long badUserId) {
+        isCrewMaster(masterEmail, crewId);
+        CrewsUsersPk pk = makeCrewsUsersPk(crewId, badUserId);
+        CrewsUsers badUser = findCrewsUsersAndValidation(pk);
+
+        if(badUser.getCaveat() >= 2){
+            badUser.setCaveat(badUser.getCaveat()+1);
+            badUser.setStatus(CrewsUsersStatus.FORCED_EXIT);
+            badUser.setWithdrawalDate(LocalDateTime.now());
+            return Map.of("message", "누적 경고 3회로 유저가 강퇴되었습니다.", "status", badUser.getStatus(),
+                    "releaseDay", badUser.getReleaseDay(), "caveat", badUser.getCaveat());
+        }else {
+            badUser.setCaveat(badUser.getCaveat()+1);
+            return Map.of("message", "경고가 부여되었습니다.", "caveat", badUser.getCaveat());
+        }
     }
 }

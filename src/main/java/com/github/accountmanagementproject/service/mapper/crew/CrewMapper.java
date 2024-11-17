@@ -73,6 +73,7 @@ public interface CrewMapper {
     @Mapping(target = "nickname", source = "crewsUsersPk.user.nickname")
     @Mapping(target = "userImageUrl", source = "crewsUsersPk.user.profileImg")
     @Mapping(target = "profileMessage", source = "crewsUsersPk.user.profileMessage")
+    @Mapping(target = "userId", source = "crewsUsersPk.user.userId")
     @Mapping(target = "gender", source = "crewsUsersPk.user.gender")
     @Mapping(target = "lastLoginDate", source = "crewsUsersPk.user.lastLogin")
     @Mapping(target = "joinRequestOrJoinDate", expression =

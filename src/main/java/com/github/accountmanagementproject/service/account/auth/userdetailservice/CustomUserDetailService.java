@@ -34,7 +34,7 @@ public class CustomUserDetailService implements UserDetailsService {
         checkLockedOrDisable(myUser);
 
         HttpSession session = request.getSession();
-        session.setAttribute("myUser", myUser);
+        session.setAttribute("userId", myUser.getUserId());
 
 
         return User.builder()

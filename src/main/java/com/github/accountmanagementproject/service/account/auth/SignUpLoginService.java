@@ -12,6 +12,7 @@ import com.github.accountmanagementproject.web.dto.account.auth.LoginRequest;
 import com.github.accountmanagementproject.web.dto.account.auth.SignUpRequest;
 import com.github.accountmanagementproject.web.dto.account.auth.TokenDto;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +37,7 @@ public class SignUpLoginService {
 
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final HttpServletRequest request;
 
 
     @Transactional
@@ -66,8 +68,10 @@ public class SignUpLoginService {
                 .collect(Collectors.joining(","));
             String accessToken = jwtProvider.createNewAccessToken(authentication.getName(), roles);
             String refreshToken = jwtProvider.createNewRefreshToken();
+
+
             try {
-                return jwtProvider.saveRefreshTokenAndCreateTokenDto(accessToken, refreshToken, Duration.ofMinutes(3));
+                return jwtProvider.saveRefreshTokenAndCreateTokenDto(request.getSession().getAttribute("userId"), accessToken, refreshToken, Duration.ofMinutes(3));
             }catch (RedisConnectionFailureException e){
                 e.printStackTrace();
                 throw new CustomServerException.ExceptionBuilder()
@@ -79,7 +83,7 @@ public class SignUpLoginService {
 
     public TokenDto refreshTokenByTokenDto(TokenDto tokenDto) {
         try{
-            return jwtProvider.tokenRefresh(tokenDto.getAccessToken(), tokenDto.getRefreshToken());
+            return jwtProvider.tokenRefresh(tokenDto);
         }catch (RedisConnectionFailureException e){
             throw new CustomServerException.ExceptionBuilder()
                     .systemMessage(e.getMessage())
