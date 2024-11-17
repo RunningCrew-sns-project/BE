@@ -148,7 +148,10 @@ public class CrewJoinRunPostService {
 
         CrewJoinPost crewPost = getCrewPost(runId);
 
-        if (!isAuthorizedUser(crewPost.getCrew().getCrewId(), user)) {
+//        if (!isAuthorizedUser(crewPost.getCrew().getCrewId(), user)) {
+//            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_VIEW);
+//        }
+        if (!isAuthorizedUser(crewPost, user)) {  // CrewJoinPost 객체 전달
             throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_VIEW);
         }
 
@@ -161,21 +164,42 @@ public class CrewJoinRunPostService {
         return response;
     }
 
+    public boolean isAuthorizedUser(CrewJoinPost post, MyUser user) {
+        // 게시글 작성자인 경우
+        if (post.getAuthor().getUserId().equals(user.getUserId())) {
+            return true;
+        }
+
+        // 크루 마스터이거나 크루 멤버인 경우
+        return crewRepository.findById(post.getCrew().getCrewId())
+                .map(crew -> crew.getCrewMaster().getUserId().equals(user.getUserId()) ||
+                        crewsUsersRepository.existsByCrewIdAndUserIdAndStatus(
+                                crew.getCrewId(), user.getUserId(), CrewsUsersStatus.COMPLETED))
+                .orElse(false);
+    }
+
 
     // 크루 글 수정
     @Transactional
     @CacheEvict(allEntries = true)
     public CrewRunPostResponse updateCrewPostByRunId(Long runId, Long crewId, MyUser user, CrewRunPostUpdateRequest request) {
 
-        Crew crew = validateUserAndCrew(user, crewId);
         CrewJoinPost crewPost = getCrewPost(runId);
-        validatePostAuthor(crewPost, user);
+
+        // 권한 검증
+        if (!isAuthorizedToEdit(crewPost, user)) {
+            throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_POST_EDIT_OR_DELETE_AUTHOR_ONLY);
+        }
 
         try {
             handleImageUpdate(crewPost, request);  // 이미지 업데이트
             updatePostFields(crewPost, request, user);  // 게시글 필드 업데이트
 
             CrewJoinPost updatedPost = crewJoinPostRepository.save(crewPost);
+
+            Crew crew = crewRepository.findByIdWithImages(crewPost.getCrew().getCrewId())
+                    .orElseThrow(() -> new SimpleRunAppException(ErrorCode.CREW_NOT_FOUND));
+
             CrewRunPostResponse response = CrewRunPostResponseMapper.toDto(updatedPost, crew);
             response.setPeople(crewRunGroupRepository.countParticipantsByPostId(updatedPost.getCrewPostId()));
             return response;
@@ -184,6 +208,17 @@ public class CrewJoinRunPostService {
             throw new SimpleRunAppException(ErrorCode.STORAGE_UPDATE_FAILED,
                     String.format("Error while deleting post: %s", e.getMessage()));
         }
+    }
+
+    // 수정 권한 확인
+    private boolean isAuthorizedToEdit(CrewJoinPost post, MyUser user) {
+        // 게시글 작성자인 경우
+        if (post.getAuthor().getUserId().equals(user.getUserId())) {
+            return true;
+        }
+
+        // 크루 마스터인 경우
+        return post.getCrew().getCrewMaster().getUserId().equals(user.getUserId());
     }
 
 
