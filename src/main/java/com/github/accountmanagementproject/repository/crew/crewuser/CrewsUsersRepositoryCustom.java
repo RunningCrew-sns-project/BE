@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.repository.crew.crewuser;
 
 import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
+import com.github.accountmanagementproject.web.dto.crew.CrewAndUserResponse;
 import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
 import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 
@@ -23,4 +24,6 @@ public interface CrewsUsersRepositoryCustom {
     boolean withdrawalCrew(String email, Long crewId);
 
     List<MyCrewResponse> findMyCrewResponseByEmail(String email, Boolean isAll);
+
+    List<CrewAndUserResponse> myCrewPendingUsers(String email);
 }

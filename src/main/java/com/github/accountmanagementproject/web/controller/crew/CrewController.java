@@ -88,6 +88,16 @@ public class CrewController implements CrewControllerDocs {
                 .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
                 .build();
     }
+
+    @GetMapping("/all/admin/users")
+    public CustomSuccessResponse getAllMyCrewUsersForNotifications(@AuthenticationPrincipal String email) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("내 크루 멤버 조회 성공")
+                .responseData(crewService.getAllMyCrewAWaitingUsers(email))
+                .build();
+    }
+
+
     @GetMapping("/{crewId}/users")
     public CustomSuccessResponse getSimplyCrewUsers(@PathVariable Long crewId) {
         return new CustomSuccessResponse.SuccessDetail()
@@ -158,5 +168,6 @@ public class CrewController implements CrewControllerDocs {
                 .responseData(crewService.giveAUserAYellowCard(masterEmail, crewId, badUserId))
                 .build();
     }
+
 
 }

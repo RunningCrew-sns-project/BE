@@ -1,8 +1,6 @@
 package com.github.accountmanagementproject.web.controller.runJoinPost.generalJoinPost;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.exception.SimpleRunAppException;
-import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
@@ -11,7 +9,6 @@ import com.github.accountmanagementproject.service.runJoinPost.generalJoinPost.G
 import com.github.accountmanagementproject.service.runJoinPost.generalJoinPost.GeneralJoinRunPostService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
-import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
@@ -19,21 +16,14 @@ import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRu
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GenRunJoinUpdateResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
-import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.JoinResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -126,7 +116,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     @Override
     public Response<GeneralJoinResponse> joinGeneralPost(
             @PathVariable Long runId,
-            @RequestParam String email) {
+            @AuthenticationPrincipal String email) {
 
         GeneralJoinResponse response = alarmService.applyToJoinPost(email, runId);
         return Response.success(HttpStatus.OK,"참여 신청이 완료되었습니다.", response);
@@ -153,7 +143,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     public Response<GenRunJoinUpdateResponse> approveOrReject(
             @PathVariable Long runId,
             @PathVariable Long userId,   // 신청자
-            @RequestParam(required = false) String email) {
+            @AuthenticationPrincipal String email) {
 
         GenRunJoinUpdateResponse result = alarmService.processNewParticipation(runId, userId, email);
         return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
@@ -166,7 +156,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     public Response<GenRunJoinUpdateResponse> kickParticipant(
             @PathVariable Long runId,
             @PathVariable Long userId,
-            @RequestParam String email
+            @AuthenticationPrincipal String email
     ) {
 
         GenRunJoinUpdateResponse result = alarmService.forceToKickOut(email, runId, userId);

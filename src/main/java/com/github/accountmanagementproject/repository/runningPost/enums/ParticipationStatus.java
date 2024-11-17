@@ -3,9 +3,9 @@ package com.github.accountmanagementproject.repository.runningPost.enums;
 
 public enum ParticipationStatus implements BaseEnum {
 
-    PENDING("가입 대기"),
-    APPROVED("가입 완료"),
-    REJECTED("가입 거절"),
+    PENDING("참여 대기"),
+    APPROVED("참여 확정"),
+    REJECTED("참여 거절"),
     FORCED_EXIT("강제 퇴장");    // 강퇴 상태 추가
 
 
