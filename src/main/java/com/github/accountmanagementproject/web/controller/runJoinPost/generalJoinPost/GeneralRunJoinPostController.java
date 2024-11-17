@@ -123,6 +123,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 
     // 참여 신청
     @PostMapping("/join/{runId}")
+    @Override
     public Response<GeneralJoinResponse> joinGeneralPost(
             @PathVariable Long runId,
             @RequestParam String email) {
@@ -148,6 +149,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 
     // 승인 또는 거절
     @PostMapping("/{runId}/approveOrReject/{userId}")
+    @Override
     public Response<GenRunJoinUpdateResponse> approveOrReject(
             @PathVariable Long runId,
             @PathVariable Long userId,   // 신청자
@@ -157,19 +159,10 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
         return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
     }
 
-//    {
-//        "resultCode": "success",
-//            "code": 200,
-//            "httpStatus": "OK",
-//            "message": "처리가 완료되었습니다.",
-//            "detailMessage": null,
-//            "responseData": "요청 유저: 졸령의 요청을 승인했습니다.",
-//            "timestamp": "2024-11-14T17:54:54.7676589"
-//    }
-
 
     // 강퇴
     @PostMapping("/{runId}/kickout/{userId}")
+    @Override
     public Response<GenRunJoinUpdateResponse> kickParticipant(
             @PathVariable Long runId,
             @PathVariable Long userId,
@@ -182,10 +175,9 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     }
 
 
-
-
     // general_post_id를 조회하면 해당 게시물의 모든 참여자들의 user_id, status , 참여일, 업데이트일 목록 조회
     @GetMapping("/participants/list/{runId}")
+    @Override
     public Response<List<GeneralParticipantsResponse>> getAllParticipants(
 //                                                                PageRequestDto pageRequestDto ,
                                                                     @PathVariable Long runId

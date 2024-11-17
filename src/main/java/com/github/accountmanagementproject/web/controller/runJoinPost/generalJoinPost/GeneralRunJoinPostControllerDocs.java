@@ -3,17 +3,23 @@ package com.github.accountmanagementproject.web.controller.runJoinPost.generalJo
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
+import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GenRunJoinUpdateResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -200,4 +206,182 @@ public interface GeneralRunJoinPostControllerDocs {
     )
     Response<PageResponseDto<GeneralRunPostResponse>> getAll(
             @Parameter(description = "페이지 요청 정보") PageRequestDto pageRequestDto);
+
+
+    /************************************************************************************************************/
+
+    @Operation(summary = "일반 게시물 참여 신청", description = "사용자가 특정 일반 게시물에 참여 신청을 합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "참여 신청 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "참여 신청 성공 응답",
+                                    value = """
+                                            {
+                                                "resultCode": "success",
+                                                "code": 200,
+                                                "httpStatus": "OK",
+                                                "message": "참여 신청이 완료되었습니다.",
+                                                "detailMessage": null,
+                                                "responseData": {
+                                                    "runId": 42,
+                                                    "isCrewRunPost": false,
+                                                    "title": "일반 달리기 게시물",
+                                                    "adminId": 15,
+                                                    "adminNickname": "관리자 닉네임",
+                                                    "userId": 8,
+                                                    "nickname": "참여자 닉네임",
+                                                    "userEmail": "participant@example.com",
+                                                    "status": "PENDING",
+                                                    "requestedDate": "2024-11-17T12:30:45"
+                                                },
+                                                "timestamp": "2024-11-17T12:30:45.123456"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("/join/{runId}")
+    public Response<GeneralJoinResponse> joinGeneralPost(
+            @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId,
+            @Parameter(description = "사용자 이메일", required = true) @RequestParam String email);
+
+    @Operation(summary = "참여 승인 또는 거절", description = "관리자가 특정 사용자의 일반 게시물 참여를 승인 또는 거절합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "승인 또는 거절 처리 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "승인 또는 거절 성공 응답",
+                                    value = """
+                                            {
+                                                "resultCode": "success",
+                                                "code": 200,
+                                                "httpStatus": "OK",
+                                                "message": "처리가 완료되었습니다.",
+                                                "detailMessage": null,
+                                                "responseData": {
+                                                    "runId": 42,
+                                                    "title": "일반 달리기 게시물",
+                                                    "adminId": 15,
+                                                    "adminNickname": "관리자 닉네임",
+                                                    "userId": 8,
+                                                    "nickname": "참여자 닉네임",
+                                                    "userEmail": "participant@example.com",
+                                                    "status": "APPROVED",
+                                                    "statusUpdatedAt": "2024-11-17T12:45:30"
+                                                },
+                                                "timestamp": "2024-11-17T12:45:30.123456"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("/{runId}/approveOrReject/{userId}")
+    public Response<GenRunJoinUpdateResponse> approveOrReject(
+            @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId,
+            @Parameter(description = "참여 신청자 ID", required = true) @PathVariable Long userId,
+            @Parameter(description = "관리자 이메일", required = false) @RequestParam(required = false) String email);
+
+    @Operation(summary = "참여자 강퇴", description = "관리자가 특정 사용자를 일반 게시물에서 강퇴합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "강퇴 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "강퇴 성공 응답",
+                                    value = """
+                                            {
+                                                "resultCode": "success",
+                                                "code": 200,
+                                                "httpStatus": "OK",
+                                                "message": "처리가 완료되었습니다.",
+                                                "detailMessage": null,
+                                                "responseData": {
+                                                    "runId": 42,
+                                                    "title": "일반 달리기 게시물",
+                                                    "adminId": 15,
+                                                    "adminNickname": "관리자 닉네임",
+                                                    "userId": 8,
+                                                    "nickname": "참여자 닉네임",
+                                                    "userEmail": "participant@example.com",
+                                                    "status": "FORCED_EXIT",
+                                                    "statusUpdatedAt": "2024-11-17T13:00:00"
+                                                },
+                                                "timestamp": "2024-11-17T13:00:00.123456"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("/{runId}/kickout/{userId}")
+    public Response<GenRunJoinUpdateResponse> kickParticipant(
+            @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId,
+            @Parameter(description = "강퇴할 사용자 ID", required = true) @PathVariable Long userId,
+            @Parameter(description = "관리자 이메일", required = true) @RequestParam String email);
+
+    @Operation(summary = "참여자 리스트 조회", description = "특정 일반 게시물의 모든 참여자를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "참여자 리스트 조회 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "참여자 리스트 조회 성공 응답",
+                                    value = """
+                                            {
+                                                "resultCode": "success",
+                                                "code": 200,
+                                                "httpStatus": "OK",
+                                                "message": "일반 참여자 리스트가 조회되었습니다.",
+                                                "detailMessage": null,
+                                                "responseData": [
+                                                    {
+                                                        "userId": 1,
+                                                        "nickname": "참여자1",
+                                                        "email": "user1@example.com",
+                                                        "status": "APPROVED",
+                                                        "joinedAt": "2024-11-17T12:15:00"
+                                                    },
+                                                    {
+                                                        "userId": 2,
+                                                        "nickname": "참여자2",
+                                                        "email": "user2@example.com",
+                                                        "status": "PENDING",
+                                                        "joinedAt": "2024-11-17T12:20:00"
+                                                    }
+                                                ],
+                                                "timestamp": "2024-11-17T13:00:00.123456"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @GetMapping("/participants/list/{runId}")
+    public Response<List<GeneralParticipantsResponse>> getAllParticipants(
+            @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId);
+
+
+
+
 }
