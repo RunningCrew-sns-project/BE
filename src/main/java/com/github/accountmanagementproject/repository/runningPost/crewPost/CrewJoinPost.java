@@ -3,10 +3,12 @@ package com.github.accountmanagementproject.repository.runningPost.crewPost;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
+import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroup;
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
+import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
 import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroup;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,8 +46,16 @@ public class CrewJoinPost {
     @JoinColumn(name = "author_id", nullable = false)
     private MyUser author;    // 작성자
 
-    @OneToMany(mappedBy = "crewJoinPost", fetch = FetchType.EAGER)
-    private Set<UserRunGroup> participants = new HashSet<>();
+    @OneToMany(mappedBy = "crewJoinPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CrewRunGroup> participants = new HashSet<>();
+
+    // 연관 관계 편의 메서드
+    public void addParticipant(CrewRunGroup crewRunGroup) {
+        if (!participants.contains(crewRunGroup)) {
+            participants.add(crewRunGroup);
+            crewRunGroup.setGeneralJoinPost(this);  // RunGroup의 setGeneralJoinPost 호출
+        }
+    }
 
     /** ****************************************************************/
 
