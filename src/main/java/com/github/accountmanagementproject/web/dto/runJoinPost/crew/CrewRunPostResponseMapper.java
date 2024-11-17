@@ -38,7 +38,8 @@ public class CrewRunPostResponseMapper {
         }
 
         // 참여 인원 수 계산
-        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
+//        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
+        int participantCount = runJoinPost.getCurrentPeople() != null ? runJoinPost.getCurrentPeople() : 0;
 
         // Crew 정보
         String crewName = crew != null ? crew.getCrewName() : null;
