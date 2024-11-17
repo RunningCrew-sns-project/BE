@@ -133,6 +133,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     // 참여 신청
     @PostMapping("join/{runId}")
+    @Override
     public Response<CrewRunJoinResponse> participateInCrewRun(
             @PathVariable Long runId,
             @RequestParam String email) {
@@ -143,6 +144,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     // 2. 승인 또는 거절
     @PostMapping("/{runId}/approveOrReject/{userId}")
+    @Override
     public Response<CrewRunJoinUpdateResponse> approveParticipation(
             @PathVariable Long runId,
             @PathVariable Long userId,
@@ -165,6 +167,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     // 강퇴
     @PostMapping("/{runId}/kickout/{userId}")
+    @Override
     public Response<CrewRunJoinUpdateResponse> expelParticipant(
             @PathVariable Long runId,
             @PathVariable Long userId,
@@ -196,6 +199,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
 
     @GetMapping("/participants/list/{runId}")
+    @Override
     public Response<List<CrewParticipantsResponse>> getAllParticipants(
 //                                                                PageRequestDto pageRequestDto ,
             @PathVariable Long runId
