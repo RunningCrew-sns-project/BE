@@ -13,9 +13,11 @@ import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
+import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralRunPostUpdateRequest;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GenRunJoinUpdateResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.JoinResponse;
 import jakarta.validation.Valid;
@@ -68,67 +70,6 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     }
 
 
-    // 참여 신청
-    @PostMapping("/join/{runId}")
-    public Response<JoinResponse> joinGeneralPost(
-            @PathVariable Long runId,
-            @RequestParam String email) {
-
-        JoinResponse response = alarmService.applyToJoinPost(email, runId);
-        return Response.success(HttpStatus.OK,"참여 신청이 완료되었습니다.", response);
-    }
-
-//    {  // TODO :  크루 - crewId, 일반 : runId , 신청자 : userId
-//        "resultCode": "success",
-//            "code": 200,
-//            "httpStatus": "OK",
-//            "message": "참여 신청이 완료되었습니다.",
-//            "detailMessage": null,
-//            "responseData": {
-//        "nickname": "홍길동",
-//                "userEmail": "abc@abc.com",
-//                "status": "가입대기",
-//                "requestedDate": "2024-11-14T18:30:07.705042200"
-//    },
-//        "timestamp": "2024-11-14T18:30:07.8073024"
-//    }
-
-    // 참여 신청 -> 승인/거절
-    @PostMapping("/approveOrReject")
-    public Response<String> approveOrReject(
-            @RequestParam String email,  // 관지자(방장)
-            @RequestParam Long runId,
-            @RequestParam Long userId,   // 신청자
-            @RequestParam Boolean approve) {
-
-        String result = alarmService.approveOrReject(email, runId, userId, approve);
-        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
-    }
-
-//    {
-//        "resultCode": "success",
-//            "code": 200,
-//            "httpStatus": "OK",
-//            "message": "처리가 완료되었습니다.",
-//            "detailMessage": null,
-//            "responseData": "요청 유저: 졸령의 요청을 승인했습니다.",
-//            "timestamp": "2024-11-14T17:54:54.7676589"
-//    }
-
-
-    // 강퇴
-    @PostMapping("/kickout")
-    public Response<String> kickParticipant(
-            @RequestParam String email,
-            @RequestParam Long postId,
-            @RequestParam Long userId
-            ) {
-
-        String result = alarmService.forceToKickOut(email, postId, userId);
-
-        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
-    }
-
 
     // 게시글 상세보기
     @GetMapping("/{runId}")
@@ -176,6 +117,77 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
     public Response<PageResponseDto<GeneralRunPostResponse>> getAll(PageRequestDto pageRequestDto) {
         PageResponseDto<GeneralRunPostResponse> response = generalRunJoinPostService.getAll(pageRequestDto);
         return Response.success(HttpStatus.OK, "모든 게시물이 조회되었습니다.", response);
+    }
+
+
+
+    // 참여 신청
+    @PostMapping("/join/{runId}")
+    @Override
+    public Response<GeneralJoinResponse> joinGeneralPost(
+            @PathVariable Long runId,
+            @RequestParam String email) {
+
+        GeneralJoinResponse response = alarmService.applyToJoinPost(email, runId);
+        return Response.success(HttpStatus.OK,"참여 신청이 완료되었습니다.", response);
+    }
+
+//    {  // TODO :  크루 - crewId, 일반 : runId , 신청자 : userId
+//        "resultCode": "success",
+//            "code": 200,
+//            "httpStatus": "OK",
+//            "message": "참여 신청이 완료되었습니다.",
+//            "detailMessage": null,
+//            "responseData": {
+//        "nickname": "홍길동",
+//                "userEmail": "abc@abc.com",
+//                "status": "가입대기",
+//                "requestedDate": "2024-11-14T18:30:07.705042200"
+//    },
+//        "timestamp": "2024-11-14T18:30:07.8073024"
+//    }
+
+    // 승인 또는 거절
+    @PostMapping("/{runId}/approveOrReject/{userId}")
+    @Override
+    public Response<GenRunJoinUpdateResponse> approveOrReject(
+            @PathVariable Long runId,
+            @PathVariable Long userId,   // 신청자
+            @RequestParam(required = false) String email) {
+
+        GenRunJoinUpdateResponse result = alarmService.processNewParticipation(runId, userId, email);
+        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
+    }
+
+
+    // 강퇴
+    @PostMapping("/{runId}/kickout/{userId}")
+    @Override
+    public Response<GenRunJoinUpdateResponse> kickParticipant(
+            @PathVariable Long runId,
+            @PathVariable Long userId,
+            @RequestParam String email
+    ) {
+
+        GenRunJoinUpdateResponse result = alarmService.forceToKickOut(email, runId, userId);
+
+        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", result);
+    }
+
+
+    // general_post_id를 조회하면 해당 게시물의 모든 참여자들의 user_id, status , 참여일, 업데이트일 목록 조회
+    @GetMapping("/participants/list/{runId}")
+    @Override
+    public Response<List<GeneralParticipantsResponse>> getAllParticipants(
+//                                                                PageRequestDto pageRequestDto ,
+                                                                    @PathVariable Long runId
+//                                                                    @RequestParam String email
+    ) {
+//        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        List<GeneralParticipantsResponse> result = alarmService.getAllParticipants(runId);
+        return Response.success(HttpStatus.OK, "일반 참여자 리스트가 조회되었습니다.", result);
     }
 
 

@@ -3,7 +3,7 @@ package com.github.accountmanagementproject.repository.runningPost.userRunGroups
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
-import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;

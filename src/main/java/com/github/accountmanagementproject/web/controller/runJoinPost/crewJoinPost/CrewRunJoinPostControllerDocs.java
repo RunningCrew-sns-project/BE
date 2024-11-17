@@ -1,22 +1,32 @@
 package com.github.accountmanagementproject.web.controller.runJoinPost.crewJoinPost;
 
+import com.github.accountmanagementproject.exception.SimpleRunAppException;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinUpdateResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Crew Run Join Post", description = "크루 달리기 참여 게시물 관련 API")
 public interface CrewRunJoinPostControllerDocs {
@@ -213,6 +223,157 @@ public interface CrewRunJoinPostControllerDocs {
     })
     Response<PageResponseDto<CrewRunPostResponse>> getAll(
             PageRequestDto pageRequestDto, @AuthenticationPrincipal String principal);
+
+
+    /************************************************************************************************************************8******/
+
+    @Operation(summary = "크루 참여 신청", description = "사용자가 특정 크루에 참여 신청을 합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "참여 신청 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "참여 신청 성공 응답",
+                                    value = """
+                                        {
+                                            "resultCode": "success",
+                                            "code": 200,
+                                            "httpStatus": "OK",
+                                            "message": "처리가 완료되었습니다.",
+                                            "detailMessage": null,
+                                            "responseData": {
+                                                "runId": 27,
+                                                "title": "42번크 달리기",
+                                                "adminId": 57,
+                                                "adminNickname": "홍길동",
+                                                "userId": 11,
+                                                "nickname": "뭐얌",
+                                                "userEmail": "abc2@abc.com",
+                                                "status": "PENDING",
+                                                "statusUpdatedAt": "2024-11-17 05:41:18",
+                                                "crewRunPost": true
+                                            },
+                                            "timestamp": "2024-11-17T05:41:18.4696627"
+                                        }
+                                        """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("join/{runId}")
+    public Response<CrewRunJoinResponse> participateInCrewRun(
+            @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
+            @Parameter(description = "사용자 이메일", required = true) @RequestParam String email);
+
+
+    @Operation(summary = "참여 승인 또는 거절", description = "관리자가 특정 사용자의 크루 참여를 승인 또는 거절합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "처리 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "참여 승인 또는 거절 성공 응답",
+                                    value = """
+                                        {
+                                            "resultCode": "success",
+                                            "code": 200,
+                                            "httpStatus": "OK",
+                                            "message": "참여가 승인되었습니다.",
+                                            "detailMessage": null,
+                                            "responseData": {
+                                                "runId": 27,
+                                                "title": "42번크 달리기",
+                                                "adminId": 57,
+                                                "adminNickname": "홍길동",
+                                                "userId": 11,
+                                                "nickname": "뭐얌",
+                                                "userEmail": "abc2@abc.com",
+                                                "status": "APPROVED",
+                                                "statusUpdatedAt": "2024-11-17 05:41:18",
+                                                "crewRunPost": true
+                                            },
+                                            "timestamp": "2024-11-17T05:41:18.4696627"
+                                        }
+                                        """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("/{runId}/approveOrReject/{userId}")
+    public Response<CrewRunJoinUpdateResponse> approveParticipation(
+            @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
+            @Parameter(description = "참여 신청자 ID", required = true) @PathVariable Long userId,
+            @Parameter(description = "관리자 이메일", required = true) @RequestParam String principal);
+
+
+    @Operation(summary = "참여자 강퇴", description = "관리자가 특정 사용자를 크루 모임에서 강퇴합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "강퇴 성공", content = @Content(schema = @Schema(implementation = CrewRunJoinUpdateResponse.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("/{runId}/kickout/{userId}")
+    public Response<CrewRunJoinUpdateResponse> expelParticipant(
+            @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
+            @Parameter(description = "강퇴할 사용자 ID", required = true) @PathVariable Long userId,
+            @Parameter(description = "관리자 이메일", required = true) @RequestParam String email);
+
+
+    @Operation(summary = "크루 참여자 리스트 조회", description = "특정 크루의 모든 참여자를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "참여자 리스트 조회 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "참여자 리스트 조회 성공 응답",
+                                    value = """
+                                        {
+                                            "resultCode": "success",
+                                            "code": 200,
+                                            "httpStatus": "OK",
+                                            "message": "크루 참여자 리스트가 조회되었습니다.",
+                                            "detailMessage": null,
+                                            "responseData": [
+                                                {
+                                                    "userId": 1,
+                                                    "nickname": "참여자1",
+                                                    "email": "user1@example.com",
+                                                    "status": "APPROVED",
+                                                    "joinedAt": "2024-11-17T05:41:18",
+                                                    "statusUpdatedAt": "2024-11-17T01:37:48.313Z"
+                                                },
+                                                {
+                                                    "userId": 2,
+                                                    "nickname": "참여자2",
+                                                    "email": "user2@example.com",
+                                                    "status": "PENDING",
+                                                    "joinedAt": "2024-11-16T18:22:45",
+                                                    "statusUpdatedAt": "2024-11-17T01:37:48.313Z"
+                                                }
+                                            ],
+                                            "timestamp": "2024-11-17T05:41:18.4696627"
+                                        }
+                                        """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @GetMapping("/participants/list/{runId}")
+    public Response<List<CrewParticipantsResponse>> getAllParticipants(
+            @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId);
+
 
 }
 

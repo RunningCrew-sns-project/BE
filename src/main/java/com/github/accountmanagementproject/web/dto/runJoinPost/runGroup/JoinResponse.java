@@ -1,13 +1,11 @@
 package com.github.accountmanagementproject.web.dto.runJoinPost.runGroup;
 
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
-import com.github.accountmanagementproject.repository.runningPost.userRunGroups.ParticipationStatus;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.format.DateTimeFormatter;
 
 
 @Builder

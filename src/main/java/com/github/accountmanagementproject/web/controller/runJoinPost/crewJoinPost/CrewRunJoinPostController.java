@@ -8,17 +8,24 @@ import com.github.accountmanagementproject.repository.account.user.MyUsersReposi
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
+import com.github.accountmanagementproject.service.runJoinPost.crewJoinPost.CrewJoinRunPostAlarmService;
 import com.github.accountmanagementproject.service.runJoinPost.crewJoinPost.CrewJoinRunPostService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostCreateRequest;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewRunPostUpdateRequest;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinUpdateResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +45,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
     private final CrewJoinPostRepository crewJoinPostRepository;
     private final CrewJoinRunPostService crewJoinRunPostService;
+    private final CrewJoinRunPostAlarmService alarmService;
     private final MyUsersRepository usersRepository;
     private final CrewsRepository crewsRepository;
     private final AccountConfig accountConfig;
@@ -121,6 +129,138 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 
         return Response.success(HttpStatus.OK, "모든 게시물이 조회되었습니다.", response);
     }
+
+
+    // 참여 신청
+    @PostMapping("join/{runId}")
+    @Override
+    public Response<CrewRunJoinResponse> participateInCrewRun(
+            @PathVariable Long runId,
+            @RequestParam String email) {
+
+        CrewRunJoinResponse response = alarmService.applyForCrewRun(runId, email);
+        return Response.success(HttpStatus.OK, "처리가 완료되었습니다.", response);
+    }
+
+    // 2. 승인 또는 거절
+    @PostMapping("/{runId}/approveOrReject/{userId}")
+    @Override
+    public Response<CrewRunJoinUpdateResponse> approveParticipation(
+            @PathVariable Long runId,
+            @PathVariable Long userId,
+            @RequestParam String principal) {
+
+        try {
+            CrewRunJoinUpdateResponse response = alarmService.processNewParticipation(runId, userId, principal);
+
+            if (response.getStatus() == ParticipationStatus.REJECTED) {
+                return Response.success(HttpStatus.OK, "강퇴 이력으로 인해 참여가 자동으로 거절되었습니다.", response);
+            } else {
+                return Response.success(HttpStatus.OK, "참여가 승인되었습니다.", response);
+            }
+        } catch (SimpleRunAppException e) {
+            return Response.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "참여 신청 처리 중 오류가 발생했습니다."
+            );
+        }
+    }
+
+
+    // 강퇴
+    @PostMapping("/{runId}/kickout/{userId}")
+    @Override
+    public Response<CrewRunJoinUpdateResponse> expelParticipant(
+            @PathVariable Long runId,
+            @PathVariable Long userId,
+            @RequestParam String email) {
+        CrewRunJoinUpdateResponse response = alarmService.forceToKickOut(runId, userId, email);
+        return Response.success(HttpStatus.OK, "모임에서 강퇴되었습니다.", response);
+    }
+
+//    {
+//        "resultCode": "success",
+//            "code": 200,
+//            "httpStatus": "OK",
+//            "message": "모임에서 강퇴되었습니다.",
+//            "detailMessage": null,
+//            "responseData": {
+//        "runId": 27,
+//                "title": "42번크 달리기 ",
+//                "adminId": 57,
+//                "adminNickname": "이유경",
+//                "userId": 11,
+//                "nickname": "뭐얌",
+//                "userEmail": "abc2@abc.com",
+//                "status": "강제 퇴장",
+//                "statusUpdatedAt": "2024-11-17 05:41:18",
+//                "crewRunPost": true
+//    },
+//        "timestamp": "2024-11-17T05:41:18.4696627"
+//    }
+
+
+    @GetMapping("/participants/list/{runId}")
+    @Override
+    public Response<List<CrewParticipantsResponse>> getAllParticipants(
+//                                                                PageRequestDto pageRequestDto ,
+            @PathVariable Long runId
+//                                                                    @RequestParam String email
+    ) {
+//        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        List<CrewParticipantsResponse> result = alarmService.getAllParticipants(runId);
+        return Response.success(HttpStatus.OK, "크루 참여자 리스트가 조회되었습니다.", result);
+    }
+
+//    {
+//        "resultCode": "success",
+//            "code": 200,
+//            "httpStatus": "OK",
+//            "message": "참여가 승인되었습니다.",
+//            "detailMessage": null,
+//            "responseData": {
+//        "runId": 18,
+//                "title": "한강크루 ",
+//                "adminId": 57,
+//                "adminNickname": "이유경",
+//                "userId": 11,
+//                "nickname": "뭐얌",
+//                "userEmail": "abc2@abc.com",
+//                "status": "가입 완료",
+//                "statusUpdatedAt": "2024-11-17 04:45:33",
+//                "crewRunPost": true
+//    },
+//        "timestamp": "2024-11-17T04:45:33.7850465"
+//    }
+
+
+
+//    {
+//        "resultCode": "success",
+//            "code": 200,
+//            "httpStatus": "OK",
+//            "message": "처리가 완료되었습니다.",
+//            "detailMessage": null,
+//            "responseData": {
+//        "runId": 18,
+//                "title": "한강크루 ",
+//                "adminId": null,  // 승인이 되면 adminId와 adminNickname이 채워져서 응답
+//                "adminNickname": null,  // 승인이 되면 adminId와 adminNickname이 채워져서 응답
+//                "userId": 11,
+//                "nickname": "뭐얌",
+//                "userEmail": "abc2@abc.com",
+//                "status": "가입 대기",
+//                "requestedDate": "2024-11-17 02:59:56",
+//                "crewRunPost": true
+//    },
+//        "timestamp": "2024-11-17T02:59:57.082428"
+//    }
+
+
+
+
+
+
 
 
     // CrewJoinPost 목록과 참여 인원 수를 반환하는 API

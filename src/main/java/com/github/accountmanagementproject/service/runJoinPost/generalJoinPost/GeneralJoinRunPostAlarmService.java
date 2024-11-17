@@ -10,7 +10,11 @@ import com.github.accountmanagementproject.repository.runningPost.generalPost.Ge
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupId;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupRepository;
-import com.github.accountmanagementproject.repository.runningPost.userRunGroups.ParticipationStatus;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
+import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinUpdateResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GenRunJoinUpdateResponse;
+import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.JoinResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -31,10 +37,12 @@ public class GeneralJoinRunPostAlarmService {
     private final RunGroupRepository runGroupRepository;
     private final NotificationService notificationService;
 
+    private static final int MAX_BAN_COUNT = 3;
+
 
     // 참여 신청
     @Transactional
-    public JoinResponse applyToJoinPost(String email, Long postId) {
+    public GeneralJoinResponse applyToJoinPost(String email, Long postId) {
         // 1. 사용자 조회
         MyUser user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
@@ -77,18 +85,81 @@ public class GeneralJoinRunPostAlarmService {
                 .build();
 
         RunGroup savedRunGroup = runGroupRepository.save(runGroup);
-        return JoinResponse.toDto(savedRunGroup);
+        return GeneralJoinResponse.toDto(savedRunGroup);
+    }
+
+
+    // 신규 참여 신청 시 호출되는 메서드
+    @Transactional
+    public GenRunJoinUpdateResponse processNewParticipation(Long postId, Long requestUserId, String email) {
+//        MyUser user = accountConfig.findMyUser(principal);
+        MyUser requestUser = userRepository.findById(Math.toIntExact(requestUserId))  //  TODO: 삭제 예정
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        // 강퇴 횟수 확인
+        int banCount = countForcedExit(requestUserId);
+
+        if (banCount >= MAX_BAN_COUNT) {
+            return autoReject(email, postId, requestUserId);
+        }
+
+        return approve(email, postId, requestUserId);
+    }
+
+    // 강퇴 이력 확인
+    private int countForcedExit(Long userId) {
+        int count = runGroupRepository.countByUserUserIdAndStatus(userId, ParticipationStatus.FORCED_EXIT);
+        log.info("User ID: {} has {} forced exits", userId, count);
+        return count;
+    }
+
+
+    //  거절 : 자동으로 처리 , 강퇴 이력 3번이면 거절
+    private GenRunJoinUpdateResponse autoReject(String email, Long postId, Long requestUserId) {
+        // 1. 관리자(방장) 조회
+//        MyUser user = accountConfig.findMyUser(adminEmail);
+        MyUser admin = userRepository.findByEmail(email)   // TODO
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
+
+        // 2. 게시물 조회
+        GeneralJoinPost post = generalJoinPostRepository.findById(postId)
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND));
+
+        // 3. 참여 신청 정보 조회
+        RunGroupId groupId = new RunGroupId();
+        groupId.setUserId(requestUserId);
+        groupId.setGeneralPostId(postId);
+
+        RunGroup runGroup = runGroupRepository.findById(groupId)
+                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.PARTICIPATION_NOT_FOUND));
+
+        // 4. 자동 거절 처리
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        runGroup.setStatus(ParticipationStatus.REJECTED);
+        runGroup.setApprover(admin);
+        runGroup.setStatusUpdatedAt(now);
+        runGroupRepository.save(runGroup);
+
+        // 5. 알림 전송
+        notificationService.sendRejectNotification(
+                requestUserId,
+                postId,
+                admin.getUserId(),
+                "강퇴 이력이 3번 이상으로 인해 자동으로 거절되었습니다."
+        );
+
+        // 6. 응답 생성
+        GeneralJoinResponse existingResponse = GeneralJoinResponse.toDto(runGroup);
+        return GenRunJoinUpdateResponse.from(existingResponse, admin, ParticipationStatus.REJECTED, now);
     }
 
 
     // 승인 또는 반려
     @Transactional
-    public String approveOrReject(String adminEmail, Long postId, Long userId, Boolean approve) {
-        // 1. 관리자(방장) 조회
-        MyUser admin = userRepository.findByEmail(adminEmail)
+    public GenRunJoinUpdateResponse approve(String email, Long postId, Long userId) {
+//        MyUser user = accountConfig.findMyUser(principal);
+        MyUser admin = userRepository.findByEmail(email)  // TODO
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
 
-        // 2. 게시물 조회 및 권한 확인
         GeneralJoinPost post = generalJoinPostRepository.findById(postId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND));
 
@@ -96,7 +167,7 @@ public class GeneralJoinRunPostAlarmService {
             throw new SimpleRunAppException(ErrorCode.UNAUTHORIZED_ACCESS, "게시물의 작성자가 아닙니다.");
         }
 
-        // 3. 참여 신청 정보 조회
+        // 2. 참여 신청 정보 조회 및 상태 확인
         RunGroupId groupId = new RunGroupId();
         groupId.setUserId(userId);
         groupId.setGeneralPostId(postId);
@@ -104,49 +175,40 @@ public class GeneralJoinRunPostAlarmService {
         RunGroup runGroup = runGroupRepository.findById(groupId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.PARTICIPATION_NOT_FOUND));
 
-        // 4. 현재 상태 확인
         if (runGroup.getStatus() != ParticipationStatus.PENDING) {
-            return "이미 처리된 신청입니다.";
+            throw new SimpleRunAppException(ErrorCode.INVALID_STATUS, "이미 처리된 신청입니다.");
         }
 
-        // 5. 승인/거절 처리
+            // 승인 처리
+        int currentPeople = post.getCurrentPeople() != null ? post.getCurrentPeople() : 0;
+        int maxPeople = post.getMaximumPeople() != null ? post.getMaximumPeople() : 0;
+
+        if (currentPeople >= maxPeople) {
+            throw new SimpleRunAppException(ErrorCode.GROUP_FULL);
+        }
+
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-        if (approve) {
-            // 승인 처리
-            int currentPeople = post.getCurrentPeople() != null ? post.getCurrentPeople() : 0;
-            int maxPeople = post.getMaximumPeople() != null ? post.getMaximumPeople() : 0;
-
-            // 승인 처리
-            if (currentPeople >= maxPeople) {
-                throw new SimpleRunAppException(ErrorCode.GROUP_FULL);
-            }
-            runGroup.setStatus(ParticipationStatus.APPROVED);
-            post.setCurrentPeople(currentPeople + 1);  // null 체크된 값을 사용
-            generalJoinPostRepository.save(post);
-
-            notificationService.sendApproveNotification(userId, postId, admin.getUserId(), "달리기 모임 참여가 승인되었습니다.");
-        } else {
-            // 거절 처리
-            runGroup.setStatus(ParticipationStatus.REJECTED);
-            notificationService.sendRejectNotification(userId, postId, admin.getUserId(), "달리기 모임 참여가 거절되었습니다.");
-        }
-
-        // 6. 공통 처리
+        runGroup.setStatus(ParticipationStatus.APPROVED);
         runGroup.setApprover(admin);
         runGroup.setStatusUpdatedAt(now);
         runGroupRepository.save(runGroup);
 
-        String actionType = approve ? "승인" : "거절";
-        log.info("Admin {} {} participation for user {} in post {}", admin.getEmail(), actionType, userId, postId);
+        post.setCurrentPeople(currentPeople + 1);
+        generalJoinPostRepository.save(post);
 
-        return String.format("요청 유저: %s의 요청을 %s했습니다.", runGroup.getUser().getNickname(), actionType);
+        notificationService.sendApproveNotification(userId, postId, admin.getUserId(), "달리기 모임 참여가 승인되었습니다.");   // TODO 알림
+
+        // 6. 응답 생성 (fromEntity 메서드 활용)
+        GenRunJoinUpdateResponse response = GenRunJoinUpdateResponse.from(GeneralJoinResponse.toDto(runGroup), admin, runGroup.getStatus(), now);
+        return response;
     }
 
 
     // 강퇴
     @Transactional
-    public String forceToKickOut(String adminEmail, Long postId, Long userId) {
+    public GenRunJoinUpdateResponse forceToKickOut(String adminEmail, Long postId, Long userId) {
         // 1. 관리자(방장) 조회
+//        MyUser user = accountConfig.findMyUser(adminEmail);
         MyUser admin = userRepository.findByEmail(adminEmail)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
 
@@ -166,29 +228,38 @@ public class GeneralJoinRunPostAlarmService {
         RunGroup runGroup = runGroupRepository.findById(groupId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.PARTICIPATION_NOT_FOUND));
 
-        // 4. 현재 상태 확인 - 승인된 상태인 경우에만 강퇴 가능
+        // 4. 현재 상태 확인 -  강퇴 가능
         if (runGroup.getStatus() != ParticipationStatus.APPROVED) {
-            return "승인된 참여자만 강퇴할 수 있습니다.";
+            throw new SimpleRunAppException(ErrorCode.INVALID_STATUS, "승인된 참여자만 강퇴할 수 있습니다.");
         }
 
         // 5. 강퇴 처리
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         runGroup.setStatus(ParticipationStatus.FORCED_EXIT);
         runGroup.setApprover(admin);
-        runGroup.setStatusUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
+        runGroup.setStatusUpdatedAt(now);
+        runGroupRepository.save(runGroup);
 
         // 6. 현재 참여 인원 감소
         int currentPeople = post.getCurrentPeople() != null ? post.getCurrentPeople() : 1;
-        post.setCurrentPeople(currentPeople - 1);
+        post.setCurrentPeople(Math.max(0, currentPeople - 1)); // 음수가 되지 않도록 보호
         generalJoinPostRepository.save(post);
 
         // 7. 강퇴 알림 전송
-        notificationService.sendKickNotification(userId, postId, admin.getUserId(), "모임에서 강퇴되었습니다.");
+        notificationService.sendKickNotification(userId, postId, admin.getUserId(), "모임에서 강퇴되었습니다.");  // TODO 알림
 
-        runGroupRepository.save(runGroup);
+        // 8. 응답 생성
+        GenRunJoinUpdateResponse response = GenRunJoinUpdateResponse.from(GeneralJoinResponse.toDto(runGroup), admin, ParticipationStatus.FORCED_EXIT, now);
+        return response;
+    }
 
-        log.info("Admin {} kicked user {} from post {}", admin.getEmail(), userId, postId);
 
-        return String.format("참여자(%s)를 강퇴했습니다.", runGroup.getUser().getNickname());
+
+    // general_post_id를 조회하면 해당 게시물의 모든 참여자들의 user_id, status , 참여일, 업데이트일 목록 조회
+    public List<GeneralParticipantsResponse> getAllParticipants(Long postId) {
+        return runGroupRepository.findAllParticipantsByPostId(postId).stream()
+                .map(GeneralParticipantsResponse::toDto)
+                .collect(Collectors.toList());
     }
 
 

@@ -15,7 +15,6 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/blog")
 @RequiredArgsConstructor
-@CrossOrigin(originPatterns = "*")
 public class BlogController implements BlogControllerDocs{
     private final BlogService blogService;
     private final AccountConfig accountConfig;
