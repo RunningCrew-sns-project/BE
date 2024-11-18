@@ -36,7 +36,6 @@ public class ChatRoomController implements ChatRoomControllerDocs{
     @Override
     @GetMapping("/myRooms")
     public CustomSuccessResponse myChatRoomList(@AuthenticationPrincipal String principal) {
-        log.info(principal + "사용자 인증 정보!!!!!");
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .message("사용자가 참여한 채팅방을 조회했습니다.")
@@ -74,7 +73,6 @@ public class ChatRoomController implements ChatRoomControllerDocs{
             @RequestParam Integer roomId,
             @RequestParam(defaultValue = "10") Integer limit,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> lastTime){
-        log.info(principal + "사용자 인증 정보!!!!!");
         MyUser user = accountConfig.findMyUser(principal);
         return new CustomSuccessResponse.SuccessDetail()
                 .message("메세지를 불러왔습니다.")

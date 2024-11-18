@@ -62,7 +62,7 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", user=" + user.getNickname() +
+//                ", user=" + user.getNickname() +
                 '}';
     }
 }
