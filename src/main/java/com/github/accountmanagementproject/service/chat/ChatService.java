@@ -9,7 +9,6 @@ import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
 import com.github.accountmanagementproject.web.dto.chat.*;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +18,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -36,6 +36,7 @@ public class ChatService{
     private final MongoTemplate mongoTemplate;
 
     @ExeTimer
+    @Transactional
     public ScrollPaginationCollection<ChatRoomResponse> findAllRoom(Integer size, Integer cursor) {
         Integer lastRoomId = (cursor != null) ? cursor : chatRoomRepository.findTopByOrderByRoomIdDesc().getRoomId();
         PageRequest pageRequest = PageRequest.of(0, size + 1);
@@ -55,6 +56,7 @@ public class ChatService{
     }
 
     @ExeTimer
+    @Transactional(readOnly = true)
     public List<ChatRoomResponse> findMyRoomList(MyUser user) {
         return userChatMappingRepository.findAllByUser(user)
                 .stream()
@@ -146,6 +148,7 @@ public class ChatService{
     }
 
     @ExeTimer
+    @Transactional
     //채팅방 전체 userList 조회
     public List<UserResponse> getUserList(Integer roomId){
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
@@ -162,6 +165,7 @@ public class ChatService{
     }
 
     @ExeTimer
+    @Transactional
     public List<ChatMongoDto> getMessageByRoomId(Integer roomId, MyUser user, Integer limit, Optional<LocalDateTime> lastTime) {
         LocalDateTime lastTimeStamp = lastTime
                 .orElse(LocalDateTime.now())

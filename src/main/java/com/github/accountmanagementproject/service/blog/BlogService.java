@@ -18,24 +18,17 @@ import com.github.accountmanagementproject.service.mapper.blog.BlogMapper;
 import com.github.accountmanagementproject.web.dto.blog.BlogDetails;
 import com.github.accountmanagementproject.web.dto.blog.BlogRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.BlogResponseDTO;
-import jakarta.annotation.PreDestroy;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 @Service
@@ -53,6 +46,7 @@ public class BlogService {
     //https://kbwplace.tistory.com/178 No offset 방식 스크롤링 구현
     //https://velog.io/@dbsxogh96/Redis%EB%A1%9C-%EC%A1%B0%ED%9A%8C%EC%88%98-%EC%A2%8B%EC%95%84%EC%9A%94-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0
     //TODO : 좋아요 갯수 redis에 저장 하는 로직 구현
+    @Transactional(readOnly = true)
     @ExeTimer
     public ScrollPaginationCollection<BlogResponseDTO> getAllBlogs(Integer size, Integer cursor, MyUser user, Boolean isMyBlog) {
         //TODO : 메소드 실행할때마다 레포지토리에 접근하게 되니까 개선 필요
@@ -81,7 +75,7 @@ public class BlogService {
         return ScrollPaginationCollection.of(currentScrollItems, size, lastScroll, nextCursor);
     }
 
-    private List<BlogResponseDTO> mappingBlogResponse(MyUser user, List<Blog> blogs){
+    protected List<BlogResponseDTO> mappingBlogResponse(MyUser user, List<Blog> blogs){
         //좋아요 목록을 불러와서 저장
         Set<Integer> userLikesBlogsIds = getUserLikesBlogsIds(user, blogs);
 
@@ -104,7 +98,7 @@ public class BlogService {
     //레포지토리에서 레디스에
     // user_likes:user_id , blog_id, true/false  -> 형태로 저장
     //TODO : 가져온 블로그에서 좋아요 눌렀는지 검사해야함. 모든 좋아요 검사하니까 에러남 -> 불러온 목록에서만 좋아요 조회
-    private Set<Integer> getUserLikesBlogsIds(MyUser user, List<Blog> blogs){
+    protected Set<Integer> getUserLikesBlogsIds(MyUser user, List<Blog> blogs){
         //좋아요 정보가 존재하지 않으면 db에서 가져와서 레디스에 좋아요 정보 저장하고
         Set<Integer> userLikesBlogsIds = new HashSet<>();
 
@@ -129,6 +123,7 @@ public class BlogService {
     }
 
     @ExeTimer
+    @Transactional(readOnly = true)
     public BlogDetails getBlogById(Integer blogId, MyUser user) {
         // 블로그에 대한 댓글 가져오기
         Blog blog = blogRepository.findById(blogId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder().customMessage("블로그를 찾을 수 없습니다.").build());

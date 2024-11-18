@@ -17,10 +17,10 @@ public class UserChatMapping {
     private Integer id;
 
     @JoinColumn(name = "user_id")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private MyUser user;
 
     @JoinColumn(name = "chatroom_id")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private ChatRoom chatRoom;
 }

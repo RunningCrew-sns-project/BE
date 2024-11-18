@@ -13,11 +13,11 @@ import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.comment.CommentMapper;
 import com.github.accountmanagementproject.web.dto.blog.CommentRequestDTO;
 import com.github.accountmanagementproject.web.dto.blog.CommentResponseDTO;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +30,7 @@ public class BlogCommentService {
     private final AccountConfig accountConfig;
 
     @ExeTimer
+    @Transactional(readOnly = true)
     public ScrollPaginationCollection<CommentResponseDTO> getCommentByBlogId(Integer blogId, Integer size, Integer cursor) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("블로그를 찾을 수 없습니다.")
@@ -96,6 +97,7 @@ public class BlogCommentService {
     }
 
     @ExeTimer
+    @Transactional
     public String deleteComment(Integer commentId, MyUser user) {
         BlogComment blogComment = blogCommentRepository.findById(commentId).orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
                 .customMessage("댓글을 찾을 수 없습니다.")

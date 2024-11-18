@@ -23,11 +23,11 @@ public class BlogComment {
     @Column(name = "content")
     private String content;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private MyUser user;
 
