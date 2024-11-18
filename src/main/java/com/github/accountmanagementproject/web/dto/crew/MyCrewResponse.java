@@ -15,6 +15,9 @@ public class MyCrewResponse {
     private String crewName;
     private String crewImageUrl;
     private String crewIntroduction;
+    private CrewRegion activityRegion;
+    private long memberCount;
+    private int maxCapacity;
     private LocalDateTime requestOrCompletionDate;
     private CrewsUsersStatus status;
     private boolean isCrewMaster;

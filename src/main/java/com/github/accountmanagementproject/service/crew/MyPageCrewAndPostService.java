@@ -1,18 +1,13 @@
 package com.github.accountmanagementproject.service.crew;
 
 
-import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
-import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
-import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersPk;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
-import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,17 +18,10 @@ public class MyPageCrewAndPostService {
 
     @Transactional(readOnly = true)
     public List<MyCrewResponse> getMyCrew(String email, Boolean isAll){
-        List<CrewsUsers> entityList = new ArrayList<>();
-
-        if(isAll==null||isAll) {//요청중인 크루만 조회시 내가만든 크루는 제외
-            List<Crew> theCrewIMade = crewsRepository.findIMadeCrewsByEmail(email);
-            entityList.addAll(theCrewIMade.stream()
-                    .map(crew -> new CrewsUsers(new CrewsUsersPk(crew, crew.getCrewMaster()))).toList());
-        }
-        entityList.addAll(crewsUsersRepository.findMyCrewsByEmail(email, isAll));
-
-        return entityList.stream().
-                map(CrewMapper.INSTANCE::crewsUsersToMyCrewResponse).toList();
+        List<MyCrewResponse> myCrewResponses = crewsUsersRepository.findMyCrewResponseByEmail(email, isAll);
+        if(isAll!=null&&!isAll) return myCrewResponses;
+        List<MyCrewResponse> crewIMade = crewsRepository.findIMadeCrewResponseByEmail(email);
+        crewIMade.addAll(myCrewResponses);
+        return crewIMade;
     }
-
 }

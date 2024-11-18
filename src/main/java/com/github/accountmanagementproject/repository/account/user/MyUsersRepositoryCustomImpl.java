@@ -22,8 +22,7 @@ public class MyUsersRepositoryCustomImpl implements MyUsersRepositoryCustom {
                 .where(qSocialId.socialIdPk.eq(socialIdPk))
                 .fetchOne();
 
-        return myUser==null ? Optional.empty() :
-                Optional.of(myUser);
+        return Optional.ofNullable(myUser);
     }
 
 //    @Override
