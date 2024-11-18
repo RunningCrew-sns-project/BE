@@ -2,20 +2,23 @@ package com.github.accountmanagementproject.web.dto.runJoinPost.crew;
 
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
+import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.web.dto.storage.FileDto;
 import com.github.accountmanagementproject.web.dto.storage.UrlDto;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Setter
 public class CrewRunPostResponseMapper {
 
     private CrewRunPostResponseMapper() {
         // 인스턴스화 방지
     }
-
 
     public static CrewRunPostResponse toDto(CrewJoinPost runJoinPost,  Crew crew) {
 
@@ -38,7 +41,8 @@ public class CrewRunPostResponseMapper {
         }
 
         // 참여 인원 수 계산
-        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
+//        int participantCount = runJoinPost.getParticipants() != null ? runJoinPost.getParticipants().size() : 0;
+        int participantCount = runJoinPost.getCurrentPeople() != null ? runJoinPost.getCurrentPeople() : 0;
 
         // Crew 정보
         String crewName = crew != null ? crew.getCrewName() : null;

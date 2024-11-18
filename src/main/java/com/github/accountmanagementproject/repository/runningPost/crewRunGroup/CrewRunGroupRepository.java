@@ -56,4 +56,7 @@ public interface CrewRunGroupRepository extends JpaRepository<CrewRunGroup, Crew
     );
 
 
+    @Query("SELECT COUNT(p) FROM CrewRunGroup p WHERE p.crewJoinPost.crewPostId = :postId AND p.status = 'APPROVED'")
+    int countParticipantsByPostId(@Param("postId") Long postId);
+
 }
