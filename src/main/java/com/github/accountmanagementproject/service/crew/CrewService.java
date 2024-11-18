@@ -358,4 +358,8 @@ public class CrewService {
                     .request(Map.of("email", email, "crewId", crewId))
                     .build();
     }
+
+    public List<CrewAndUserResponse> getAllMyCrewAWaitingUsers(String email) {
+        return crewsUsersRepository.myCrewPendingUsers(email);
+    }
 }

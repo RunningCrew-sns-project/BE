@@ -7,6 +7,7 @@ import com.github.accountmanagementproject.repository.crew.crewuser.QCrewsUsers;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.QCrewJoinPost;
 import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.CrewListResponse;
+import com.github.accountmanagementproject.web.dto.crew.MyCrewResponse;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.CursorHolder;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchCriteria;
 import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.SearchRequest;
@@ -118,6 +119,26 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .where(QCREW.crewId.eq(crewId)
                         .and(QCREW.crewMaster.email.eq(email)))
                 .fetchOne();
+    }
+
+    @Override
+    public List<MyCrewResponse> findIMadeCrewResponseByEmail(String email) {
+        return queryFactory.select(Projections.fields(MyCrewResponse.class,
+                QCREW.crewId,
+                QCREW.crewName,
+                QCREW.crewIntroduction,
+                QCrewImage.crewImage.imageUrl.as("crewImageUrl"),
+                QCREW.activityRegion,
+                QCREW.createdAt.as("requestOrCompletionDate"),
+                ExpressionUtils.as(completedCrewUsersCount(), "memberCount"),
+                ExpressionUtils.as(Expressions.constant(true), "isCrewMaster"),
+                QCREW.maxCapacity))
+                .from(QCREW)
+                .leftJoin(QCREW.crewImages, QCrewImage.crewImage)
+                .where(QCREW.crewMaster.email.eq(email))
+                .groupBy(QCREW)
+                .orderBy(QCREW.createdAt.desc())
+                .fetch();
     }
 
 
