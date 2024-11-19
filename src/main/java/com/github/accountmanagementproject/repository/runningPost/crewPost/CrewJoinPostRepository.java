@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.repository.runningPost.crewPost;
 
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,4 +28,5 @@ public interface CrewJoinPostRepository extends JpaRepository<CrewJoinPost, Long
             "GROUP BY c.crewPostId")
     List<Object[]> findCrewPostsWithParticipantCount();
 
+    List<CrewJoinPost> findAllByAuthor(MyUser user);
 }

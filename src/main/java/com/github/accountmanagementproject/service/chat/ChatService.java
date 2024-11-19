@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.service.chat;
 
 import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.repository.chat.ChatRoomRepository;
@@ -121,7 +122,9 @@ public class ChatService{
     @Transactional
     //채팅방 유저 리스트에 유저추가
     public Boolean addUser(Integer roomId, MyUser user){
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(()->new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("존재하지 않는 채팅방")
+                .build());
         //아이디 중복 확인 후 userList에 추가
         List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
 
@@ -136,7 +139,7 @@ public class ChatService{
 
         userChatMappingRepository.save(userChatMapping);
 
-        Objects.requireNonNull(chatRoom).setUserCount(userList.size());
+        chatRoom.setUserCount(userList.size());
 
         chatRoomRepository.save(chatRoom);
 
