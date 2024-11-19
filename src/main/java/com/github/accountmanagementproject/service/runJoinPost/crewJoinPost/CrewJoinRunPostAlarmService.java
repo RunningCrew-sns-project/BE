@@ -8,7 +8,6 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crew.Crew;
 import com.github.accountmanagementproject.repository.crew.crew.CrewsRepository;
-import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsers;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRepository;
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
@@ -16,13 +15,10 @@ import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJ
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroup;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupId;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
-
 import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
-import com.github.accountmanagementproject.web.dto.crew.CrewJoinResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crew.CrewParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinUpdateResponse;
-import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -133,7 +129,7 @@ public class CrewJoinRunPostAlarmService {
                 .id(groupId)
                 .user(requestUser)
                 .crewJoinPost(crewPost)  // 여기서 crewJoinPost 설정이 필수
-                .status(ParticipationStatus.PENDING)
+                .status(ParticipationStatus.APPROVED)
                 .joinedAt(now)
                 .statusUpdatedAt(now)
                 .build();

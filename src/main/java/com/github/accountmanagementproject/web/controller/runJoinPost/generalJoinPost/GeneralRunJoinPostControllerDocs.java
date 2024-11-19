@@ -17,10 +17,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -249,8 +250,8 @@ public interface GeneralRunJoinPostControllerDocs {
     })
     @PostMapping("/join/{runId}")
     public Response<GeneralJoinResponse> joinGeneralPost(
-            @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId,
-            @Parameter(description = "사용자 이메일", required = true) @RequestParam String email);
+            @Parameter(description = "일반 게시물 ID", required = true)  Long runId,
+            @Parameter(description = "사용자 이메일")  String email);
 
     @Operation(summary = "참여 승인 또는 거절", description = "관리자가 특정 사용자의 일반 게시물 참여를 승인 또는 거절합니다.")
     @ApiResponses(value = {
