@@ -7,10 +7,10 @@ import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJ
 import com.github.accountmanagementproject.repository.runningPost.enums.CrewRunJoinPostStatus;
 import com.github.accountmanagementproject.repository.runningPost.enums.PostType;
 import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
-import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
-import com.github.accountmanagementproject.web.dto.storage.FileDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +30,7 @@ import java.util.List;
 public class CrewRunPostCreateRequest {
 
     @NotBlank(message = "게시물 제목을 입력해주세요.")
+    @Schema(description = "게시물 제목", example = "달리러 가요~")
     private String title; // 게시물 제목
 
     @NotBlank(message = "게시물 내용을 입력해주세요.")
@@ -41,8 +42,9 @@ public class CrewRunPostCreateRequest {
     private String location;
 
     private LocalDate date;
-
-    private LocalTime startTime;
+    @Schema(description = "시작 시간", example = "13:30:59")
+    @Pattern(regexp = "^([01]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$", message = "시간 형식은 HH:mm:ss 이어야 합니다.")
+    private String startTime;
 
     // 위치 정보
     private String inputLocation; // 시작 위치
@@ -66,7 +68,7 @@ public class CrewRunPostCreateRequest {
                 .maximumPeople(request.getMaximumPeople())
                 .currentPeople(0)  // 처음 게시글 생성 시 참여 인원은 0명으로 설정
                 .date(request.getDate())
-                .startTime(request.getStartTime() != null ? request.getStartTime() : null)
+                .startTime(request.getStartTime() != null ? LocalTime.parse(request.getStartTime()) : null)
                 .inputLocation(request.getInputLocation())
                 .inputLatitude(request.getInputLatitude())
                 .inputLongitude(request.getInputLongitude())
