@@ -140,12 +140,7 @@ public class GeneralJoinRunPostAlarmService {
         runGroupRepository.save(runGroup);
 
         // 5. 알림 전송
-        notificationService.sendRejectNotification(
-                requestUserId,
-                postId,
-                admin.getUserId(),
-                "강퇴 이력이 3번 이상으로 인해 자동으로 거절되었습니다."
-        );
+        notificationService.sendRejectNotification(requestUserId, postId, admin.getUserId(), "강퇴 이력이 3번 이상으로 인해 자동으로 거절되었습니다.");
 
         // 6. 응답 생성
         GeneralJoinResponse existingResponse = GeneralJoinResponse.toDto(runGroup);
@@ -196,7 +191,7 @@ public class GeneralJoinRunPostAlarmService {
         post.setCurrentPeople(currentPeople + 1);
         generalJoinPostRepository.save(post);
 
-        notificationService.sendApproveNotification(userId, postId, admin.getUserId(), "달리기 모임 참여가 승인되었습니다.");   // TODO 알림
+        notificationService.sendApproveNotification(userId, postId, admin.getUserId(), "달리기 모임 참여가 승인되었습니다.");   //  알림
 
         // 6. 응답 생성 (fromEntity 메서드 활용)
         GenRunJoinUpdateResponse response = GenRunJoinUpdateResponse.from(GeneralJoinResponse.toDto(runGroup), admin, runGroup.getStatus(), now);

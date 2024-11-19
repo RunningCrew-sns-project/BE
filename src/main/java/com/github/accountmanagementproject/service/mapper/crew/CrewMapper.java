@@ -28,7 +28,9 @@ public interface CrewMapper {
             expression = "java(isStatusCompleted(crew) ?" +
                     " crew.getJoinDate() " +
                     ": (crew.getStatus() == null ? crew.getCrewsUsersPk().getCrew().getCreatedAt() : crew.getApplicationDate()))")
-    @Mapping(target = "status", source = "crew.status")
+    @Mapping(target = "activityRegion", source = "crew.crewsUsersPk.crew.activityRegion")
+//    @Mapping(target = "memberCount", source = "crew.crewsUsersPk.crew.crewUsers.size()")
+    @Mapping(target = "maxCapacity", source = "crew.crewsUsersPk.crew.maxCapacity")
     MyCrewResponse crewsUsersToMyCrewResponse(CrewsUsers crew);
 
     default boolean isStatusCompleted(CrewsUsers crew) {
@@ -73,6 +75,7 @@ public interface CrewMapper {
     @Mapping(target = "nickname", source = "crewsUsersPk.user.nickname")
     @Mapping(target = "userImageUrl", source = "crewsUsersPk.user.profileImg")
     @Mapping(target = "profileMessage", source = "crewsUsersPk.user.profileMessage")
+    @Mapping(target = "userId", source = "crewsUsersPk.user.userId")
     @Mapping(target = "gender", source = "crewsUsersPk.user.gender")
     @Mapping(target = "lastLoginDate", source = "crewsUsersPk.user.lastLogin")
     @Mapping(target = "joinRequestOrJoinDate", expression =

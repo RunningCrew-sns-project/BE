@@ -27,5 +27,4 @@ public interface CrewJoinPostRepository extends JpaRepository<CrewJoinPost, Long
             "GROUP BY c.crewPostId")
     List<Object[]> findCrewPostsWithParticipantCount();
 
-
 }

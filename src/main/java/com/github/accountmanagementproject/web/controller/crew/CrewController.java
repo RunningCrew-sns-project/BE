@@ -88,11 +88,29 @@ public class CrewController implements CrewControllerDocs {
                 .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
                 .build();
     }
+
+    @GetMapping("/all/admin/users")
+    public CustomSuccessResponse getAllMyCrewUsersForNotifications(@AuthenticationPrincipal String email) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("내 크루 멤버 조회 성공")
+                .responseData(crewService.getAllMyCrewAWaitingUsers(email))
+                .build();
+    }
+
+
     @GetMapping("/{crewId}/users")
     public CustomSuccessResponse getSimplyCrewUsers(@PathVariable Long crewId) {
         return new CustomSuccessResponse.SuccessDetail()
                 .message("크루 멤버 조회 성공")
                 .responseData(crewService.getSimplyCrewUsers(crewId))
+                .build();
+    }
+
+    @DeleteMapping("/{crewId}/users")
+    public CustomSuccessResponse withdrawalCrew(@PathVariable Long crewId, @AuthenticationPrincipal String email) {
+        crewService.withdrawalCrew(email, crewId);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 탈퇴 성공")
                 .build();
     }
 
@@ -139,6 +157,15 @@ public class CrewController implements CrewControllerDocs {
                 .httpStatus(HttpStatus.OK)
                 .message("크루 정보와 리스트가 정상적으로 조회되었습니다.")
                 .responseData(response)
+                .build();
+    }
+
+
+    @PutMapping("/{crewId}/admin/users")
+    public CustomSuccessResponse userAYellowCard(@PathVariable Long crewId, @RequestParam Long badUserId, @AuthenticationPrincipal String masterEmail) {
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("경고 성공")
+                .responseData(crewService.giveAUserAYellowCard(masterEmail, crewId, badUserId))
                 .build();
     }
 

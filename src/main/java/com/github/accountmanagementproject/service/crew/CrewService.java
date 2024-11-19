@@ -83,6 +83,13 @@ public class CrewService {
     public CrewJoinResponse joinTheCrew(String email, Long crewId) {
         MyUser user = accountConfig.findMyUser(email);
         Crew crew = findsCrewById(crewId);
+        long crewUserCount = crewsUsersRepository.countCrewUsersByCrewId(crewId);
+
+        if(crew.getMaxCapacity() <= crewUserCount)
+            throw new CustomBadRequestException.ExceptionBuilder()
+                    .customMessage("크루 인원이 가득 찼습니다.")
+                    .request(crewUserCount)
+                    .build();
 
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, user);
 
@@ -199,7 +206,7 @@ public class CrewService {
         //객체 저장 - 트랜잭셔널 적용되어있구 원래있던 객체 불러와서 수정한거라 save 안쓰셔도 괜찮습니다
 //        crewsUsersRepository.save(crewsUser);
         Long masterUserId = myUsersRepository.findByEmail(crewMasterEmail).get().getUserId();
-        notificationService.sendKickNotification(outUserId, crewId, masterUserId,  "모임에서 강퇴되었습니다.");
+        notificationService.sendKickNotification(outUserId, crewId, masterUserId,  "모임에서 강퇴되었습니다.");  // 알림
         return "crewUser : " + crewsUser.getCrewsUsersPk().getUser().getNickname() + " 을/를 성공적으로 퇴장시켰습니다.";
     }
 
@@ -305,5 +312,54 @@ public class CrewService {
                 masterResponse :
                 crewsUsersRepository.findByCrewIdAndUserEmail(crewId, email);
 
+    }
+    private CrewsUsersPk makeCrewsUsersPk(Long crewId, Long userId) {
+        Crew crew = new Crew();
+        crew.setCrewId(crewId);
+        MyUser user = new MyUser();
+        user.setUserId(userId);
+        return new CrewsUsersPk(crew, user);
+    }
+    private CrewsUsers findCrewsUsersAndValidation(CrewsUsersPk pk){
+        CrewsUsers badUser = crewsUsersRepository.findById(pk)
+                .orElseThrow(() -> new CustomNotFoundException.ExceptionBuilder()
+                        .customMessage("해당 크루의 멤버를 찾을 수 없습니다.").request(pk.getCrew().getCrewId()+" "+pk.getUser().getUserId()).build());
+        if(badUser.getStatus()!=CrewsUsersStatus.COMPLETED)
+            throw new CustomBadRequestException.ExceptionBuilder()
+                    .customMessage("가입 완료 상태의 멤버가 아닙니다.").request(badUser.getStatus()).build();
+        return badUser;
+    }
+
+
+    @Transactional
+    public Map<String,Object> giveAUserAYellowCard(String masterEmail, Long crewId, Long badUserId) {
+        isCrewMaster(masterEmail, crewId);
+        CrewsUsersPk pk = makeCrewsUsersPk(crewId, badUserId);
+        CrewsUsers badUser = findCrewsUsersAndValidation(pk);
+
+        if(badUser.getCaveat() >= 2){
+            badUser.setCaveat(badUser.getCaveat()+1);
+            badUser.setStatus(CrewsUsersStatus.FORCED_EXIT);
+            badUser.setWithdrawalDate(LocalDateTime.now());
+            return Map.of("message", "누적 경고 3회로 유저가 강퇴되었습니다.", "status", badUser.getStatus(),
+                    "releaseDay", badUser.getReleaseDay(), "caveat", badUser.getCaveat());
+        }else {
+            badUser.setCaveat(badUser.getCaveat()+1);
+            return Map.of("message", "경고가 부여되었습니다.", "caveat", badUser.getCaveat());
+        }
+    }
+
+    @Transactional
+    public void withdrawalCrew(String email, Long crewId) {
+        boolean result = crewsUsersRepository.withdrawalCrew(email, crewId);
+        if(!result)
+            throw new CustomNotFoundException.ExceptionBuilder()
+                    .customMessage("해당 크루의 가입 완료상태인 유저가 아니거나 존재하지 않는 크루")
+                    .request(Map.of("email", email, "crewId", crewId))
+                    .build();
+    }
+
+    public List<CrewAndUserResponse> getAllMyCrewAWaitingUsers(String email) {
+        return crewsUsersRepository.myCrewPendingUsers(email);
     }
 }

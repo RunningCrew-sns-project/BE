@@ -86,8 +86,8 @@ public class CrewJoinRunPostAlarmService {
                 ParticipationStatus.REJECTED,  // 새로운 상태
                 now  // 업데이트 시간
         );
-
-        // 자동 거절 알림 전송 TODO
+        // 알림
+        notificationService.sendRejectNotification(requestUserId, crewPostId, crewPost.getAuthor().getUserId(), "강퇴 이력이 3번 이상으로 인해 자동으로 거절되었습니다.");
         return response;
     }
 
@@ -211,7 +211,8 @@ public class CrewJoinRunPostAlarmService {
                 ParticipationStatus.APPROVED,              // 새로운 상태
                 now     );                                   // 업데이트 시간);
 
-        // TODO : 알림
+        //  알림
+        notificationService.sendApproveNotification(requestUserId, crewPostId, admin.getUserId(), "달리기 모임 참여가 승인되었습니다.");
         return response;
     }
 
@@ -227,7 +228,7 @@ public class CrewJoinRunPostAlarmService {
     }
 
 
-    // 거절
+    // 강퇴
     @Transactional
     public CrewRunJoinUpdateResponse forceToKickOut(Long crewPostId, Long requestUserId, String principal) {
 //        MyUser user = accountConfig.findMyUser(principal);
@@ -253,12 +254,10 @@ public class CrewJoinRunPostAlarmService {
         crewRunGroupRepository.save(participation);
 
         // 응답 생성
-        return CrewRunJoinUpdateResponse.fromEntity(
-                CrewRunJoinResponse.toDto(participation),
-                admin,
-                ParticipationStatus.FORCED_EXIT,
-                updateTime
-        );
+        CrewRunJoinUpdateResponse response =  CrewRunJoinUpdateResponse.fromEntity(CrewRunJoinResponse.toDto(participation), admin, ParticipationStatus.FORCED_EXIT, updateTime);
+
+        notificationService.sendKickNotification(requestUserId, crewPostId, admin.getUserId(), "모임에서 강퇴되었습니다.");  //  알림
+        return response;
     }
 
 

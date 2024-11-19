@@ -22,11 +22,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Crew", description = "Crew 관련 API")
 public interface CrewControllerDocs {
+    @Operation(summary = "내 크루 가입 요청자 조회", description = "나의 크루의 모든 가입 요청자 조회")
+    CustomSuccessResponse getAllMyCrewUsersForNotifications(String email);
+    @Operation(summary = "크루 탈퇴", description = "크루 탈퇴 탈퇴 후 하루지나서 재가입 가능")
+    CustomSuccessResponse withdrawalCrew( Long crewId,  String email);
     @Operation(summary = "크루원 간단 조회", description = "크루원 조회")
     CustomSuccessResponse getSimplyCrewUsers(Long crewId);
     @Operation(summary = "특정 크루에 대한 나의 정보 조회", description = "크루에 대한 나의 정보 조회")
     CustomSuccessResponse userAboutCrew(Long crewId, String email);
-
+    @Operation(summary = "크루원 경고 부여", description = "경고 3회 누적시 강제 퇴장 30일간 재가입 불가")
+    CustomSuccessResponse userAYellowCard(Long crewId, Long badUserId, String masterEmail);
     @Operation(summary = "크루 목록 조회", description = "크루 목록을 조회합니다.<br>" +
             "criteria = 정렬 조건 (latest = 최신순, popular = 인기순, name = 이름순, member = 크루원수순, activities = 활동량(게시글 수))<br>" +
             "인기순은 한달간 가입한 크루원 수로 판단하고, 활동량은 크루원들의 일주일간 게시글 수로 판단합니다.")
