@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "RunRecordsController", description = "달리기 기록 CRUD API")
+@Tag(name = "Run Records", description = "달리기 기록 CRUD API")
 public interface RunRecordsControllerDocs {
     @Operation(summary = "달리기 기록 조회", description = "달리기 기록 조회, 무한스크롤링 페이지네이션")
     @Parameters({

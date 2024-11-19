@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@Tag(name = "BlogController", description = "블로그 작성, 좋아요, 댓글 관련 API")
+@Tag(name = "Blog", description = "블로그 작성, 좋아요, 댓글 관련 API")
 public interface BlogControllerDocs {
 
 

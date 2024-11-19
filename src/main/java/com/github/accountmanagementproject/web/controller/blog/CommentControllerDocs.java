@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "CommentController", description = "댓글 작성, 조회, 수정, 삭제 API")
+@Tag(name = "Comment", description = "댓글 작성, 조회, 수정, 삭제 API")
 public interface CommentControllerDocs {
     @Operation(summary = "블로그 id를 받아 댓글 조회")
     @Parameter(name = "blogId", description = "댓글 조회할 블로그 아이디")

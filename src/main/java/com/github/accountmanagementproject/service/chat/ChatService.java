@@ -83,7 +83,8 @@ public class ChatService{
     @ExeTimer
     @Transactional
     // roomName 으로 채팅방 만들기
-    public CustomSuccessResponse createChatRoom(String roomName, MyUser user){
+    public CustomSuccessResponse createChatRoom(ChatRoomRequest chatRoomRequest, MyUser user){
+        String roomName = chatRoomRequest.getRoomName();
         CustomSuccessResponse customSuccessResponse = null;
         //채팅방 이름으로 채팅 방 생성후
         if(chatRoomRepository.findByTitle(roomName) == null) {
