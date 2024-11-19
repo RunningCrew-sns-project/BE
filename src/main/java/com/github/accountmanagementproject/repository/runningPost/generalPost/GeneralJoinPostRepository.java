@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.repository.runningPost.generalPost;
 
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +29,6 @@ public interface GeneralJoinPostRepository extends JpaRepository<GeneralJoinPost
             "FROM GeneralJoinPost p " +
             "WHERE p.generalPostId = :postId AND p.author.email = :email")
     boolean isPostAuthor(@Param("email") String email, @Param("postId") Long postId);
+
+    List<GeneralJoinPost> findAllByAuthor(MyUser user);
 }
