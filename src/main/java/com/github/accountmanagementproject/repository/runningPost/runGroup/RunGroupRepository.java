@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.repository.runningPost.runGroup;
 
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,4 +38,6 @@ public interface RunGroupRepository extends JpaRepository<RunGroup, RunGroupId> 
 
     @Query(value = "SELECT COUNT(*) FROM run_group WHERE user_id = :userId AND status = :status", nativeQuery = true)
     int countByUserIdAndStatusNative(@Param("userId") Long userId, @Param("status") String status);
+
+    List<RunGroup> findAllByUser(MyUser user);
 }
