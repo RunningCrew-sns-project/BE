@@ -1,6 +1,7 @@
 package com.github.accountmanagementproject.service.runJoinPost.generalJoinPost;
 
 import com.github.accountmanagementproject.alarm.service.NotificationService;
+import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.exception.SimpleRunAppException;
 import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
@@ -36,6 +37,7 @@ public class GeneralJoinRunPostAlarmService {
     private final MyUsersRepository userRepository;
     private final RunGroupRepository runGroupRepository;
     private final NotificationService notificationService;
+    private final AccountConfig accountConfig;
 
     private static final int MAX_BAN_COUNT = 3;
 
@@ -44,8 +46,9 @@ public class GeneralJoinRunPostAlarmService {
     @Transactional
     public GeneralJoinResponse applyToJoinPost(String email, Long postId) {
         // 1. 사용자 조회
-        MyUser user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
+        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
 
         // 2. 게시글 조회
         GeneralJoinPost post = generalJoinPostRepository.findById(postId)
@@ -92,9 +95,9 @@ public class GeneralJoinRunPostAlarmService {
     // 신규 참여 신청 시 호출되는 메서드
     @Transactional
     public GenRunJoinUpdateResponse processNewParticipation(Long postId, Long requestUserId, String email) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser requestUser = userRepository.findById(Math.toIntExact(requestUserId))  //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        MyUser user = accountConfig.findMyUser(email);
+//        MyUser requestUser = userRepository.findById(Math.toIntExact(requestUserId))  //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
         // 강퇴 횟수 확인
         int banCount = countForcedExit(requestUserId);
 
@@ -203,9 +206,9 @@ public class GeneralJoinRunPostAlarmService {
     @Transactional
     public GenRunJoinUpdateResponse forceToKickOut(String adminEmail, Long postId, Long userId) {
         // 1. 관리자(방장) 조회
-//        MyUser user = accountConfig.findMyUser(adminEmail);
-        MyUser admin = userRepository.findByEmail(adminEmail)
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
+        MyUser admin = accountConfig.findMyUser(adminEmail);
+//        MyUser admin = userRepository.findByEmail(adminEmail)
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND));
 
         // 2. 게시물 조회 및 권한 확인
         GeneralJoinPost post = generalJoinPostRepository.findById(postId)

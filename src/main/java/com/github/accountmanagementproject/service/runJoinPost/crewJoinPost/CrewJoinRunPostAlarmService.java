@@ -54,9 +54,9 @@ public class CrewJoinRunPostAlarmService {
     // 신규 참여 신청 시 호출되는 메서드
     @Transactional
     public CrewRunJoinUpdateResponse processNewParticipation(Long crewPostId, Long requestUserId, String principal) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser requestUser = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
+        MyUser requestUser = accountConfig.findMyUser(principal);
+//        MyUser requestUser = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
         // 강퇴 횟수 확인
         int banCount = crewRunGroupRepository.countByUserUserIdAndStatus(requestUser.getUserId(), ParticipationStatus.FORCED_EXIT);
 
@@ -96,9 +96,9 @@ public class CrewJoinRunPostAlarmService {
     // 참여 신청
     @Transactional
     public CrewRunJoinResponse applyForCrewRun(Long crewPostId, String principal) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser requestUser = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
+        MyUser requestUser = accountConfig.findMyUser(principal);
+//        MyUser requestUser = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
 
         // 1. 크루 게시물 조회
         CrewJoinPost crewPost = crewJoinPostRepository.findById(crewPostId)
@@ -174,9 +174,9 @@ public class CrewJoinRunPostAlarmService {
 
     // 승인
     public CrewRunJoinUpdateResponse approveParticipation(Long crewPostId, Long requestUserId, String principal) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser admin = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
+        MyUser admin = accountConfig.findMyUser(principal);
+//        MyUser admin = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
         CrewJoinPost crewPost = crewJoinPostRepository.findById(crewPostId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND));
 
@@ -231,9 +231,9 @@ public class CrewJoinRunPostAlarmService {
     // 강퇴
     @Transactional
     public CrewRunJoinUpdateResponse forceToKickOut(Long crewPostId, Long requestUserId, String principal) {
-//        MyUser user = accountConfig.findMyUser(principal);
-        MyUser admin = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
+        MyUser admin = accountConfig.findMyUser(principal);
+//        MyUser admin = userRepository.findByEmail(principal)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + principal));
         CrewJoinPost crewPost = crewJoinPostRepository.findById(crewPostId)
                 .orElseThrow(() -> new SimpleRunAppException(ErrorCode.POST_NOT_FOUND));
 

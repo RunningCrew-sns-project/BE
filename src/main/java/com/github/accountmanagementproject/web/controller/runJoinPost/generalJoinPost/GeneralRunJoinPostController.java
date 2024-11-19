@@ -72,6 +72,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 
     // 게시글 수정
     @PostMapping("/update/{runId}")
+    @Override
     public Response<GeneralRunPostResponse> updatePostById(@PathVariable Long runId,
                                                                  @RequestBody @Valid GeneralRunPostUpdateRequest request,
                                                            @AuthenticationPrincipal String email) {
@@ -86,6 +87,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 
     // 게시글 삭제
     @DeleteMapping("/delete/{runId}")
+    @Override
     public Response<Void> deletePostById(@PathVariable Long runId, @AuthenticationPrincipal String email) {
                 MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
 //        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
