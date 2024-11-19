@@ -50,10 +50,7 @@ public class ChatRoomController implements ChatRoomControllerDocs{
         log.info(principal);
         MyUser user = accountConfig.findMyUser(principal);
 
-        return new CustomSuccessResponse.SuccessDetail()
-                .message("채팅방 생성을 완료하였습니다.")
-                .responseData(chatService.createChatRoom(roomName, user))
-                .build();
+        return chatService.createChatRoom(roomName, user);
     }
 
     @Override
