@@ -50,6 +50,7 @@ public class TodayRunService {
         List<TodayRunDto> todayCrewJoinPostFromCrewJoinPost = crewJoinPostRepository
                 .findAllByAuthor(user)
                 .stream()
+                .filter(crewJoinPost -> crewJoinPost.getDate().equals(LocalDate.now()))
                 .map(post -> TodayRunDto.builder()
                         .id(post.getCrewPostId())
                         .title(post.getTitle())
@@ -75,6 +76,7 @@ public class TodayRunService {
         List<TodayRunDto> todayGeneralJoinPostFromGeneralJoinPost = generalJoinPostRepository
                 .findAllByAuthor(user)
                 .stream()
+                .filter(generalJoinPost -> generalJoinPost.getDate().equals(LocalDate.now()))
                 .map(post -> TodayRunDto.builder()
                         .id(post.getGeneralPostId())
                         .title(post.getTitle())
@@ -90,6 +92,8 @@ public class TodayRunService {
         todayRunDtos.addAll(todayCrewJoinPostFromCrewJoinPost);
         todayRunDtos.addAll(todayGeneralJoinPostFromRunGroup);
         todayRunDtos.addAll(todayGeneralJoinPostFromGeneralJoinPost);
+
+        log.info(LocalDateTime.now().toString());
 
         return todayRunDtos;
     }
