@@ -4,6 +4,7 @@ import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroup;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupRepository;
@@ -32,6 +33,7 @@ public class TodayRunService {
         List<TodayRunDto> todayCrewJoinPost = crewRunGroupRepository
                 .findAllByUser(user)
                 .stream()
+                .filter(crewRunGroup -> crewRunGroup.getStatus().equals(ParticipationStatus.APPROVED))
                 .map(CrewRunGroup::getCrewJoinPost)
                 .filter(crewJoinPost -> crewJoinPost.getDate().equals(LocalDate.now()))
                 .map(post-> TodayRunDto.builder()
@@ -45,6 +47,7 @@ public class TodayRunService {
         List<TodayRunDto> todayGeneralJoinPost = runGroupRepository
                 .findAllByUser(user)
                 .stream()
+                .filter(runGroup -> runGroup.getStatus().equals(ParticipationStatus.APPROVED))
                 .map(RunGroup::getGeneralJoinPost)
                 .filter(generalJoinPost -> generalJoinPost.getDate().equals(LocalDate.now()))
                 .map(post-> TodayRunDto.builder()
