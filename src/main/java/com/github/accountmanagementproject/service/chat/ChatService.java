@@ -9,6 +9,7 @@ import com.github.accountmanagementproject.service.ExeTimer;
 import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.chatRoom.ChatRoomMapper;
 import com.github.accountmanagementproject.web.dto.chat.*;
+import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +83,8 @@ public class ChatService{
     @ExeTimer
     @Transactional
     // roomName 으로 채팅방 만들기
-    public ChatRoom createChatRoom(String roomName, MyUser user){
+    public CustomSuccessResponse createChatRoom(String roomName, MyUser user){
+        CustomSuccessResponse customSuccessResponse = null;
         //채팅방 이름으로 채팅 방 생성후
         if(chatRoomRepository.findByTitle(roomName) == null) {
             ChatRoom chatRoom = ChatRoom.builder()
@@ -97,10 +100,20 @@ public class ChatService{
             userChatMappingRepository.save(userChatMapping);
             List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
             chatRoom.setUserCount(userList.size());
-            return chatRoom;
+            customSuccessResponse = new CustomSuccessResponse.SuccessDetail()
+                    .responseData(chatRoom)
+                    .httpStatus(HttpStatus.CREATED)
+                    .message("채팅방 생성을 완료하였습니다.")
+                    .build();
         }else {
-            return chatRoomRepository.findByTitle(roomName);
+            customSuccessResponse = new CustomSuccessResponse.SuccessDetail()
+                    .responseData(chatRoomRepository.findByTitle(roomName))
+                    .httpStatus(HttpStatus.CONFLICT)
+                    .message("이미 존재하는 채팅방")
+                    .build();
         }
+
+        return customSuccessResponse;
     }
 
     @ExeTimer

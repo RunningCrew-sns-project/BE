@@ -1,5 +1,7 @@
 package com.github.accountmanagementproject.repository.runningPost.crewRunGroup;
 
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import com.mongodb.RequestContext;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -55,5 +57,5 @@ public interface CrewRunGroupRepository extends JpaRepository<CrewRunGroup, Crew
             @Param("status") ParticipationStatus status
     );
 
-
+    List<CrewRunGroup> findAllByUser(MyUser user);
 }

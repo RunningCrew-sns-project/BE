@@ -21,9 +21,8 @@ public interface ChatRoomControllerDocs {
     CustomSuccessResponse myChatRoomList(@AuthenticationPrincipal String principal);
 
     @Operation(summary = "채팅방 생성하기", description = "채팅방 이름으로 채팅방 생성하기")
-    @Parameter(name = "roomName", description = "채팅방 이름")
     @PostMapping("/createRoom")
-    CustomSuccessResponse createRoom(@RequestBody String roomName, @AuthenticationPrincipal String principal);
+    CustomSuccessResponse createRoom(@RequestParam(name = "roomName") String roomName, @AuthenticationPrincipal String principal);
 
     @Operation(summary = "채팅방에 참여중인 유저 목록 불러오기", description = "roomId를 받아 채팅방에 참여중인 유저 목록 조회")
     @Parameter(name = "roomId", description = "채팅방 아이디")
