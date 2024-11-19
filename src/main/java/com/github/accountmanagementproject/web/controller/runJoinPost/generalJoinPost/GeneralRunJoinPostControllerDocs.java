@@ -21,7 +21,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -251,9 +250,12 @@ public interface GeneralRunJoinPostControllerDocs {
     @PostMapping("/join/{runId}")
     public Response<GeneralJoinResponse> joinGeneralPost(
             @Parameter(description = "일반 게시물 ID", required = true)  Long runId,
-            @Parameter(description = "사용자 이메일")  String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String email);
 
-    @Operation(summary = "참여 승인 또는 거절", description = "관리자가 특정 사용자의 일반 게시물 참여를 승인 또는 거절합니다.")
+    @Operation(
+            summary = "참여 승인 또는 거절",
+            description = "관리자가 특정 사용자의 일반 게시물 참여를 승인 또는 거절합니다."
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -263,26 +265,26 @@ public interface GeneralRunJoinPostControllerDocs {
                             examples = @ExampleObject(
                                     name = "승인 또는 거절 성공 응답",
                                     value = """
-                                            {
-                                                "resultCode": "success",
-                                                "code": 200,
-                                                "httpStatus": "OK",
-                                                "message": "처리가 완료되었습니다.",
-                                                "detailMessage": null,
-                                                "responseData": {
-                                                    "runId": 42,
-                                                    "title": "일반 달리기 게시물",
-                                                    "adminId": 15,
-                                                    "adminNickname": "관리자 닉네임",
-                                                    "userId": 8,
-                                                    "nickname": "참여자 닉네임",
-                                                    "userEmail": "participant@example.com",
-                                                    "status": "APPROVED",
-                                                    "statusUpdatedAt": "2024-11-17T12:45:30"
-                                                },
-                                                "timestamp": "2024-11-17T12:45:30.123456"
-                                            }
-                                            """
+                                        {
+                                            "resultCode": "success",
+                                            "code": 200,
+                                            "httpStatus": "OK",
+                                            "message": "처리가 완료되었습니다.",
+                                            "detailMessage": null,
+                                            "responseData": {
+                                                "runId": 42,
+                                                "title": "일반 달리기 게시물",
+                                                "adminId": 15,
+                                                "adminNickname": "관리자 닉네임",
+                                                "userId": 8,
+                                                "nickname": "참여자 닉네임",
+                                                "userEmail": "participant@example.com",
+                                                "status": "APPROVED",
+                                                "statusUpdatedAt": "2024-11-17T12:45:30"
+                                            },
+                                            "timestamp": "2024-11-17T12:45:30.123456"
+                                        }
+                                        """
                             )
                     )
             ),
@@ -293,7 +295,8 @@ public interface GeneralRunJoinPostControllerDocs {
     public Response<GenRunJoinUpdateResponse> approveOrReject(
             @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId,
             @Parameter(description = "참여 신청자 ID", required = true) @PathVariable Long userId,
-            @Parameter(description = "관리자 이메일", required = false) @RequestParam(required = false) String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String email);
+
 
     @Operation(summary = "참여자 강퇴", description = "관리자가 특정 사용자를 일반 게시물에서 강퇴합니다.")
     @ApiResponses(value = {
@@ -335,7 +338,7 @@ public interface GeneralRunJoinPostControllerDocs {
     public Response<GenRunJoinUpdateResponse> kickParticipant(
             @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId,
             @Parameter(description = "강퇴할 사용자 ID", required = true) @PathVariable Long userId,
-            @Parameter(description = "관리자 이메일", required = true) @RequestParam String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String email);
 
     @Operation(summary = "참여 신청 후 -> '승인(APPROVED)' 유저 리스트 조회", description = "특정 일반 게시물의 '승인(APPROVED)'된 유저를 조회합니다.")
     @ApiResponses(value = {

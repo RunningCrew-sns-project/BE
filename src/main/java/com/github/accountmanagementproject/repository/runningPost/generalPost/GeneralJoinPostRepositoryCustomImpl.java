@@ -60,6 +60,8 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
             return posts;
         }
 
+
+
     }
 
     private Map<Long, List<RunMemberResponse>> generalRunMemberQuery(BooleanBuilder whereClause) {

@@ -1,9 +1,11 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
+import com.github.accountmanagementproject.web.dto.chat.ChatRoomRequest;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -11,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Tag(name = "ChatRooms", description = "채팅방 관련 API")
 public interface ChatRoomControllerDocs {
 
+    @Operation(summary = "모든 채팅방 불러오기", description = "생성된 모든 채팅방 페이지네이션 구현")
     @GetMapping("/allRooms")
     CustomSuccessResponse findAllRoomList(Integer size, Integer cursor, @AuthenticationPrincipal String email);
 
@@ -22,7 +26,7 @@ public interface ChatRoomControllerDocs {
 
     @Operation(summary = "채팅방 생성하기", description = "채팅방 이름으로 채팅방 생성하기")
     @PostMapping("/createRoom")
-    CustomSuccessResponse createRoom(@RequestParam(name = "roomName") String roomName, @AuthenticationPrincipal String principal);
+    CustomSuccessResponse createRoom(@RequestBody ChatRoomRequest roomName, @AuthenticationPrincipal String principal);
 
     @Operation(summary = "채팅방에 참여중인 유저 목록 불러오기", description = "roomId를 받아 채팅방에 참여중인 유저 목록 조회")
     @Parameter(name = "roomId", description = "채팅방 아이디")
