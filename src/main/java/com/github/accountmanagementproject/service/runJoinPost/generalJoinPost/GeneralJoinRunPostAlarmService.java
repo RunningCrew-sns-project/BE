@@ -6,17 +6,15 @@ import com.github.accountmanagementproject.exception.SimpleRunAppException;
 import com.github.accountmanagementproject.exception.enums.ErrorCode;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
+import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupId;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupRepository;
-import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
-import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.CrewRunJoinUpdateResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.general.GeneralParticipantsResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GenRunJoinUpdateResponse;
 import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.GeneralJoinResponse;
-import com.github.accountmanagementproject.web.dto.runJoinPost.runGroup.JoinResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -82,7 +80,7 @@ public class GeneralJoinRunPostAlarmService {
                 .id(groupId)
                 .user(user)
                 .generalJoinPost(post)
-                .status(ParticipationStatus.PENDING)
+                .status(ParticipationStatus.APPROVED)
                 .joinedAt(now)
                 .statusUpdatedAt(now)
                 .build();
