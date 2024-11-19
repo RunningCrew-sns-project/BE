@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
+import com.github.accountmanagementproject.web.dto.chat.ChatRoomRequest;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,7 +23,7 @@ public interface ChatRoomControllerDocs {
 
     @Operation(summary = "채팅방 생성하기", description = "채팅방 이름으로 채팅방 생성하기")
     @PostMapping("/createRoom")
-    CustomSuccessResponse createRoom(@RequestParam(name = "roomName") String roomName, @AuthenticationPrincipal String principal);
+    CustomSuccessResponse createRoom(@RequestBody ChatRoomRequest roomName, @AuthenticationPrincipal String principal);
 
     @Operation(summary = "채팅방에 참여중인 유저 목록 불러오기", description = "roomId를 받아 채팅방에 참여중인 유저 목록 조회")
     @Parameter(name = "roomId", description = "채팅방 아이디")

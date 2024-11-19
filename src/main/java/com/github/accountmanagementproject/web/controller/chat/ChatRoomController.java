@@ -3,6 +3,7 @@ package com.github.accountmanagementproject.web.controller.chat;
 import com.github.accountmanagementproject.config.security.AccountConfig;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.service.chat.ChatService;
+import com.github.accountmanagementproject.web.dto.chat.ChatRoomRequest;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -46,11 +47,11 @@ public class ChatRoomController implements ChatRoomControllerDocs{
 
     @Override
     @PostMapping("/createRoom")
-    public CustomSuccessResponse createRoom(@RequestBody String roomName, @AuthenticationPrincipal String principal){
+    public CustomSuccessResponse createRoom(@RequestBody ChatRoomRequest chatRoomRequest, @AuthenticationPrincipal String principal){
         log.info(principal);
         MyUser user = accountConfig.findMyUser(principal);
 
-        return chatService.createChatRoom(roomName, user);
+        return chatService.createChatRoom(chatRoomRequest, user);
     }
 
     @Override
