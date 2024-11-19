@@ -5,6 +5,7 @@ import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccess
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Tag(name = "ChatRooms", description = "채팅방 관련 API")
 public interface ChatRoomControllerDocs {
 
+    @Operation(summary = "모든 채팅방 불러오기", description = "생성된 모든 채팅방 페이지네이션 구현")
     @GetMapping("/allRooms")
     CustomSuccessResponse findAllRoomList(Integer size, Integer cursor, @AuthenticationPrincipal String email);
 
