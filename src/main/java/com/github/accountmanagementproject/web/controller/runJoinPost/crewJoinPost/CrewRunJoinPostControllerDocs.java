@@ -267,7 +267,7 @@ public interface CrewRunJoinPostControllerDocs {
     @PostMapping("join/{runId}")
     public Response<CrewRunJoinResponse> participateInCrewRun(
             @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
-            @Parameter(description = "사용자 이메일", required = true) @RequestParam String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
 
 
     @Operation(summary = "참여 승인 또는 거절", description = "관리자가 특정 사용자의 크루 참여를 승인 또는 거절합니다.")
@@ -311,7 +311,7 @@ public interface CrewRunJoinPostControllerDocs {
     public Response<CrewRunJoinUpdateResponse> approveParticipation(
             @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
             @Parameter(description = "참여 신청자 ID", required = true) @PathVariable Long userId,
-            @Parameter(description = "관리자 이메일", required = true) @RequestParam String principal);
+            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
 
 
     @Operation(summary = "참여자 강퇴", description = "관리자가 특정 사용자를 크루 모임에서 강퇴합니다.")
@@ -324,7 +324,7 @@ public interface CrewRunJoinPostControllerDocs {
     public Response<CrewRunJoinUpdateResponse> expelParticipant(
             @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
             @Parameter(description = "강퇴할 사용자 ID", required = true) @PathVariable Long userId,
-            @Parameter(description = "관리자 이메일", required = true) @RequestParam String email);
+            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
 
 
     @Operation(summary = "참여 신청 후 -> '승인(APPROVED)' 유저 리스트 조회", description = "특정 게시글의 모든 '승인(APPROVED)'된 유저를 조회합니다.")
