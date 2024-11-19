@@ -24,6 +24,13 @@ public interface RunGroupRepository extends JpaRepository<RunGroup, RunGroupId> 
     List<RunGroup> findAllParticipantsByPostId(@Param("postId") Long postId);
 
 
+    @Query("SELECT rg FROM RunGroup rg " +
+            "JOIN FETCH rg.user " +
+            "LEFT JOIN FETCH rg.approver " +
+            "WHERE rg.generalJoinPost.generalPostId = :postId AND rg.status = 'PENDING' ")
+    List<RunGroup> getAllPendingParticipants(@Param("postId") Long postId);
+
+
     @Query("SELECT COUNT(r) FROM RunGroup r WHERE r.id.userId = :userId AND r.status = :status")
     int countByUserUserIdAndStatus(@Param("userId") Long userId, @Param("status") ParticipationStatus status);
 

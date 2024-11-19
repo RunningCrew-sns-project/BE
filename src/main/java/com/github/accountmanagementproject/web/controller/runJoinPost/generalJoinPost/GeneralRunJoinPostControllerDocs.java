@@ -336,11 +336,11 @@ public interface GeneralRunJoinPostControllerDocs {
             @Parameter(description = "강퇴할 사용자 ID", required = true) @PathVariable Long userId,
             @Parameter(description = "관리자 이메일", required = true) @RequestParam String email);
 
-    @Operation(summary = "참여자 리스트 조회", description = "특정 일반 게시물의 모든 참여자를 조회합니다.")
+    @Operation(summary = "참여 신청 후 -> '승인(APPROVED)' 유저 리스트 조회", description = "특정 일반 게시물의 '승인(APPROVED)'된 유저를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "참여자 리스트 조회 성공",
+                    description = "'승인(APPROVED)' 리스트 조회 성공",
                     content = @Content(
                             schema = @Schema(implementation = Response.class),
                             examples = @ExampleObject(
@@ -350,7 +350,7 @@ public interface GeneralRunJoinPostControllerDocs {
                                                 "resultCode": "success",
                                                 "code": 200,
                                                 "httpStatus": "OK",
-                                                "message": "일반 참여자 리스트가 조회되었습니다.",
+                                                "message": "'승인(APPROVED)' 리스트가 조회되었습니다.",
                                                 "detailMessage": null,
                                                 "responseData": [
                                                     {
@@ -377,10 +377,57 @@ public interface GeneralRunJoinPostControllerDocs {
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
             @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
-    @GetMapping("/participants/list/{runId}")
+    @GetMapping("/participants/approve-list/{runId}")
     public Response<List<GeneralParticipantsResponse>> getAllParticipants(
             @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId);
 
+
+    @Operation(summary = "참여 신청 후 -> '참여 대기(PENDING)' 유저 리스트 조회", description = "특정 일반 게시물의 대기 상태인 유저를 조회합니다. adminId 가 null로 응답됩니다. 이후 승인 또는 거절 시 adminId 가 표시됨")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "참여자 리스트 조회 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Response.class),
+                            examples = @ExampleObject(
+                                    name = "참여자 - 대기(PENDING) 리스트 조회 성공 응답",
+                                    value = """
+                                            {
+                                                "resultCode": "success",
+                                                "code": 200,
+                                                "httpStatus": "OK",
+                                                "message": "'참여 대기(PENDING)' 리스트가 조회되었습니다.",
+                                                "detailMessage": null,
+                                                "responseData": [
+                                                    {
+                                                        "userId": 1,
+                                                        "nickname": "참여자1",
+                                                        "adminId": null,
+                                                        "email": "user1@example.com",
+                                                        "status": "PENDING",
+                                                        "joinedAt": "2024-11-17T12:15:00"
+                                                    },
+                                                    {
+                                                        "userId": 2,
+                                                        "nickname": "참여자2",
+                                                        "adminId": null,
+                                                        "email": "user2@example.com",
+                                                        "status": "PENDING",
+                                                        "joinedAt": "2024-11-17T12:20:00"
+                                                    }
+                                                ],
+                                                "timestamp": "2024-11-17T13:00:00.123456"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @GetMapping("/participants/pending-list/{runId}")
+    public Response<List<GeneralParticipantsResponse>> getAllPendingParticipants(
+            @Parameter(description = "일반 게시물 ID", required = true) @PathVariable Long runId);
 
 
 

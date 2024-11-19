@@ -198,7 +198,7 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 //    }
 
 
-    @GetMapping("/participants/list/{runId}")
+    @GetMapping("/participants/approve-list/{runId}")
     @Override
     public Response<List<CrewParticipantsResponse>> getAllParticipants(
 //                                                                PageRequestDto pageRequestDto ,
@@ -209,8 +209,23 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
 //        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
 //                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
         List<CrewParticipantsResponse> result = alarmService.getAllParticipants(runId);
-        return Response.success(HttpStatus.OK, "크루 참여자 리스트가 조회되었습니다.", result);
+        return Response.success(HttpStatus.OK, "'승인(APPROVED)' 참여자 리스트가 조회되었습니다.", result);
     }
+
+    @GetMapping("/participants/pending-list/{runId}")
+    @Override
+    public Response<List<CrewParticipantsResponse>> getAllPendingParticipants(
+//                                                                PageRequestDto pageRequestDto ,
+            @PathVariable Long runId
+//                                                                    @RequestParam String email
+    ) {
+//        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        List<CrewParticipantsResponse> result = alarmService.getAllPendingParticipants(runId);
+        return Response.success(HttpStatus.OK, "'참여 대기(PENDING)' 리스트가 조회되었습니다.", result);
+    }
+
 
 //    {
 //        "resultCode": "success",

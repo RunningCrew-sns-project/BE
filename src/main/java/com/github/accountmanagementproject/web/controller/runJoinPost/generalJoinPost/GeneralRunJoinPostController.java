@@ -168,7 +168,7 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 
 
     // general_post_id를 조회하면 해당 게시물의 모든 참여자들의 user_id, status , 참여일, 업데이트일 목록 조회
-    @GetMapping("/participants/list/{runId}")
+    @GetMapping("/participants/approve-list/{runId}")
     @Override
     public Response<List<GeneralParticipantsResponse>> getAllParticipants(
 //                                                                PageRequestDto pageRequestDto ,
@@ -179,8 +179,24 @@ public class GeneralRunJoinPostController implements GeneralRunJoinPostControlle
 //        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
 //                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
         List<GeneralParticipantsResponse> result = alarmService.getAllParticipants(runId);
-        return Response.success(HttpStatus.OK, "일반 참여자 리스트가 조회되었습니다.", result);
+        return Response.success(HttpStatus.OK, "'승인(APPROVED)' 리스트가 조회되었습니다.", result);
     }
+
+    @GetMapping("/participants/pending-list/{runId}")
+    @Override
+    public Response<List<GeneralParticipantsResponse>> getAllPendingParticipants(
+//                                                                PageRequestDto pageRequestDto ,
+            @PathVariable Long runId
+//                                                                    @RequestParam String email
+    ) {
+//        MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
+//        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.USER_NOT_FOUND, "User not found with email: " + email));
+        List<GeneralParticipantsResponse> result = alarmService.getAllPendingParticipants(runId);
+        return Response.success(HttpStatus.OK, "'참여 대기(PENDING)' 리스트가 조회되었습니다.", result);
+    }
+
+
 
 
     // GeneralJoinPost 목록과 참여 인원 수를 반환하는 API

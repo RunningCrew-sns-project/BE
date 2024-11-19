@@ -261,5 +261,13 @@ public class GeneralJoinRunPostAlarmService {
     }
 
 
+    // 참여 후 대기자 리스트
+    public List<GeneralParticipantsResponse> getAllPendingParticipants(Long postId) {
+        return runGroupRepository.getAllPendingParticipants(postId).stream()
+                .map(GeneralParticipantsResponse::toDto)
+                .collect(Collectors.toList());
+    }
+
+
 
 }

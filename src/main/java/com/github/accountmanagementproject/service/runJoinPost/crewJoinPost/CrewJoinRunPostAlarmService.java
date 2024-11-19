@@ -269,6 +269,11 @@ public class CrewJoinRunPostAlarmService {
     }
 
 
+    public List<CrewParticipantsResponse> getAllPendingParticipants(Long postId) {
+        return crewRunGroupRepository.getAllPendingParticipants(postId).stream()
+                .map(CrewParticipantsResponse::toDto)
+                .collect(Collectors.toList());
+    }
 
 
 
