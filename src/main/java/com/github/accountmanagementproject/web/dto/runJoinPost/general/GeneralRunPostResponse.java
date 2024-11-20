@@ -49,26 +49,20 @@ public class GeneralRunPostResponse {
     private LocalDateTime updatedAt;
 
 //    private List<UrlDto> imageUrls;
-    private List<FileDto> banners;  // 파일 이미지
+    private List<UrlDto> banners;  // 파일 이미지
 
 
     public static GeneralRunPostResponse toDto(GeneralJoinPost runJoinPost) {
 
         List<RunJoinPostImage> images = runJoinPost.getGeneralJoinPostImages();
-        List<FileDto> fileDtos = new ArrayList<>();
+//        List<FileDto> fileDtos = new ArrayList<>();
         List<UrlDto> urlDtos = new ArrayList<>();
 
         if (images != null) {
             images.forEach(image -> {
-                if (image.getFileName() != null) {
-                    // 파일로 업로드된 이미지
-                    fileDtos.add(new FileDto(image.getFileName(), image.getImageUrl()));
-                } else {
-                    // URL로 입력된 이미지
-                    UrlDto urlDto = new UrlDto();
-                    urlDto.setUrl(image.getImageUrl());
-                    urlDtos.add(urlDto);
-                }
+                UrlDto urlDto = new UrlDto();
+                urlDto.setUrl(image.getImageUrl());
+                urlDtos.add(urlDto);
             });
         }
 
@@ -94,7 +88,7 @@ public class GeneralRunPostResponse {
                 .createdAt(runJoinPost.getCreatedAt())
                 .updatedAt(runJoinPost.getUpdatedAt())
 //                .imageUrls(urlDtos)
-                .banners(fileDtos)  // 변환된 이미지 정보 추가
+                .banners(urlDtos)  // 변환된 이미지 정보 추가
                 .build();
     }
 

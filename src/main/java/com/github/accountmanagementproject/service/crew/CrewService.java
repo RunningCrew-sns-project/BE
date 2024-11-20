@@ -14,6 +14,8 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersRe
 import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersStatus;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
+import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
+import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.mapper.crew.CrewMapper;
 import com.github.accountmanagementproject.web.dto.account.crew.UserAboutCrew;
 import com.github.accountmanagementproject.web.dto.crew.*;
@@ -42,6 +44,7 @@ public class CrewService {
     private final AccountConfig accountConfig;
     private final CrewsRepository crewsRepository;
     private final CrewsUsersRepository crewsUsersRepository;
+    private final CrewRunGroupRepository crewRunGroupRepository;
     private final NotificationService notificationService;
     private final MyUsersRepository myUsersRepository;
     private final CrewJoinPostRepository crewJoinPostRepository;
@@ -255,9 +258,9 @@ public class CrewService {
     // 크루 Info + 크루 달리기 게시물 목록
     @Transactional(readOnly = true)
     public PageResponseDto<CrewDetailWithPostsResponse> getCrewDetailsWithPosts(String email, Long crewId, PageRequestDto pageRequestDto) {
-//        MyUser user = accountConfig.findMyUser(email);
-        MyUser user = myUsersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
-                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
+        MyUser user = accountConfig.findMyUser(email);
+//        MyUser user = myUsersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
+//                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));
 
         // 크루 정보 조회 및 권한 확인
         Crew crew = crewsRepository.findByIdWithImages(crewId)
@@ -269,27 +272,52 @@ public class CrewService {
         // 크루 기본 정보 DTO로 변환
         CrewDetailResponse crewResponse = getCrewDetail(crewId);
 
+        int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
         // 게시물 목록 조회 및 페이징 처리
         List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredCrewPosts(
                 crewId,
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                pageRequestDto.getSize(),
+                size + 1,
                 pageRequestDto.getSortType()
         );
 
+        ScrollPaginationCollection<CrewJoinPost> scrollPagination =
+                ScrollPaginationCollection.of(
+                        crewJoinPosts.subList(0, Math.min(crewJoinPosts.size(), size)),
+                        size,
+                        crewJoinPosts.size() <= size,
+                        crewJoinPosts.size() > size ? crewJoinPosts.get(size) : null
+                );
+
+        // 다음 페이지 여부 판단
+        boolean hasNext = crewJoinPosts.size() > pageRequestDto.getSize();
+        if (hasNext) {
+            crewJoinPosts.remove(crewJoinPosts.size() - 1); // 다음 페이지 확인용으로 가져온 항목 제거
+        }
+
         // 게시물 DTO 변환
         List<CrewRunPostResponse> postResponses = crewJoinPosts.stream()
-                .map(post -> CrewRunPostResponseMapper.toDto(post, crew))
-                .toList();
+                .map(post -> {
+                    CrewRunPostResponse response = CrewRunPostResponseMapper.toDto(post, crew);
+                    response.setPeople(crewRunGroupRepository.countParticipantsByPostId(post.getCrewPostId()));
+                    return response;
+                }).toList();
 
         // 다음 커서 및 마지막 페이지 여부 설정
-        boolean hasNext = postResponses.size() > pageRequestDto.getSize();
-        Integer nextCursor = hasNext ? postResponses.get(pageRequestDto.getSize() - 1).getRunId().intValue() : null;
+//        boolean hasNext = postResponses.size() > pageRequestDto.getSize();
+//        Integer nextCursor = hasNext ? postResponses.get(pageRequestDto.getSize() - 1).getRunId().intValue() : null;
 
         // 결과 응답 설정
         CrewDetailWithPostsResponse response = new CrewDetailWithPostsResponse(crewResponse, postResponses);
+
+        // nextCursor는 다음 객체의 ID
+        Integer nextCursor = null;
+        if (!scrollPagination.isLastScroll()) {
+            CrewJoinPost nextPost = scrollPagination.getNextCursor();
+            nextCursor = Math.toIntExact(nextPost.getCrewPostId());
+        }
         return new PageResponseDto<>(List.of(response), pageRequestDto.getSize(), !hasNext, nextCursor);
     }
 

@@ -120,7 +120,9 @@ public class CrewRunJoinPostController implements CrewRunJoinPostControllerDocs 
     )
     @GetMapping("/list")
     @Override
-    public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto, @AuthenticationPrincipal String email) {
+    public Response<PageResponseDto<CrewRunPostResponse>> getAll(PageRequestDto pageRequestDto,
+                                                                 @AuthenticationPrincipal String email)
+    {
                 MyUser user = accountConfig.findMyUser(email);  // TODO: 수정 예정
 //        MyUser user = usersRepository.findByEmail(email)   //  TODO: 삭제 예정, 현재 로직에 맞춰 Not Found 가 아닌 것으로 대체함.
 //                .orElseThrow(() -> new SimpleRunAppException(ErrorCode.UNAUTHORIZED_CREW_VIEW));

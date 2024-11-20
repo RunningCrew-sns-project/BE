@@ -23,20 +23,13 @@ public class CrewRunPostResponseMapper {
     public static CrewRunPostResponse toDto(CrewJoinPost runJoinPost,  Crew crew) {
 
         List<CrewJoinPostImage> images = runJoinPost.getCrewJoinPostImages();
-        List<FileDto> fileDtos = new ArrayList<>();
         List<UrlDto> urlDtos = new ArrayList<>();
 
         if (images != null) {
             images.forEach(image -> {
-                if (image.getFileName() != null) {
-                    // 파일로 업로드된 이미지
-                    fileDtos.add(new FileDto(image.getFileName(), image.getImageUrl()));
-                } else {
-                    // URL로 입력된 이미지
-                    UrlDto urlDto = new UrlDto();
-                    urlDto.setUrl(image.getImageUrl());
-                    urlDtos.add(urlDto);
-                }
+                UrlDto urlDto = new UrlDto();
+                urlDto.setUrl(image.getImageUrl());
+                urlDtos.add(urlDto);
             });
         }
 
@@ -72,7 +65,7 @@ public class CrewRunPostResponseMapper {
                 .distance(runJoinPost.getDistance())
                 .createdAt(runJoinPost.getCreatedAt())
                 .updatedAt(runJoinPost.getUpdatedAt())
-                .banners(fileDtos)   // 달리기 게시물 이미지
+                .crewPostImageUrl(urlDtos)  // 달리기 게시물 이미지
                 .crewName(crewName)                // 크루 이름 추가
                 .crewDescription(crewDescription)  // 크루 소개 추가
                 .crewImageUrl(crewImageUrl)        // 크루 이미지 URL 추가

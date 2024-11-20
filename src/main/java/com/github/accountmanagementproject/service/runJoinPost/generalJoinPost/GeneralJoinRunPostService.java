@@ -10,6 +10,7 @@ import com.github.accountmanagementproject.repository.runningPost.generalPost.Ge
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.userRunGroups.UserRunGroupRepository;
+import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -239,26 +241,46 @@ public class GeneralJoinRunPostService {
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                size,
+                size + 1,
                 pageRequestDto.getSortType()
         );
 
+        log.info("Service - Total posts fetched: {}", joinPosts.size());
+
         // 다음 페이지 여부 판단
-        boolean hasNext = joinPosts.size() > pageRequestDto.getSize();
+        boolean hasNext = joinPosts.size() > size;
+
+        // 실제 보여줄 데이터
+        List<GeneralJoinPost> contentPosts;
+        GeneralJoinPost nextItem = null;
+
         if (hasNext) {
-            joinPosts.remove(joinPosts.size() - 1); // 다음 페이지 확인용으로 가져온 항목 제거
+            // 다음 페이지가 있는 경우
+            contentPosts = joinPosts.subList(0, size); // size 만큼의 현재 페이지 데이터
+            nextItem = joinPosts.get(size);  // 다음 페이지의 첫 번째 객체
+        } else {
+            contentPosts = new ArrayList<>(joinPosts);
         }
 
+        ScrollPaginationCollection<GeneralJoinPost> scrollPagination =
+                ScrollPaginationCollection.of(
+                        contentPosts,
+                        size,
+                        !hasNext,
+                        nextItem  // 다음 객체 전달
+                );
+
         // 각 게시물을 DTO로 변환
-        List<GeneralRunPostResponse> lists = joinPosts.stream()
+        List<GeneralRunPostResponse> lists = scrollPagination.getCurrentScrollItems().stream()
                 .map(GeneralRunPostResponse::toDto)
                 .toList();
 
-        // 다음 커서 설정 (마지막 요소의 ID를 커서로 설정)
-        Integer nextCursor = hasNext ? lists.get(lists.size() - 1).getRunId().intValue() : null;
+        Integer nextCursor = null;
+        if (nextItem != null) {
+            nextCursor = Math.toIntExact(nextItem.getGeneralPostId());  // 다음 객체의 id 로 변환
+        }
 
-        // PageResponseDto 객체로 반환
-        return new PageResponseDto<>(lists, pageRequestDto.getSize(), !hasNext, nextCursor);
+        return new PageResponseDto<>(lists, size, scrollPagination.isLastScroll(), nextCursor);
     }
 
 
