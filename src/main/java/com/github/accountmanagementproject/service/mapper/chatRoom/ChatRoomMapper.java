@@ -1,6 +1,6 @@
 package com.github.accountmanagementproject.service.mapper.chatRoom;
 
-import com.github.accountmanagementproject.web.dto.chat.ChatRoom;
+import com.github.accountmanagementproject.repository.chat.ChatRoom;
 import com.github.accountmanagementproject.web.dto.chat.ChatRoomResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

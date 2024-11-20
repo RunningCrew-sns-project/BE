@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.chat;
+package com.github.accountmanagementproject.repository.chat;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import jakarta.persistence.*;
@@ -16,11 +16,11 @@ public class UserChatMapping {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private MyUser user;
 
-    @JoinColumn(name = "chatroom_id")
+    @JoinColumn(name = "chatroom_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private ChatRoom chatRoom;
 }
