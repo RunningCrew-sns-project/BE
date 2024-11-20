@@ -1,9 +1,10 @@
 package com.github.accountmanagementproject.repository.blog;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -25,16 +26,20 @@ public class Blog {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "record", nullable = false, length = 100)
+    @Column(name = "record", length = 100)
     private String record;
 
-    @Column(name = "image", nullable = false)
-    private String image;
+    @Column(name = "distance", length = 100)
+    private String distance;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
-    private Integer likeCount;
+    private Integer likeCount = 0;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private MyUser user;
 
@@ -57,8 +62,7 @@ public class Blog {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", record='" + record + '\'' +
-                ", image='" + image + '\'' +
-                ", user=" + user.getNickname() +
+//                ", user=" + user.getNickname() +
                 '}';
     }
 }

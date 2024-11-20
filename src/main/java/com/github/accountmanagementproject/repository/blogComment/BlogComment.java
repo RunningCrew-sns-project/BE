@@ -1,9 +1,11 @@
 package com.github.accountmanagementproject.repository.blogComment;
 
-import com.github.accountmanagementproject.repository.account.users.MyUser;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.blog.Blog;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -26,6 +28,9 @@ public class BlogComment {
     private Blog blog;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private MyUser user;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 }

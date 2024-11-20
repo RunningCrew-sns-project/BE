@@ -1,12 +1,10 @@
 package com.github.accountmanagementproject.config.security.event;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.repository.account.users.MyUser;
-import com.github.accountmanagementproject.repository.account.users.enums.UserStatus;
-import com.github.accountmanagementproject.service.customExceptions.CustomBadCredentialsException;
-import com.github.accountmanagementproject.web.dto.accountAuth.AuthFailureMessage;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.github.accountmanagementproject.exception.CustomBadCredentialsException;
+import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.account.user.myenum.UserStatus;
+import com.github.accountmanagementproject.web.dto.account.auth.AuthFailureMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
@@ -21,9 +19,8 @@ public class AuthenticationListener {
 
     @EventListener
     public void handleBadCredentialsEvent(AuthenticationFailureBadCredentialsEvent event){
-        event.getAuthentication().getDetails();
-//        MyUser myUser = accountConfig.failureCounting(event.getAuthentication().getName());
-        MyUser myUser = accountConfig.failureCounting();
+        MyUser myUser = accountConfig.failureCounting(event.getAuthentication().getName());
+
         throw new CustomBadCredentialsException.ExceptionBuilder()
                 .systemMessage(myUser.getStatus() == UserStatus.LOCK?event.getException().getMessage()+" 계정이 잠깁니다."
                         :event.getException().getMessage())
