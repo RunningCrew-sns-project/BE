@@ -1,7 +1,5 @@
 package com.github.accountmanagementproject.web.controller.runJoinPost.crewJoinPost;
 
-import com.github.accountmanagementproject.exception.SimpleRunAppException;
-import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.Response;
@@ -14,17 +12,17 @@ import com.github.accountmanagementproject.web.dto.runJoinPost.crewRunGroup.Crew
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -260,7 +258,7 @@ public interface CrewRunJoinPostControllerDocs {
     @PostMapping("join/{runId}")
     public Response<CrewRunJoinResponse> participateInCrewRun(
             @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
-            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
+            @Parameter(description = "사용자 이메일") String email);
 
 
     @Operation(summary = "참여 승인 또는 거절", description = "관리자가 특정 사용자의 크루 참여를 승인 또는 거절합니다.")
@@ -304,7 +302,7 @@ public interface CrewRunJoinPostControllerDocs {
     public Response<CrewRunJoinUpdateResponse> approveParticipation(
             @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
             @Parameter(description = "참여 신청자 ID", required = true) @PathVariable Long userId,
-            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
+            @Parameter(description = "관리자 이메일", required = true) @RequestParam String principal);
 
 
     @Operation(summary = "참여자 강퇴", description = "관리자가 특정 사용자를 크루 모임에서 강퇴합니다.")
@@ -317,7 +315,7 @@ public interface CrewRunJoinPostControllerDocs {
     public Response<CrewRunJoinUpdateResponse> expelParticipant(
             @Parameter(description = "크루 러닝 ID", required = true) @PathVariable Long runId,
             @Parameter(description = "강퇴할 사용자 ID", required = true) @PathVariable Long userId,
-            @Parameter(hidden = true) @AuthenticationPrincipal String principal);
+            @Parameter(description = "관리자 이메일", required = true) @RequestParam String email);
 
 
     @Operation(summary = "참여 신청 후 -> '승인(APPROVED)' 유저 리스트 조회", description = "특정 게시글의 모든 '승인(APPROVED)'된 유저를 조회합니다.")

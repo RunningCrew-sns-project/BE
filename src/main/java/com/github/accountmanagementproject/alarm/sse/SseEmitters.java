@@ -33,6 +33,16 @@ public class SseEmitters {
             }
         }
     }
+    public void sendBySihuTest(Long userId, Object data) {
+        SseEmitter emitter = emitters.get(userId);
+        if (emitter != null) {
+            try {
+                emitter.send(SseEmitter.event().name("sihu").data(data));
+            } catch (Exception e) {
+                emitters.remove(userId); // 에러 발생 시 연결 제거
+            }
+        }
+    }
 
     public void removeEmitter(Long userId) {
         emitters.remove(userId);  // 특정 userId에 해당하는 SseEmitter 제거
