@@ -11,8 +11,10 @@ import com.github.accountmanagementproject.repository.crew.crewuser.CrewsUsersSt
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
+import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.image.CrewJoinPostImage;
 import com.github.accountmanagementproject.repository.runningPost.image.RunJoinPostImage;
+import com.github.accountmanagementproject.service.ScrollPaginationCollection;
 import com.github.accountmanagementproject.service.runJoinPost.GeoUtil;
 import com.github.accountmanagementproject.service.storage.StorageService;
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -328,22 +331,39 @@ public class CrewJoinRunPostService {
         int size = pageRequestDto.getSize() > 0 ? pageRequestDto.getSize() : 20;
 
         // findFilteredPosts 메서드에 cursor와 size 전달
-        List<CrewJoinPost> crewJoinPosts = crewJoinPostRepository.findFilteredPosts(
+        List<CrewJoinPost> joinPosts = crewJoinPostRepository.findFilteredPosts(
                 pageRequestDto.getDate(),
                 pageRequestDto.getLocation(),
                 pageRequestDto.getCursor(),
-                size,
+                size + 1,
                 pageRequestDto.getSortType()
         );
 
-        // 다음 페이지 여부 판단
-        boolean hasNext = crewJoinPosts.size() > pageRequestDto.getSize();
+        boolean hasNext = joinPosts.size() > size;
+
+        // 실제 보여줄 데이터
+        List<CrewJoinPost> contentPosts;
+        CrewJoinPost nextItem = null;
+
         if (hasNext) {
-            crewJoinPosts.remove(crewJoinPosts.size() - 1); // 다음 페이지 확인용으로 가져온 항목 제거
+            // 다음 페이지가 있는 경우
+            contentPosts = joinPosts.subList(0, size); // size 만큼의 현재 페이지 데이터
+            nextItem = joinPosts.get(size);  // 다음 페이지의 첫 번째 객체
+        } else {
+            contentPosts = new ArrayList<>(joinPosts);
         }
 
+        ScrollPaginationCollection<CrewJoinPost> scrollPagination =
+                ScrollPaginationCollection.of(
+                        contentPosts,
+                        size,
+                        !hasNext,
+                        nextItem  // 다음 객체 전달
+                );
+
+
         // 권한 확인 후, 각 게시물에 대한 DTO 변환
-        List<CrewRunPostResponse> lists = crewJoinPosts.stream()
+        List<CrewRunPostResponse> lists = scrollPagination.getCurrentScrollItems().stream()
                 .map(post -> {
                     checkUserCrewMembership(user, post);  // 권한 확인
 
@@ -360,10 +380,13 @@ public class CrewJoinRunPostService {
                 })
                 .toList();
 
-        // 다음 커서 설정 (현재 페이지 마지막 항목의 ID 다음 항목의 ID를 커서로 설정)
-        Integer nextCursor = hasNext ? lists.get(lists.size() - 1).getRunId().intValue() : null;
+        // 다음 커서 ID 설정
+        Integer nextCursor = null;
+        if (nextItem != null) {
+            nextCursor = Math.toIntExact(nextItem.getCrewPostId());  // 다음 객체의 id 로 변환
+        }
 
-        return new PageResponseDto<>(lists, pageRequestDto.getSize(), !hasNext, nextCursor);
+        return new PageResponseDto<>(lists, size, scrollPagination.isLastScroll(), nextCursor);
     }
 
 

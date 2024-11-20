@@ -51,8 +51,5 @@ public class CrewRunPostResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private List<FileDto> banners;  // 파일 이미지
-
-
-
+    private List<UrlDto> crewPostImageUrl;  // 파일 이미지
 }
