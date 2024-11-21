@@ -147,9 +147,9 @@ public class CrewController implements CrewControllerDocs {
             allowCredentials = "true"
     )
     @GetMapping("/{crewId}/list")
-//    @Override
+    @Override
     public CustomSuccessResponse getCrewDetailsWithCrewPosts(
-            @PathVariable Long crewId, @RequestParam String email, PageRequestDto pageRequestDto) {
+            @PathVariable Long crewId, @AuthenticationPrincipal String email, PageRequestDto pageRequestDto) {
 
         PageResponseDto<CrewDetailWithPostsResponse> response = crewService.getCrewDetailsWithPosts(email, crewId, pageRequestDto);
 

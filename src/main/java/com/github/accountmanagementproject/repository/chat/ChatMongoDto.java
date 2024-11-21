@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.chat;
+package com.github.accountmanagementproject.repository.chat;
 
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;

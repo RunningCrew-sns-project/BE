@@ -1,14 +1,13 @@
 package com.github.accountmanagementproject.web.controller.chat;
 
 import com.github.accountmanagementproject.config.security.AccountConfig;
-import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.account.user.MyUsersRepository;
 import com.github.accountmanagementproject.repository.chat.ChatMongoRepository;
 import com.github.accountmanagementproject.repository.chat.UserChatMappingRepository;
 import com.github.accountmanagementproject.service.chat.ChatService;
 import com.github.accountmanagementproject.web.dto.chat.ChatDto;
-import com.github.accountmanagementproject.web.dto.chat.ChatMongoMapper;
+import com.github.accountmanagementproject.service.mapper.chatRoom.ChatMongoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -17,7 +16,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;

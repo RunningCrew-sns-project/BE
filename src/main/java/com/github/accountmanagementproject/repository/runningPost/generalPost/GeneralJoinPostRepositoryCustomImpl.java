@@ -16,8 +16,10 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -181,41 +183,130 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
 
     @Override
     public List<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size, String sortType) {
-        QGeneralJoinPost generalJoinPost = QGeneralJoinPost.generalJoinPost;
+        QGeneralJoinPost post = QGeneralJoinPost.generalJoinPost;
         QRunJoinPostImage qrunJoinPostImage = QRunJoinPostImage.runJoinPostImage;
         QRunGroup qRunGroup = QRunGroup.runGroup;
 
-        BooleanExpression dateCondition = date != null ? generalJoinPost.date.goe(date) : null;
-        BooleanExpression locationCondition = location != null && !location.trim().isEmpty() && !location.equals("전체")
-                ? generalJoinPost.location.eq(location) : null;
-        // cursor 값이 너무 작은 경우 무시하거나, 적절한 값으로 조정
-        BooleanExpression cursorCondition = (cursor != null && cursor > 10000) ? generalJoinPost.generalPostId.lt(cursor) : null;
-
         List<GeneralJoinPost> posts = queryFactory
-                .selectFrom(generalJoinPost)
-                .where(dateCondition, locationCondition, cursorCondition)
-                .leftJoin(generalJoinPost.generalJoinPostImages, qrunJoinPostImage).fetchJoin()
-                .orderBy(getOrderSpecifier(sortType, generalJoinPost))
+                .selectFrom(post)
+                .where(
+                        dateCondition(post, date),
+                        locationCondition(post, location),
+                        cursorCondition(post, cursor, sortType)
+                )
+                .leftJoin(post.generalJoinPostImages, qrunJoinPostImage).fetchJoin()
+                .orderBy(getOrderSpecifier(sortType, post))
                 .limit(size + 1) // 요청한 size보다 1개 더 가져와서 다음 데이터 확인
                 .fetch();
 
         posts.forEach(this::setApprovedParticipantCount);
 
-        // 다음 페이지 여부 확인을 위해 추가로 가져온 데이터 제거
-        if (posts.size() > size) {
-            posts.remove(posts.size() - 1);
+        System.out.println("Query result size: {}" + posts.size());  // 로그 추가
+        if (!posts.isEmpty()) {
+            System.out.println("First post ID: {}, Last post ID: {}" +
+                    posts.get(0).getGeneralPostId() +
+                    posts.get(posts.size()-1).getGeneralPostId());
         }
-
         return posts;
     }
 
 
+    private BooleanExpression dateCondition(QGeneralJoinPost post, LocalDate date) {
+        return date != null ? post.date.eq(date) : null;
+    }
+
+    private BooleanExpression locationCondition(QGeneralJoinPost post, String location) {
+        if (location == null || location.trim().isEmpty() || location.equals("전체")) {
+            return null;
+        }
+        return post.location.eq(location);
+    }
+
+    private BooleanExpression cursorCondition(QGeneralJoinPost post, Integer cursor, String sortType) {
+        if (cursor == null) {
+            return null;
+        }
+
+        LocalDate cursorDate = getPostDate(cursor);
+        LocalTime cursorTime = getPostTime(cursor);
+
+        return sortType.equalsIgnoreCase("oldest")
+                ? createOldestCursorCondition(post, cursorDate, cursorTime, cursor)
+                : createNewestCursorCondition(post, cursorDate, cursorTime, cursor);
+    }
+
+    private BooleanExpression createOldestCursorCondition(
+            QGeneralJoinPost post,
+            LocalDate cursorDate,
+            LocalTime cursorTime,
+            Integer cursor) {
+        return post.date.gt(cursorDate)
+                .or(post.date.eq(cursorDate)
+                        .and(post.startTime.gt(cursorTime))
+                        .or(post.date.eq(cursorDate)
+                                .and(post.startTime.eq(cursorTime))
+                                .and(post.generalPostId.goe(cursor))));
+    }
+
+    private BooleanExpression createNewestCursorCondition(
+            QGeneralJoinPost post,
+            LocalDate cursorDate,
+            LocalTime cursorTime,
+            Integer cursor) {
+        return post.date.lt(cursorDate)
+                .or(post.date.eq(cursorDate)
+                        .and(post.startTime.lt(cursorTime))
+                        .or(post.date.eq(cursorDate)
+                                .and(post.startTime.eq(cursorTime))
+                                .and(post.generalPostId.loe(cursor))));
+    }
+
+
+    // 커서 ID의 날짜를 조회하는 메서드 추가
+    private LocalDate getPostDate(Integer cursor) {
+        QGeneralJoinPost post = QGeneralJoinPost.generalJoinPost;
+        try {
+            return queryFactory
+                    .select(post.date)
+                    .from(post)
+                    .where(post.generalPostId.eq(Long.valueOf(cursor)))
+                    .fetchOne();
+        } catch (Exception e) {
+//            log.error("Error fetching date for cursor: {}", cursor, e);
+            return null;
+        }
+    }
+
+    // 커서 ID의 시간을 조회하는 메서드 추가
+    private LocalTime getPostTime(Integer cursor) {
+        QGeneralJoinPost post = QGeneralJoinPost.generalJoinPost;
+        try {
+            return queryFactory
+                    .select(post.startTime)
+                    .from(post)
+                    .where(post.generalPostId.eq(Long.valueOf(cursor)))
+                    .fetchOne();
+        } catch (Exception e) {
+//            log.error("Error fetching time for cursor: {}", cursor, e);
+            return null;
+        }
+    }
+
 
     // 약속 날짜 기준 최신순, 오래된순
-    private OrderSpecifier<?> getOrderSpecifier(String sortType, QGeneralJoinPost generalJoinPost) {
-        return sortType.equalsIgnoreCase("oldest")
-                ? generalJoinPost.date.asc()
-                : generalJoinPost.date.desc();
+    private OrderSpecifier<?>[] getOrderSpecifier(String sortType, QGeneralJoinPost post) {
+        if (sortType.equalsIgnoreCase("oldest")) {
+            return new OrderSpecifier[]{
+                    post.date.asc(),
+                    post.startTime.asc(),
+                    post.generalPostId.asc()
+            };
+        }
+        return new OrderSpecifier[]{
+                post.date.desc(),
+                post.startTime.desc(),  // asc에서 desc로 수정
+                post.generalPostId.desc()
+        };
     }
 
     // 참여자 수
