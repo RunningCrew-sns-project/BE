@@ -31,11 +31,6 @@ public class NotificationController implements NotificationControllerDocs{
     private final MyUsersRepository userRepository;
 
 
-    @CrossOrigin(
-            origins = {"http://localhost:8080", "http://54.180.9.220:8080"},
-            allowedHeaders = "*",
-            allowCredentials = "true"
-    )
     @GetMapping("/connect")
     @Override
     public ResponseEntity<SseEmitter> connect(@AuthenticationPrincipal String email) {
