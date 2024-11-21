@@ -1,7 +1,8 @@
-package com.github.accountmanagementproject.web.dto.chat;
+package com.github.accountmanagementproject.service.mapper.chatRoom;
 
+import com.github.accountmanagementproject.repository.chat.ChatMongoDto;
+import com.github.accountmanagementproject.web.dto.chat.ChatDto;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 @Mapper

@@ -19,14 +19,14 @@ public class UserLikesBlog {
     private Integer userLikesBlogId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blog_id")
+    @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private MyUser user;
 
     @Builder.Default
-    @Column(name = "is_liked")
+    @Column(name = "is_liked", nullable = false)
     private Boolean isLiked = true;
 }

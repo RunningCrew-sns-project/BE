@@ -1,4 +1,4 @@
-package com.github.accountmanagementproject.web.dto.chat;
+package com.github.accountmanagementproject.repository.chat;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,14 +19,14 @@ public class ChatRoom {
     @Column(name = "chatroom_id")
     private Integer roomId;  // 채팅방 아이디
 
-    @Column(name = "title")
+    @Column(name = "title", nullable = false)
     private String title;// 채팅방 이름
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Builder.Default
-    @Column(name = "user_count")
+    @Column(name = "user_count", nullable = false)
     private Integer userCount = 0;
 
     @Builder.Default
