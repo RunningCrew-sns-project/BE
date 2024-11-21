@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/authorize-test").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/api/crews/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE,"/api/crews/**").authenticated()
-                        .requestMatchers("/api/auth/auth-test", "/api/account/*", "/api/run-post/users", "/api/crews/*/about-user", "/api/crews/*/admin/*").authenticated()
+                        .requestMatchers("/api/auth/auth-test", "/api/account/*", "/api/run-post/users", "/api/crews/*/about-user", "/api/crews/*/admin/*", "/api/notifications/connect").authenticated()
                         .requestMatchers("/resources/**","/api/auth/*", "/api/email/*",
                                 "/error","/swagger-ui/**", "/v3/api-docs/**", "/running-docs.html").permitAll()
                         .anyRequest().permitAll()
