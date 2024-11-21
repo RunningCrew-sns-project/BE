@@ -1,10 +1,12 @@
 package com.github.accountmanagementproject.service.runJoinPost;
 
 import com.github.accountmanagementproject.repository.account.user.MyUser;
+import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroup;
 import com.github.accountmanagementproject.repository.runningPost.crewRunGroup.CrewRunGroupRepository;
 import com.github.accountmanagementproject.repository.runningPost.enums.ParticipationStatus;
+import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.generalPost.GeneralJoinPostRepository;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroup;
 import com.github.accountmanagementproject.repository.runningPost.runGroup.RunGroupRepository;
@@ -39,23 +41,14 @@ public class TodayRunService {
                 .filter(crewRunGroup -> crewRunGroup.getStatus().equals(ParticipationStatus.APPROVED))
                 .map(CrewRunGroup::getCrewJoinPost)
                 .filter(crewJoinPost -> crewJoinPost.getDate().equals(LocalDate.now()))
-                .map(post-> TodayRunDto.builder()
-                        .id(post.getCrewPostId())
-                        .title(post.getTitle())
-                        .startDate(LocalDateTime.of(post.getDate(), post.getStartTime()))
-                        .isCrew(true)
-                        .build())
+                .map(this::mappingCrewJoinPost)
                 .toList();
 
         List<TodayRunDto> todayCrewJoinPostFromCrewJoinPost = crewJoinPostRepository
                 .findAllByAuthor(user)
                 .stream()
-                .map(post -> TodayRunDto.builder()
-                        .id(post.getCrewPostId())
-                        .title(post.getTitle())
-                        .startDate(LocalDateTime.of(post.getDate(), post.getStartTime()))
-                        .isCrew(true)
-                        .build())
+                .filter(crewJoinPost -> crewJoinPost.getDate().equals(LocalDate.now()))
+                .map(this::mappingCrewJoinPost)
                 .toList();
 
         List<TodayRunDto> todayGeneralJoinPostFromRunGroup = runGroupRepository
@@ -64,23 +57,14 @@ public class TodayRunService {
                 .filter(runGroup -> runGroup.getStatus().equals(ParticipationStatus.APPROVED))
                 .map(RunGroup::getGeneralJoinPost)
                 .filter(generalJoinPost -> generalJoinPost.getDate().equals(LocalDate.now()))
-                .map(post-> TodayRunDto.builder()
-                        .id(post.getGeneralPostId())
-                        .title(post.getTitle())
-                        .startDate(LocalDateTime.of(post.getDate(), post.getStartTime()))
-                        .isCrew(false)
-                        .build())
+                .map(this::mappingGeneralJoinPost)
                 .toList();
 
         List<TodayRunDto> todayGeneralJoinPostFromGeneralJoinPost = generalJoinPostRepository
                 .findAllByAuthor(user)
                 .stream()
-                .map(post -> TodayRunDto.builder()
-                        .id(post.getGeneralPostId())
-                        .title(post.getTitle())
-                        .startDate(LocalDateTime.of(post.getDate(), post.getStartTime()))
-                        .isCrew(false)
-                        .build())
+                .filter(generalJoinPost -> generalJoinPost.getDate().equals(LocalDate.now()))
+                .map(this::mappingGeneralJoinPost)
                 .toList();
 
 
@@ -91,6 +75,26 @@ public class TodayRunService {
         todayRunDtos.addAll(todayGeneralJoinPostFromRunGroup);
         todayRunDtos.addAll(todayGeneralJoinPostFromGeneralJoinPost);
 
+        log.info(LocalDateTime.now().toString());
+
         return todayRunDtos;
+    }
+
+    private TodayRunDto mappingCrewJoinPost(CrewJoinPost post){
+       return TodayRunDto.builder()
+                .id(post.getCrewPostId())
+                .title(post.getTitle())
+                .startDate(LocalDateTime.of(post.getDate(), post.getStartTime()))
+                .isCrew(true)
+                .build();
+    }
+
+    private TodayRunDto mappingGeneralJoinPost(GeneralJoinPost post){
+        return TodayRunDto.builder()
+                .id(post.getGeneralPostId())
+                .title(post.getTitle())
+                .startDate(LocalDateTime.of(post.getDate(), post.getStartTime()))
+                .isCrew(false)
+                .build();
     }
 }
