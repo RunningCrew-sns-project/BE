@@ -43,7 +43,7 @@ public class SwaggerConfig {
         server.setDescription("AWS Server");
 
         Server httpsServer  = new Server();
-        httpsServer.setUrl(this.serverUrl);
+        httpsServer.setUrl(this.httpsServerUrl);
         httpsServer.setDescription("HTTPS Production Server");
 
         Server localServer = new Server();
