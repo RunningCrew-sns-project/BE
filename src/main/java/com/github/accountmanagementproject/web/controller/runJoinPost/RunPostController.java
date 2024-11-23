@@ -6,13 +6,11 @@ import com.github.accountmanagementproject.repository.account.user.myenum.OAuthP
 import com.github.accountmanagementproject.service.runJoinPost.RunPostService;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +30,26 @@ public class RunPostController {
                 .responseData(runPostService.getRunPostUsers(isCrew, email, isAll))
                 .build();
     }
+
+    @DeleteMapping("/crew/{postId}/users/{badUserId}")
+    @Operation(summary = "크루 달리기 멤버에서 크루원 강퇴", description = "크루원을 강퇴합니다.")
+    public CustomSuccessResponse crewRunFromMemberDrop(@PathVariable @Parameter(description = "게시물 고유 번호") Long postId, @PathVariable @Parameter(description = "강퇴시킬 userId") Long badUserId, @AuthenticationPrincipal String authorEmail){
+        runPostService.runFromMemberDrop(postId, badUserId, authorEmail, true);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("강퇴 성공")
+                .build();
+    }
+
+    @DeleteMapping("/general/{postId}/users/{badUserId}")
+    @Operation(summary = "일반 달리기 멤버에서 회원 강퇴", description = "달리기 회원을 강퇴합니다.")
+    public CustomSuccessResponse generalRunFromMemberDrop(@PathVariable @Parameter(description = "게시물 고유 번호") Long postId, @PathVariable @Parameter(description = "강퇴시킬 userId") Long badUserId, @AuthenticationPrincipal String authorEmail){
+        runPostService.runFromMemberDrop(postId, badUserId, authorEmail, false);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("강퇴 성공")
+                .build();
+    }
+
+
 
     @GetMapping("/test")
     public CustomSuccessResponse test(@RequestParam Long id, @RequestParam String message){

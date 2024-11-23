@@ -48,6 +48,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://database-1.cto824g8iqv2.ap-northeast-2.rds.amazonaws.com:3306/RunningCrewDB
     server-url: ENC(FbdGmh5s9GqK90JAkn5qEDVac2WmEsOYGi9QRiDRC41RY7Ir2CkUiBMnQJz/vl7exzhR+8sLDwpHtxljpCHuyFFa9B6eMhtJ9IQ7dMcNT7g=)
+    https-server-url: ENC(11eV7R5ZYYLEEcpgiu2GbmdWsvf+3N7MXzrcdn1dvn8=)
   data:
     redis:
       host: localhost

@@ -4,6 +4,7 @@ import com.github.accountmanagementproject.config.security.event.CustomAccessDen
 import com.github.accountmanagementproject.config.security.event.CustomAuthenticationEntryPoint;
 import com.github.accountmanagementproject.web.filtersAndInterceptor.JwtFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,7 +29,8 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
-
+    @Value("${spring.datasource.https-server-url}")
+    private String httpsServerUrl;
 
 
     @Bean
@@ -58,7 +60,7 @@ public class SecurityConfig {
 
     private CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*"));
+        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:*",httpsServerUrl));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowedMethods(List.of("GET","PUT","POST","PATCH","DELETE","OPTIONS"));
