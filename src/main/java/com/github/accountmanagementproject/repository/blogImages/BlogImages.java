@@ -17,7 +17,7 @@ public class BlogImages {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "blog_id")
+    @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog;
 
     @Column(name = "image_url")
