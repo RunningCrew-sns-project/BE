@@ -257,6 +257,7 @@ public class CrewJoinRunPostAlarmService {
     }
 
 
+
     // 참여자 리스트 조회
     public List<CrewParticipantsResponse> getAllParticipants(Long postId) {
         return crewRunGroupRepository.findAllParticipantsByPostId(postId).stream()
