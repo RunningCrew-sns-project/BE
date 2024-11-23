@@ -66,6 +66,39 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
 
     }
 
+    @Override
+    public boolean isPostAuthor(Long postId, String authorEmail, boolean isCrew) {
+        String authorEmailFromDb = isCrew
+                ? queryFactory.select(qCrewJoinPost.author.email)
+                .from(qCrewJoinPost)
+                .where(qCrewJoinPost.crewPostId.eq(postId))
+                .fetchOne()
+                : queryFactory.select(qGeneralJoinPost.author.email)
+                .from(qGeneralJoinPost)
+                .where(qGeneralJoinPost.generalPostId.eq(postId))
+                .fetchOne();
+
+        return authorEmailFromDb != null && authorEmailFromDb.equals(authorEmail);
+    }
+
+    @Override
+    public boolean deleteMember(Long postId, Long badUserId, boolean isCrew) {
+        long result = isCrew ?
+                queryFactory.update(qCrewRunGroup)
+                        .where(qCrewRunGroup.crewJoinPost.crewPostId.eq(postId)
+                                .and(qCrewRunGroup.user.userId.eq(badUserId))
+                                .and(qCrewRunGroup.status.eq(ParticipationStatus.APPROVED)))
+                        .set(qCrewRunGroup.status, ParticipationStatus.FORCED_EXIT)
+                        .execute() :
+                queryFactory.update(qRunGroup)
+                        .where(qRunGroup.generalJoinPost.generalPostId.eq(postId)
+                                .and(qRunGroup.user.userId.eq(badUserId))
+                                .and(qRunGroup.status.eq(ParticipationStatus.APPROVED)))
+                        .set(qRunGroup.status, ParticipationStatus.FORCED_EXIT)
+                        .execute();
+        return result == 1;
+    }
+
     private Map<Long, List<RunMemberResponse>> generalRunMemberQuery(BooleanBuilder whereClause) {
         List<RunMemberResponse> member = queryFactory.select(Projections.fields(RunMemberResponse.class,
                         qGeneralJoinPost.generalPostId.as("postId"),

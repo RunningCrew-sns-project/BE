@@ -13,4 +13,8 @@ public interface GeneralJoinPostRepositoryCustom {
     List<GeneralJoinPost> findFilteredPosts(LocalDate date, String location, Integer cursor, int size, String sortType);
 
     List<RunPostAndMemberResponse> findPostAndMembers(String email, boolean isCrew, Boolean isAll);
+
+    boolean isPostAuthor(Long postId, String authorEmail, boolean isCrew);
+
+    boolean deleteMember(Long postId, Long badUserId, boolean isCrew);
 }
