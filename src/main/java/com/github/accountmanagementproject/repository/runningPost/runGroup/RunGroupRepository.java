@@ -40,4 +40,6 @@ public interface RunGroupRepository extends JpaRepository<RunGroup, RunGroupId> 
     int countByUserIdAndStatusNative(@Param("userId") Long userId, @Param("status") String status);
 
     List<RunGroup> findAllByUser(MyUser user);
+
+    RunGroup findByGeneralJoinPostAndUser(GeneralJoinPost generalJoinPost, MyUser user);
 }

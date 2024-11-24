@@ -1,5 +1,6 @@
 package com.github.accountmanagementproject.service.runJoinPost;
 
+import com.github.accountmanagementproject.exception.CustomNotFoundException;
 import com.github.accountmanagementproject.repository.account.user.MyUser;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPost;
 import com.github.accountmanagementproject.repository.runningPost.crewPost.CrewJoinPostRepository;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,36 +36,45 @@ public class TodayRunService {
 
     @Transactional(readOnly = true)
     public List<TodayRunDto> getMyTodayRunPost(MyUser user) {
-        //참여신청한 게시물 중에
+        //시작 시간이 이미 지난경우는 필터링
+
+        //크루 달리기 참여자인 경우
         List<TodayRunDto> todayCrewJoinPostFromCrewRunGroup = crewRunGroupRepository
                 .findAllByUser(user)
                 .stream()
                 .filter(crewRunGroup -> crewRunGroup.getStatus().equals(ParticipationStatus.APPROVED))
                 .map(CrewRunGroup::getCrewJoinPost)
                 .filter(crewJoinPost -> crewJoinPost.getDate().equals(LocalDate.now()))
+                .filter(crewJoinPost -> crewJoinPost.getStartTime().isAfter(LocalTime.now()))
                 .map(this::mappingCrewJoinPost)
                 .toList();
 
+        //크루 달리기 작성자인 경우
         List<TodayRunDto> todayCrewJoinPostFromCrewJoinPost = crewJoinPostRepository
                 .findAllByAuthor(user)
                 .stream()
                 .filter(crewJoinPost -> crewJoinPost.getDate().equals(LocalDate.now()))
+                .filter(crewJoinPost -> crewJoinPost.getStartTime().isAfter(LocalTime.now()))
                 .map(this::mappingCrewJoinPost)
                 .toList();
 
+        //일반 달리기 참여자인 경우
         List<TodayRunDto> todayGeneralJoinPostFromRunGroup = runGroupRepository
                 .findAllByUser(user)
                 .stream()
                 .filter(runGroup -> runGroup.getStatus().equals(ParticipationStatus.APPROVED))
                 .map(RunGroup::getGeneralJoinPost)
                 .filter(generalJoinPost -> generalJoinPost.getDate().equals(LocalDate.now()))
+                .filter(crewJoinPost -> crewJoinPost.getStartTime().isAfter(LocalTime.now()))
                 .map(this::mappingGeneralJoinPost)
                 .toList();
 
+        //일반 달리기 작성자인 경우
         List<TodayRunDto> todayGeneralJoinPostFromGeneralJoinPost = generalJoinPostRepository
                 .findAllByAuthor(user)
                 .stream()
                 .filter(generalJoinPost -> generalJoinPost.getDate().equals(LocalDate.now()))
+                .filter(crewJoinPost -> crewJoinPost.getStartTime().isAfter(LocalTime.now()))
                 .map(this::mappingGeneralJoinPost)
                 .toList();
 
@@ -74,8 +85,6 @@ public class TodayRunService {
         todayRunDtos.addAll(todayCrewJoinPostFromCrewJoinPost);
         todayRunDtos.addAll(todayGeneralJoinPostFromRunGroup);
         todayRunDtos.addAll(todayGeneralJoinPostFromGeneralJoinPost);
-
-        log.info(LocalDateTime.now().toString());
 
         return todayRunDtos;
     }
