@@ -22,6 +22,7 @@ public class TodayRunPostController implements TodayRunPostControllerDocs{
     public CustomSuccessResponse getMyTodayRunPost(@AuthenticationPrincipal String email) {
         MyUser user = accountConfig.findMyUser(email);
         return new CustomSuccessResponse.SuccessDetail()
+                .message(todayRunService.getMyTodayRunPost(user).isEmpty() ? "데이터가 없습니다." : "데이터를 조회했습니다.")
                 .responseData(todayRunService.getMyTodayRunPost(user))
                 .build();
     }
