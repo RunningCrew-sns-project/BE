@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -66,12 +67,34 @@ public class NotificationService {
         // SSE를 통해 실시간 알림 전송
         sseEmitters.sendNotification(recipientUserId, message);
     }
+    private void createAndSendNotificationTemp(Long recipientUserId, Long crewId, Long masterUserId, String message, NotificationType type) {
+        // 알림 생성 및 저장
+        Notification notification = Notification.builder()
+                .recipientUserId(recipientUserId)
+                .joinRequestId(crewId)
+                .masterUserId(masterUserId)
+                .message(message)
+                .type(type)
+                .createdAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
+                .build();
+
+        notificationRepository.save(notification);
+
+        // SSE를 통해 실시간 알림 전송
+        sseEmitters.sendBySihuTest(recipientUserId, Map.of("recipientUserId", recipientUserId, "message", message,
+                "crewId", crewId));
+    }
 
     /**
      * 강퇴
      */
     public void sendKickNotification(Long recipientUserId, Long postId, Long masterUserId, String message) {
         createAndSendNotification(recipientUserId, postId, masterUserId, message, NotificationType.FORCED_EXIT);
+    }
+
+    public void sendRequestNotification(Long masterId, Long crewId, Long requestUserId, String message) {
+
+        createAndSendNotificationTemp(masterId, crewId, requestUserId, message, NotificationType.NEW_JOIN_REQUEST);
     }
 
 
