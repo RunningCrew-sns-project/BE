@@ -41,5 +41,7 @@ public interface RunGroupRepository extends JpaRepository<RunGroup, RunGroupId> 
 
     List<RunGroup> findAllByUser(MyUser user);
 
+    List<RunGroup> findAllByGeneralJoinPost(GeneralJoinPost generalJoinPost);
+
     RunGroup findByGeneralJoinPostAndUser(GeneralJoinPost generalJoinPost, MyUser user);
 }

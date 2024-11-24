@@ -25,4 +25,28 @@ public class TodayRunPostController implements TodayRunPostControllerDocs{
                 .build();
     }
 
+//    @Override
+//    @PutMapping("/completeTodayGeneralRun/{runPostId}")
+//    public CustomSuccessResponse completeTodayGeneralRun(@AuthenticationPrincipal String email,
+//                                                         @PathVariable Long runPostId){
+//        MyUser user = accountConfig.findMyUser(email);
+//        return new CustomSuccessResponse.SuccessDetail()
+//                .message("처리가 완료되었습니다.")
+//                .responseData(todayRunService.completeTodayGeneralRun(user, runPostId))
+//                .build();
+//    }
+//
+//    @Override
+//    @PutMapping("/completeTodayCrewRun/{runPostId}")
+//    public CustomSuccessResponse completeTodayCrewRun(@AuthenticationPrincipal String email,
+//                                                      @PathVariable Long runPostId){
+//        MyUser user = accountConfig.findMyUser(email);
+//        return new CustomSuccessResponse.SuccessDetail()
+//                .message("처리가 완료되었습니다.")
+//                .responseData(todayRunService.completeTodayCrewRun(user, runPostId))
+//                .build();
+//    }
+
+
+
 }
