@@ -74,4 +74,6 @@ public interface CrewRunGroupRepository extends JpaRepository<CrewRunGroup, Crew
     List<CrewRunGroup> getAllPendingParticipants(Long postId);
 
     CrewRunGroup findByCrewJoinPostAndUser(CrewJoinPost crewJoinPost, MyUser user);
+
+    List<CrewRunGroup> findAllByCrewJoinPost(CrewJoinPost crewJoinPost);
 }

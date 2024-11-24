@@ -4,7 +4,8 @@ public enum GeneralRunJoinPostStatus implements BaseEnum {
 
     OPEN("모집중"),    // 모집 중
     ONGOING("진행중"),
-    CLOSED("완료");  // 모집 마감
+    CLOSED("완료"),  // 모집 마감
+    END("종료"); // 모든 유저의 달리기 종료
 
     private final String value;
 

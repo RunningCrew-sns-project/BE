@@ -2,7 +2,8 @@ package com.github.accountmanagementproject.repository.runningPost.enums;
 
 public enum CrewRunJoinPostStatus implements BaseEnum {
     OPEN("모집중"),
-    FULL("만원");
+    FULL("만원"),
+    END("종료");
 
     private final String value;
 
