@@ -27,7 +27,7 @@ public class UserAboutCrew {
     public boolean isAvailableToJoin() {
 
         return this.statusIs() &&
-                LocalDate.now().isEqual(this.getReleaseDay()) || LocalDate.now().isAfter(this.getReleaseDay());
+                (LocalDate.now().isEqual(this.getReleaseDay()) || LocalDate.now().isAfter(this.getReleaseDay()));
     }
     private boolean statusIs() {
         if(isMaster) return false;

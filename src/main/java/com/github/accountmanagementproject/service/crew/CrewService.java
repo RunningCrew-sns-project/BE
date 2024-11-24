@@ -97,6 +97,7 @@ public class CrewService {
         CrewsUsersPk crewsUsersPk = new CrewsUsersPk(crew, user);
 
         CrewsUsers joinCrewsUsers = validateAndJoinCrew(crewsUsersPk);
+        notificationService.sendRequestNotification(crew.getCrewMaster().getUserId(), crewId, user.getUserId(), "크루 가입 요청이 들어왔습니다.");  // 알림
         return CrewMapper.INSTANCE.crewsUsersToCrewJoinResponse(joinCrewsUsers);
     }
 

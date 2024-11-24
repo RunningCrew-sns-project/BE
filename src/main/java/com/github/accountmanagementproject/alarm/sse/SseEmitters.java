@@ -37,7 +37,7 @@ public class SseEmitters {
         SseEmitter emitter = emitters.get(userId);
         if (emitter != null) {
             try {
-                emitter.send(SseEmitter.event().name("sihu").data(data));
+                emitter.send(SseEmitter.event().name("notification").data(data));
             } catch (Exception e) {
                 emitters.remove(userId); // 에러 발생 시 연결 제거
             }
