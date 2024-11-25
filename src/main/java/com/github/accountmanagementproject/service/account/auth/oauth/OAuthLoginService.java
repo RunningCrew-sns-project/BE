@@ -39,14 +39,9 @@ public class OAuthLoginService {
 
     @Transactional
     public AuthResult<?> loginOrCreateTempAccount(OAuthLoginParams params) {
-
-        //소셜 서버에 요청해서 사용자 정보 받아오기
         OAuthUserInfo oAuthUserInfo = oAuthClientManager.request(params);
-        //DB에서 사용자 정보 찾기
         Optional<MyUser> myUserOptional = myUsersRepository.findBySocialIdPk(new SocialIdPk(oAuthUserInfo.getSocialId(),oAuthUserInfo.getOAuthProvider()));
-        //DB에 사용자 정보가 없으면 임시 회원가입 진행
         MyUser myUser = myUserOptional.orElseGet(() -> processSignUp(oAuthUserInfo));
-        //로그인 또는 회원가입 응답 생성
         return myUserOptional.isPresent() & !myUser.isDisabled() ? createOAuthLoginResponse(myUser) : createOAuthSignUpResponse(oAuthUserInfo);
 
     }
