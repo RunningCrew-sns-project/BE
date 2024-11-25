@@ -15,7 +15,7 @@ public abstract class MyConverter<T extends Enum<T> & MyEnumInterface> implement
     }
 
 
-    @Override//null 인경우 여기로 안옴
+    @Override
     public String convertToDatabaseColumn(T myEnum) {
         return myEnum.getValue();
     }

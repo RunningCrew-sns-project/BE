@@ -1,8 +1,6 @@
 package com.github.accountmanagementproject.web.controller.runJoinPost;
 
 import com.github.accountmanagementproject.alarm.sse.SseEmitters;
-import com.github.accountmanagementproject.repository.account.socialid.SocialId;
-import com.github.accountmanagementproject.repository.account.user.myenum.OAuthProvider;
 import com.github.accountmanagementproject.service.runJoinPost.RunPostService;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +51,7 @@ public class RunPostController {
 
     @GetMapping("/test")
     public CustomSuccessResponse test(@RequestParam Long id, @RequestParam String message){
-        sseEmitters.sendBySihuTest(id,new SocialId("메롱",OAuthProvider.GOOGLE));
+        sseEmitters.sendBySihuTest(id,message);
 
         return new CustomSuccessResponse.SuccessDetail()
                 .message("테스트 성공")
