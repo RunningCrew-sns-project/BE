@@ -406,7 +406,7 @@ public class CrewService {
                 .request(Map.of("crewId", crewId, "oldMasterEmail", oldMasterEmail))
                 .build();
     }
-
+    @Transactional
     public void deleteCrew(String masterEmail, Long crewId) {
         boolean isCrewDeleted = crewsRepository.deleteCrew(masterEmail, crewId);
         if(isCrewDeleted) throw new CustomNotFoundException.ExceptionBuilder()
