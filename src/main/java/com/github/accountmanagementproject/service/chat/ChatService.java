@@ -133,9 +133,8 @@ public class ChatService{
                         .build();
 
         userChatMappingRepository.save(userChatMapping);
-        userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
 
-        chatRoom.setUserCount(userList.size());
+        chatRoom.setUserCount(userList.size() + 1);
 
         chatRoomRepository.save(chatRoom);
 
