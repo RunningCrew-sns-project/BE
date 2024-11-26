@@ -154,7 +154,12 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
     @Override
     public boolean deleteCrew(String masterEmail, Long crewId) {
         long result = queryFactory.delete(QCREW)
-                .where(QCREW.crewMaster.email.eq(masterEmail), QCREW.crewId.eq(crewId))
+                .where(QCREW.crewId.eq(crewId),
+                        JPAExpressions.selectOne()
+                                .from(QMyUser.myUser)
+                                .where(QMyUser.myUser.email.eq(masterEmail)
+                                        .and(QCREW.crewMaster.userId.eq(QMyUser.myUser.userId)))
+                                .exists())
                 .execute();
 
         return result == 1;
