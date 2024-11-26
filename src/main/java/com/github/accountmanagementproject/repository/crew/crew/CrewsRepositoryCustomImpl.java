@@ -141,6 +141,16 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public boolean replaceCrewMaster(Long crewId, String oldMasterEmail, Long newMasterId) {
+        long result = queryFactory.update(QCREW)
+                .set(QCREW.crewMaster.userId, newMasterId)
+                .where(QCREW.crewId.eq(crewId), QCREW.crewMaster.email.eq(oldMasterEmail))
+                .execute();
+
+        return result == 1;
+    }
+
 
     private Expression<CrewListResponse> setCrewListProjections(SearchCriteria searchCriteria) {
         return Projections.constructor(CrewListResponse.class,

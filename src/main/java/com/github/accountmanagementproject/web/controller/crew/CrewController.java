@@ -88,6 +88,20 @@ public class CrewController implements CrewControllerDocs {
                 .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
                 .build();
     }
+    @PutMapping("/{crewId}/admin/transfer")
+    public CustomSuccessResponse transferTheCrewMaster(@AuthenticationPrincipal String oldMasterEmail, @PathVariable Long crewId, @RequestParam Long newMasterId) {
+        crewService.transferTheCrewMaster(oldMasterEmail, crewId, newMasterId);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 마스터 변경 성공")
+                .build();
+    }
+    @DeleteMapping("/{crewId}/admin")
+    public CustomSuccessResponse deleteCrew(@PathVariable Long crewId, @AuthenticationPrincipal String email) {
+        crewService.deleteCrew(email, crewId);
+        return new CustomSuccessResponse.SuccessDetail()
+                .message("크루 삭제 성공")
+                .build();
+    }
 
     @GetMapping("/all/admin/users")
     public CustomSuccessResponse getAllMyCrewUsersForNotifications(@AuthenticationPrincipal String email) {

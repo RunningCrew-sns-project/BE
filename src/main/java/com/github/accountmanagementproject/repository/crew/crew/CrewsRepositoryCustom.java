@@ -21,5 +21,7 @@ public interface CrewsRepositoryCustom {
 
     List<MyCrewResponse> findIMadeCrewResponseByEmail(String email);
 
+    boolean replaceCrewMaster(Long crewId, String oldMasterEmail, Long newMasterId);
+
 //    List<MyCrewResponse> findMyCrewsByEmail(String email, Boolean isRequesting);
 }
