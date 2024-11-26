@@ -7,6 +7,7 @@ import com.github.accountmanagementproject.web.dto.infinitescrolling.criteria.Se
 import com.github.accountmanagementproject.web.dto.pagination.PageRequestDto;
 import com.github.accountmanagementproject.web.dto.pagination.PageResponseDto;
 import com.github.accountmanagementproject.web.dto.responsebuilder.CustomSuccessResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -88,6 +89,8 @@ public class CrewController implements CrewControllerDocs {
                 .responseData(crewService.getCrewUsers(masterEmail, crewId, all))
                 .build();
     }
+
+    @Operation(summary = "크루 마스터 변경")
     @PutMapping("/{crewId}/admin/transfer")
     public CustomSuccessResponse transferTheCrewMaster(@AuthenticationPrincipal String oldMasterEmail, @PathVariable Long crewId, @RequestParam Long newMasterId) {
         crewService.transferTheCrewMaster(oldMasterEmail, crewId, newMasterId);
@@ -95,6 +98,7 @@ public class CrewController implements CrewControllerDocs {
                 .message("크루 마스터 변경 성공")
                 .build();
     }
+    @Operation(summary = "크루 삭제")
     @DeleteMapping("/{crewId}/admin")
     public CustomSuccessResponse deleteCrew(@PathVariable Long crewId, @AuthenticationPrincipal String email) {
         crewService.deleteCrew(email, crewId);

@@ -407,7 +407,11 @@ public class CrewService {
                 .build();
     }
 
-    public void deleteCrew(String email, Long crewId) {
-
+    public void deleteCrew(String masterEmail, Long crewId) {
+        boolean isCrewDeleted = crewsRepository.deleteCrew(masterEmail, crewId);
+        if(isCrewDeleted) throw new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루의 마스터가 아니거나, 존재하지 않는 크루 입니다.")
+                .request(Map.of("crewId", crewId, "masterEmail", masterEmail))
+                .build();
     }
 }

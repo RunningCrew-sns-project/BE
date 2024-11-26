@@ -151,6 +151,15 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
         return result == 1;
     }
 
+    @Override
+    public boolean deleteCrew(String masterEmail, Long crewId) {
+        long result = queryFactory.delete(QCREW)
+                .where(QCREW.crewMaster.email.eq(masterEmail), QCREW.crewId.eq(crewId))
+                .execute();
+
+        return result == 1;
+    }
+
 
     private Expression<CrewListResponse> setCrewListProjections(SearchCriteria searchCriteria) {
         return Projections.constructor(CrewListResponse.class,
