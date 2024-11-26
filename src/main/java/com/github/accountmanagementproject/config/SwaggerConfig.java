@@ -19,7 +19,9 @@ public class SwaggerConfig {
 //    @Value("${aws.server-url}")
 //    private String serverUrl;
     @Value("${spring.datasource.server-url}")
-    private String newServerUrl;
+    private String serverUrl;
+    @Value("${spring.datasource.https-server-url}")
+    private String httpsServerUrl;
 
 
     @Bean
@@ -36,9 +38,13 @@ public class SwaggerConfig {
 //        server.setUrl(serverUrl);
 //        server.setDescription("Spare Server");
 
-        Server newServer = new Server();
-        newServer.setUrl(newServerUrl);
-        newServer.setDescription("AWS Server");
+        Server server = new Server();
+        server.setUrl(this.serverUrl);
+        server.setDescription("AWS Server");
+
+        Server httpsServer  = new Server();
+        httpsServer.setUrl(this.httpsServerUrl);
+        httpsServer.setDescription("HTTPS Production Server");
 
         Server localServer = new Server();
         localServer.setUrl("http://localhost:8080/");
@@ -54,7 +60,7 @@ public class SwaggerConfig {
                                 new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.COOKIE).name("RefreshToken"))
                 )
                 .info(info)
-                .servers(List.of(localServer, newServer))
+                .servers(List.of(localServer, httpsServer, server))
 
                 .addSecurityItem(new SecurityRequirement().addList("access"))
                 .addSecurityItem(new SecurityRequirement().addList("refresh"))
