@@ -84,7 +84,6 @@ public class ChatService{
     // roomName 으로 채팅방 만들기
     public CustomSuccessResponse createChatRoom(ChatRoomRequest chatRoomRequest, MyUser user){
         String roomName = chatRoomRequest.getRoomName();
-        CustomSuccessResponse customSuccessResponse = null;
         //채팅방 이름으로 채팅 방 생성후
         if(chatRoomRepository.findByTitle(roomName) == null) {
             ChatRoom chatRoom = ChatRoom.builder()
@@ -100,20 +99,18 @@ public class ChatService{
             userChatMappingRepository.save(userChatMapping);
             List<MyUser> userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
             chatRoom.setUserCount(userList.size());
-            customSuccessResponse = new CustomSuccessResponse.SuccessDetail()
+            return new CustomSuccessResponse.SuccessDetail()
                     .responseData(chatRoom)
                     .httpStatus(HttpStatus.CREATED)
                     .message("채팅방 생성을 완료하였습니다.")
                     .build();
         }else {
-            customSuccessResponse = new CustomSuccessResponse.SuccessDetail()
+            return new CustomSuccessResponse.SuccessDetail()
                     .responseData(chatRoomRepository.findByTitle(roomName))
                     .httpStatus(HttpStatus.CONFLICT)
                     .message("이미 존재하는 채팅방")
                     .build();
         }
-
-        return customSuccessResponse;
     }
 
     @ExeTimer
@@ -136,6 +133,7 @@ public class ChatService{
                         .build();
 
         userChatMappingRepository.save(userChatMapping);
+        userList = userChatMappingRepository.findAllByChatRoom(chatRoom).stream().map(UserChatMapping::getUser).toList();
 
         chatRoom.setUserCount(userList.size());
 
