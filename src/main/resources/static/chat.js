@@ -250,7 +250,7 @@ function getUserEmail() {
 // 서버로부터 채팅방 목록을 불러옴
 async function loadChatRooms() {
 	try {
-		const response = await fetch('http://localhost:8080/api/chat/myRooms',{
+		const response = await fetch('http://localhost:8080/api/chat/allRooms',{
 			headers: headerList
 		});  // ChatRoomResponse 데이터를 반환하는 API 호출
 		// if(!response.ok) {
@@ -262,7 +262,7 @@ async function loadChatRooms() {
 
 		const responseData = await response.json();
 		console.log("loadChatRooms : " + responseData.success.responseData);
-		const rooms = responseData.success.responseData
+		const rooms = responseData.success.responseData.currentScrollItems
 
 
 		displayChatRooms(rooms);
@@ -420,8 +420,11 @@ async function createChatRoom() {
 	try {
 		const response = await fetch('http://localhost:8080/api/chat/createRoom', {
 			method: 'POST',
-			headers: headerList,
-			body: roomName,  // roomName을 JSON 형태로 전달
+			headers: {
+				...headerList,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({roomName: roomName}),  // roomName을 JSON 형태로 전달
 		});
 
 		if (response.ok) {
