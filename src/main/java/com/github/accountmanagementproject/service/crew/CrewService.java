@@ -391,4 +391,27 @@ public class CrewService {
     public List<CrewAndUserResponse> getAllMyCrewAWaitingUsers(String email) {
         return crewsUsersRepository.myCrewPendingUsers(email);
     }
+
+    @Transactional
+    public void transferTheCrewMaster(String oldMasterEmail, Long crewId, Long newMasterId) {
+        boolean isNewMasterUserSet = crewsUsersRepository.checkCrewUserAndDelete(crewId, newMasterId);
+        if(!isNewMasterUserSet) throw new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루의 가입 완료상태인 유저가 아닙니다.")
+                .request(Map.of("crewId", crewId, "newMasterId", newMasterId))
+                .build();
+
+        boolean isTransferTheCrewMaster = crewsRepository.replaceCrewMaster(crewId, oldMasterEmail, newMasterId);
+        if(!isTransferTheCrewMaster) throw new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루의 마스터가 아니거나, 존재하지 않는 크루 입니다.")
+                .request(Map.of("crewId", crewId, "oldMasterEmail", oldMasterEmail))
+                .build();
+    }
+    @Transactional
+    public void deleteCrew(String masterEmail, Long crewId) {
+        boolean isCrewDeleted = crewsRepository.deleteCrew(masterEmail, crewId);
+        if(!isCrewDeleted) throw new CustomNotFoundException.ExceptionBuilder()
+                .customMessage("해당 크루의 마스터가 아니거나, 존재하지 않는 크루 입니다.")
+                .request(Map.of("crewId", crewId, "masterEmail", masterEmail))
+                .build();
+    }
 }

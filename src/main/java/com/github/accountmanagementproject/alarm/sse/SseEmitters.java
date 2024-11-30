@@ -38,10 +38,11 @@ public class SseEmitters {
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event().name("notification").data(data));
+                System.out.println("알림보내기 성공!");
             } catch (Exception e) {
                 emitters.remove(userId); // 에러 발생 시 연결 제거
             }
-        }
+        }else System.out.println("emitter is null!!!");
     }
 
     public void removeEmitter(Long userId) {

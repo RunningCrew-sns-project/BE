@@ -14,9 +14,8 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.JPQLSubQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -120,7 +119,7 @@ public class GeneralJoinPostRepositoryCustomImpl implements GeneralJoinPostRepos
         return member.stream()
                 .collect(Collectors.groupingBy(RunMemberResponse::getPostId));
     }
-    private JPQLQuery<Long> memberCountSubQuery(boolean isCrew, boolean isApproved) {
+    private JPQLSubQuery<Long> memberCountSubQuery(boolean isCrew, boolean isApproved) {
         BooleanExpression where = isCrew ?
                 qCrewRunGroup.crewJoinPost.eq(qCrewJoinPost) :
                 qRunGroup.generalJoinPost.eq(qGeneralJoinPost);

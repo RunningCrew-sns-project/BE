@@ -26,4 +26,6 @@ public interface CrewsUsersRepositoryCustom {
     List<MyCrewResponse> findMyCrewResponseByEmail(String email, Boolean isAll);
 
     List<CrewAndUserResponse> myCrewPendingUsers(String email);
+    boolean checkCrewUserAndDelete(Long crewId, Long userId);
+
 }
