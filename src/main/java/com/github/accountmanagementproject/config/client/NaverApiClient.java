@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.config.client;
 
 import com.github.accountmanagementproject.config.client.dto.tokens.NaverTokens;
-import com.github.accountmanagementproject.config.client.dto.userInfo.NaverUserUserInfo;
+import com.github.accountmanagementproject.config.client.dto.userInfo.NaverUserInfo;
 import com.github.accountmanagementproject.config.client.dto.userInfo.OAuthUserInfo;
 import com.github.accountmanagementproject.repository.account.user.myenum.OAuthProvider;
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.request.OAuthLoginParams;
@@ -72,6 +72,6 @@ public class NaverApiClient implements OAuthApiClient {
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
 
-        return restTemplate.postForObject(url, request, NaverUserUserInfo.class);
+        return restTemplate.postForObject(url, request, NaverUserInfo.class);
     }
 }

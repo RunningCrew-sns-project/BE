@@ -174,6 +174,17 @@ public class CrewsUsersRepositoryCustomImpl implements CrewsUsersRepositoryCusto
         return backGround;
     }
 
+    @Override
+    public boolean checkCrewUserAndDelete(Long crewId, Long userId) {
+        long result = queryFactory.delete(QCREWSUSERS)
+                .where(QCREWSUSERS.crewsUsersPk.crew.crewId.eq(crewId)
+                        .and(QCREWSUSERS.crewsUsersPk.user.userId.eq(userId))
+                        .and(QCREWSUSERS.status.eq(CrewsUsersStatus.COMPLETED)))
+                .execute();
+        return result == 1;
+    }
+
+
     private Map<Long, List<SimplyCrewUserResponse>> findMyWaitingUsers(String email) {
         List<SimplyCrewUserResponse> waitingUsers = queryFactory.select(
                         Projections.fields(SimplyCrewUserResponse.class,

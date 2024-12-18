@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class KakaoUserUserInfo implements OAuthUserInfo {
+public class KakaoUserInfo implements OAuthUserInfo {
     private String id;
 
     @JsonProperty("kakao_account")

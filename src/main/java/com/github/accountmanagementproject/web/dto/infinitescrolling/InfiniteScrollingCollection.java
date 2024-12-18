@@ -6,12 +6,12 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class InfiniteScrollingCollection<T extends ScrollingResponseInterface<U>, U>  {
+public class InfiniteScrollingCollection<T extends ScrollingResponseInterface<U>, U extends Enum<U>>  {
     private final List<T> itemsWithNextCursor;
     private final int countPerScroll;
     private final U criteria;
 
-    public static <T extends ScrollingResponseInterface<U>, U> InfiniteScrollingCollection<T, U> of(List<T> itemsWithNextCursor, int size, U criteria) {
+    public static <T extends ScrollingResponseInterface<U>, U extends Enum<U>> InfiniteScrollingCollection<T, U> of(List<T> itemsWithNextCursor, int size, U criteria) {
         return new InfiniteScrollingCollection<>(itemsWithNextCursor, size, criteria);
     }
 

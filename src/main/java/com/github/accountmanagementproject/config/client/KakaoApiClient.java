@@ -1,7 +1,7 @@
 package com.github.accountmanagementproject.config.client;
 
 import com.github.accountmanagementproject.config.client.dto.tokens.KakaoTokens;
-import com.github.accountmanagementproject.config.client.dto.userInfo.KakaoUserUserInfo;
+import com.github.accountmanagementproject.config.client.dto.userInfo.KakaoUserInfo;
 import com.github.accountmanagementproject.config.client.dto.userInfo.OAuthUserInfo;
 import com.github.accountmanagementproject.repository.account.user.myenum.OAuthProvider;
 import com.github.accountmanagementproject.web.dto.account.auth.oauth.request.OAuthLoginParams;
@@ -72,6 +72,6 @@ public class KakaoApiClient implements OAuthApiClient {
 
         HttpEntity<?> request = new HttpEntity<>(body, httpHeaders);
 
-        return restTemplate.postForObject(url, request, KakaoUserUserInfo.class);
+        return restTemplate.postForObject(url, request, KakaoUserInfo.class);
     }
 }

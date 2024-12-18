@@ -19,6 +19,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.JPQLSubQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -63,21 +64,21 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
         return fetchOne != null;
     }
 
-    private JPQLQuery<Long> numberOfUsersSignedUpInAMonth() {
+    private JPQLSubQuery<Long> numberOfUsersSignedUpInAMonth() {
         return JPAExpressions.select(QCrewsUsers.crewsUsers.count())
                 .from(QCrewsUsers.crewsUsers)
                 .where(QCrewsUsers.crewsUsers.crewsUsersPk.crew.eq(QCREW)
                         .and(QCrewsUsers.crewsUsers.joinDate.after(LocalDateTime.now().minusMonths(1))));
     }
 
-    private JPQLQuery<Long> numberOfPostsWriteInAMonth() {
+    private JPQLSubQuery<Long> numberOfPostsWriteInAMonth() {
         return JPAExpressions.select(QCrewJoinPost.crewJoinPost.count())
                 .from(QCrewJoinPost.crewJoinPost)
                 .where(QCrewJoinPost.crewJoinPost.crew.eq(QCREW)
                         .and(QCrewJoinPost.crewJoinPost.createdAt.after(LocalDateTime.now().minusDays(7))));
     }
 
-    private JPQLQuery<Long> completedCrewUsersCount() {
+    private JPQLSubQuery<Long> completedCrewUsersCount() {
         return JPAExpressions.select(QCrewsUsers.crewsUsers.count())
                 .from(QCrewsUsers.crewsUsers)
                 .where(QCrewsUsers.crewsUsers.crewsUsersPk.crew.eq(QCREW)
@@ -141,6 +142,30 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public boolean replaceCrewMaster(Long crewId, String oldMasterEmail, Long newMasterId) {
+        long result = queryFactory.update(QCREW)
+                .set(QCREW.crewMaster.userId, newMasterId)
+                .where(QCREW.crewId.eq(crewId), QCREW.crewMaster.email.eq(oldMasterEmail))
+                .execute();
+
+        return result == 1;
+    }
+
+    @Override
+    public boolean deleteCrew(String masterEmail, Long crewId) {
+        long result = queryFactory.delete(QCREW)
+                .where(QCREW.crewId.eq(crewId),
+                        JPAExpressions.selectOne()
+                                .from(QMyUser.myUser)
+                                .where(QMyUser.myUser.email.eq(masterEmail)
+                                        .and(QCREW.crewMaster.userId.eq(QMyUser.myUser.userId)))
+                                .exists())
+                .execute();
+
+        return result == 1;
+    }
+
 
     private Expression<CrewListResponse> setCrewListProjections(SearchCriteria searchCriteria) {
         return Projections.constructor(CrewListResponse.class,
@@ -182,7 +207,7 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
     }
 
     private BooleanExpression getPopularCursorCondition(CursorHolder cursorHolder, boolean reverse) {
-        JPQLQuery<Long> signedInAMonth = numberOfUsersSignedUpInAMonth();
+        JPQLSubQuery<Long> signedInAMonth = numberOfUsersSignedUpInAMonth();
         BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
         BooleanExpression popularCondition = reverse
                 ? signedInAMonth.gt(cursorHolder.getPopularOrActivitiesCursor())
@@ -208,7 +233,7 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
                 .or(QCREW.crewName.eq(cursorHolder.getNameCursor()).and(idCondition));
     }
     private BooleanExpression getActivityCursorCondition(CursorHolder cursorHolder, boolean reverse) {
-        JPQLQuery<Long> wroteInAMonth = numberOfPostsWriteInAMonth();
+        JPQLSubQuery<Long> wroteInAMonth = numberOfPostsWriteInAMonth();
         BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
         BooleanExpression wroteCondition = reverse
                 ? wroteInAMonth.gt(cursorHolder.getPopularOrActivitiesCursor())
@@ -220,7 +245,7 @@ public class CrewsRepositoryCustomImpl implements CrewsRepositoryCustom {
 
     private BooleanExpression getMemberCursorCondition(CursorHolder cursorHolder, boolean reverse) {
         BooleanExpression idCondition = getIdCursorCondition(cursorHolder.getIdCursor(), reverse);
-        JPQLQuery<Long> completedUserCount = completedCrewUsersCount();
+        JPQLSubQuery<Long> completedUserCount = completedCrewUsersCount();
         BooleanExpression memberCondition = reverse
                 ? completedUserCount.gt(cursorHolder.getMemberCursor())
                 : completedUserCount.lt(cursorHolder.getMemberCursor());
