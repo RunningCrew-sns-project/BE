@@ -7,7 +7,6 @@ public abstract class MakeRuntimeException extends RuntimeException {
     private final String customMessage;
     private final Object request;
 
-    //모든 종류의 제네릭을 처리할 수 있도록 <?>사용 하위클래스에서 이용하므로 protected 선언
     protected MakeRuntimeException(ExceptionBuilder<?> exceptionBuilder) {
         super(exceptionBuilder.systemMessage);
         this.customMessage = exceptionBuilder.customMessage;

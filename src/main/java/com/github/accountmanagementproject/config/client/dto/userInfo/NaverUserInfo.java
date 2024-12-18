@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NaverUserUserInfo implements OAuthUserInfo {
+public class NaverUserInfo implements OAuthUserInfo {
 
     @JsonProperty("response")
     private Response response;
